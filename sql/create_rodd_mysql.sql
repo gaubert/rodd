@@ -4,6 +4,9 @@ CREATE SCHEMA IF NOT EXISTS rodd;
 
 USE RODD;
 
+-- GRANT ALL PRIVILEGES on rodd.* to 'rodd@localhost' IDENTIFIED BY 'ddor';
+-- GRANT ALL PRIVILEGES on rodd.* to 'rodd@localhost.localdomain' IDENTIFIED BY 'ddor';
+
 -- Drop all tables
 
 DROP TABLE if EXISTS products;
@@ -33,13 +36,12 @@ CREATE TABLE IF NOT EXISTS products (
 	hrpt_dir BOOLEAN DEFAULT FALSE,
     filesize VARCHAR(1024),
 	oicd VARCHAR(256),
-	formats VARCHAR(512),
 	frequency VARCHAR(256),
 	instrument VARCHAR(512),
 	link VARCHAR(1024),
 	regularExpr VARCHAR(1024),
 	namingConvention VARCHAR(1024),
-	orbitType VARCHAR(256),
+	orbitType INTEGER,
 	parameter VARCHAR(256),
 	provider VARCHAR(256),
 	referenceFile VARCHAR(512),
@@ -49,16 +51,17 @@ CREATE TABLE IF NOT EXISTS products (
 	status VARCHAR(256)
   );
 
--- products formats
+-- products formats to link the formats and the products
 CREATE TABLE IF NOT EXISTS products_formats (
    roddID INTEGER PRIMARY KEY,
    formatTypeID INTEGER
 );
 
+-- format type
 CREATE TABLE IF NOT EXISTS format_type (
    formatTypeID INTEGER AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(256),
-   description VARCHAR(1024),
+   description VARCHAR(1024)
 );
 
 -- insert the different format types
@@ -84,7 +87,17 @@ INSERT into format_type (name) values("NetCDF");
 INSERT into format_type (name) values("PFS");
 INSERT into format_type (name) values("PNG");
 INSERT into format_type (name) values("Shape");
-INSERT into format_type (name) values("WMO GTS in LRIT");
+INSERT into format_type (name,description) values("LRIT-WMO","WMO GTS in LRIT");
 
--- orbitType, status, instrument, frequency, formats should be expressed differently
+-- orbit type
+CREATE TABLE IF NOT EXISTS orbit_type (
+   orbitID INTEGER AUTO_INCREMENT PRIMARY KEY,
+   name VARCHAR(256),
+);
+
+INSERT into orbit_type (name) values("LEO");
+INSERT into orbit_type (name) values("GEO");
+
+-- status, instrument, frequency, should be expressed differently
+-- for frequency, it will be very difficult
 
