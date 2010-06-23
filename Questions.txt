@@ -1,0 +1,3 @@
+1) Products and Formats
+
+In the table product a product can have multiple formats. This will result in having multiple files of the same product in different format being disseminated. Maybe the same product with 2 different format should be described as 2 different products (easier to distinguish for the dissemination).
