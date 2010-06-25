@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:od="urn:schemas-microsoft-com:officedata">
+<xsd:element name="dataroot">
+<xsd:complexType>
+<xsd:sequence>
+<xsd:element ref="tbl_service" minOccurs="0" maxOccurs="unbounded"/>
+</xsd:sequence>
+<xsd:attribute name="generated" type="xsd:dateTime"/>
+</xsd:complexType>
+</xsd:element>
+<xsd:element name="tbl_service">
+<xsd:annotation>
+<xsd:appinfo>
+<od:index index-name="Field1" index-key="serviceID " primary="yes" unique="yes" clustered="no" order="asc"/>
+<od:tableProperty name="Orientation" type="2" value="0"/>
+<od:tableProperty name="OrderByOn" type="1" value="1"/>
+<od:tableProperty name="NameMap" type="11" value="CswOVQAAAACrAU7yPQFmTqf+0qVcBFqIAAAAABA532RVreNAAAAAAAAAAAB0AGIA
+bABfAHMAZQByAHYAaQBjAGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAACrAU7y
+PQFmTqf+0qVcBFqIYwBoAGEAbgBuAGUAbAAAAAAAAACW1ZSdl9JzQoNL8R8AcEW4
+BwAAAKsBTvI9AWZOp/7SpVwEWohzAGUAcgB2AGkAYwBlAEkARAAAAAAAAABt3He1
+v2xKTp9tl6gKJk7xBwAAAKsBTvI9AWZOp/7SpVwEWohzAGUAcgB2AGkAYwBlAF8A
+ZABpAHIAZQBjAHQAbwByAHkAAAAAAAAAJGmdZVtcQkeu1Y0HZHjUgQAAAABEAJhK
+FajjQAAAAAAAAAAAdABiAGwALQBjAGgAYQBuAG4AZQBsAHMAIABRAHUAZQByAHkA
+AAAAAAAAUwOyJ3afWk6+HTR3Jzt0HwcAAACrAU7yPQFmTqf+0qVcBFqIYwBoAGEA
+bgBuAGUAbAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAQAAAAAAAAAAAAAAAAA
+AAAAAA==
+"/>
+<od:tableProperty name="DefaultView" type="2" value="2"/>
+<od:tableProperty name="GUID" type="9" value="qwFO8j0BZk6n/tKlXARaiA==
+"/>
+<od:tableProperty name="DisplayViewsOnSharePointSite" type="2" value="1"/>
+<od:tableProperty name="TotalsRow" type="1" value="0"/>
+<od:tableProperty name="FilterOnLoad" type="1" value="0"/>
+<od:tableProperty name="OrderByOnLoad" type="1" value="1"/>
+<od:tableProperty name="HideNewField" type="1" value="0"/>
+<od:tableProperty name="DatasheetFontName" type="10" value="Calibri"/>
+<od:tableProperty name="DatasheetFontHeight" type="3" value="18"/>
+<od:tableProperty name="DatasheetFontWeight" type="3" value="400"/>
+<od:tableProperty name="DatasheetFontItalic" type="1" value="0"/>
+<od:tableProperty name="DatasheetFontUnderline" type="1" value="0"/>
+<od:tableProperty name="TabularCharSet" type="2" value="186"/>
+<od:tableProperty name="TabularFamily" type="2" value="34"/>
+<od:tableProperty name="DatasheetForeColor" type="4" value="0"/>
+<od:tableProperty name="DatasheetForeColor12" type="4" value="0"/>
+<od:tableProperty name="OrderBy" type="12" value="[tbl_service].[serviceID], [tbl_service].[service_directory], [Lookup_channel].[channel]"/>
+<od:tableProperty name="Filter" type="12" value="([Lookup_channel].[channel]=&quot;EUMETSAT Data Channel 9&quot;)"/>
+</xsd:appinfo>
+</xsd:annotation>
+<xsd:complexType>
+<xsd:sequence>
+<xsd:element name="serviceID" minOccurs="0" od:jetType="double" od:sqlSType="float" type="xsd:double">
+<xsd:annotation>
+<xsd:appinfo>
+<od:fieldProperty name="Format" type="10" value="General Number"/>
+<od:fieldProperty name="ColumnWidth" type="3" value="1665"/>
+<od:fieldProperty name="ColumnOrder" type="3" value="1"/>
+<od:fieldProperty name="ColumnHidden" type="1" value="0"/>
+<od:fieldProperty name="DecimalPlaces" type="2" value="255"/>
+<od:fieldProperty name="Required" type="1" value="0"/>
+<od:fieldProperty name="DisplayControl" type="3" value="109"/>
+<od:fieldProperty name="TextAlign" type="2" value="0"/>
+<od:fieldProperty name="AggregateType" type="4" value="-1"/>
+<od:fieldProperty name="GUID" type="9" value="ltWUnZfSc0KDS/EfAHBFuA==
+"/>
+</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+<xsd:element name="service_directory" minOccurs="0" od:jetType="text" od:sqlSType="nvarchar">
+<xsd:annotation>
+<xsd:appinfo>
+<od:fieldProperty name="Format" type="10" value="@"/>
+<od:fieldProperty name="ColumnWidth" type="3" value="4725"/>
+<od:fieldProperty name="ColumnOrder" type="3" value="0"/>
+<od:fieldProperty name="ColumnHidden" type="1" value="0"/>
+<od:fieldProperty name="Required" type="1" value="0"/>
+<od:fieldProperty name="AllowZeroLength" type="1" value="1"/>
+<od:fieldProperty name="DisplayControl" type="3" value="109"/>
+<od:fieldProperty name="IMEMode" type="2" value="0"/>
+<od:fieldProperty name="IMESentenceMode" type="2" value="3"/>
+<od:fieldProperty name="UnicodeCompression" type="1" value="0"/>
+<od:fieldProperty name="TextAlign" type="2" value="0"/>
+<od:fieldProperty name="AggregateType" type="4" value="-1"/>
+<od:fieldProperty name="GUID" type="9" value="bdx3tb9sSk6fbZeoCiZO8Q==
+"/>
+</xsd:appinfo>
+</xsd:annotation>
+<xsd:simpleType>
+<xsd:restriction base="xsd:string">
+<xsd:maxLength value="255"/>
+</xsd:restriction>
+</xsd:simpleType>
+</xsd:element>
+<xsd:element name="channel" minOccurs="0" od:jetType="longinteger" od:sqlSType="int" type="xsd:int">
+<xsd:annotation>
+<xsd:appinfo>
+<od:fieldProperty name="ColumnWidth" type="3" value="11700"/>
+<od:fieldProperty name="ColumnOrder" type="3" value="0"/>
+<od:fieldProperty name="ColumnHidden" type="1" value="0"/>
+<od:fieldProperty name="DecimalPlaces" type="2" value="255"/>
+<od:fieldProperty name="Required" type="1" value="0"/>
+<od:fieldProperty name="DisplayControl" type="3" value="110"/>
+<od:fieldProperty name="RowSourceType" type="10" value="Table/Query"/>
+<od:fieldProperty name="RowSource" type="12" value="tbl-channels Query"/>
+<od:fieldProperty name="BoundColumn" type="3" value="1"/>
+<od:fieldProperty name="ColumnCount" type="3" value="2"/>
+<od:fieldProperty name="ColumnHeads" type="1" value="1"/>
+<od:fieldProperty name="ColumnWidths" type="10" value="0;2268"/>
+<od:fieldProperty name="TextAlign" type="2" value="0"/>
+<od:fieldProperty name="AllowValueListEdits" type="1" value="0"/>
+<od:fieldProperty name="AggregateType" type="4" value="-1"/>
+<od:fieldProperty name="ShowOnlyRowSourceValues" type="1" value="0"/>
+<od:fieldProperty name="GUID" type="9" value="UwOyJ3afWk6+HTR3Jzt0Hw==
+"/>
+</xsd:appinfo>
+</xsd:annotation>
+</xsd:element>
+</xsd:sequence>
+</xsd:complexType>
+</xsd:element>
+</xsd:schema>

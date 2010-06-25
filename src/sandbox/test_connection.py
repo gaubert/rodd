@@ -7,4 +7,14 @@ cursor.execute ("SELECT VERSION()")
 row = cursor.fetchone ()
 print "server version:", row[0]
 cursor.close ()
+
+cursor = conn.cursor ()
+cursor.execute ("SELECT * from format_type")
+rows = cursor.fetchall ()
+
+for row in rows:
+    print "server version:", row
+
+cursor.close ()
+
 conn.close ()

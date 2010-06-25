@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataroot xmlns:od="urn:schemas-microsoft-com:officedata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xsi:noNamespaceSchemaLocation="tbl_families.xsd" generated="2010-06-25T11:54:16">
+<tbl_families>
+<familyID>1</familyID>
+<family>AIDA</family>
+<display_name>AIDA</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>2</familyID>
+<family>BMD</family>
+<display_name>Basic Meteorological Data (BMD)</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>4</familyID>
+<family>DAILY_LOGS</family>
+</tbl_families>
+<tbl_families>
+<familyID>5</familyID>
+<family>DCP</family>
+<display_name>DCP Retransmissions (only for registered DCP operators)</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>6</familyID>
+<family>DEVCOCAST_GENERAL</family>
+</tbl_families>
+<tbl_families>
+<familyID>7</familyID>
+<family>EARS_ASCAT</family>
+<display_name>EARS-ASCAT</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>8</familyID>
+<family>EARS_ATOVS</family>
+<display_name>EARS-ATOVS</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>9</familyID>
+<family>EARS_AVHRR</family>
+<display_name>EARS-AVHRR</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>10</familyID>
+<family>ERS_SCAT</family>
+<display_name>ERS-SCAT</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>11</familyID>
+<family>EUM_MET_HIGH_VOL</family>
+<display_name>Clear Sky Reflectance Map (high data volume product)</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>12</familyID>
+<family>EUM_MET_PRODUCTS</family>
+<display_name>Meteosat Meteorological Products</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>13</familyID>
+<family>FSD_1_HOUR</family>
+<display_name> 1-hourly GOES &amp; MT-SAT image data</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>14</familyID>
+<family>FSD_3_HOUR</family>
+<display_name> 3-hourly GOES &amp; MT-SAT image data</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>15</familyID>
+<family>GNC_CN_CMA</family>
+<display_name> China Meteorological Administration (CMA) Products</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>16</familyID>
+<family>HR_SEVIRI_QUARTER</family>
+<display_name>High Rate SEVIRI Image Data 0º longitude: 1/4-hourly data transmissions **</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>17</familyID>
+<family>IODC_HALF</family>
+<display_name>High Resolution Image Indian Ocean Data Coverage: 1/2-hourly data transmissions</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>18</familyID>
+<family>JASON</family>
+<display_name>Jason/OSTM Products</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>19</familyID>
+<family>LR_SEVIRI_HALF</family>
+<display_name>Low Rate SEVIRI Image Data 0º longitude (near real time data):</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>20</familyID>
+<family>LSA_SAF_PRODUCTS</family>
+<display_name>Land Surface Analysis Applications (LSA-SAF Products)</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>21</familyID>
+<family>MDD_ACMAD</family>
+<display_name>Meteorological Data Dissemination</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>22</familyID>
+<family>MDD_NOMINAL</family>
+<display_name>Meteorological Data Dissemination</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>23</familyID>
+<family>METOP_AMSUA</family>
+<display_name>Metop AMSU_A</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>24</familyID>
+<family>METOP_ASCAT</family>
+<display_name>Metop ASCAT</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>25</familyID>
+<family>METOP_ASCAT_SOMO</family>
+<display_name>EUMETSAT Metop ASCAT Surface Soil Moisture</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>26</familyID>
+<family>METOP_AVHRR</family>
+<display_name>Metop AVHRR</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>27</familyID>
+<family>METOP_GOME</family>
+<display_name>Metop GOME</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>28</familyID>
+<family>METOP_GRASS</family>
+<display_name>Metop GRAS</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>29</familyID>
+<family>METOP_HIRS</family>
+<display_name>Metop HIRS</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>30</familyID>
+<family>METOP_IASI</family>
+<display_name>Metop IASI</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>31</familyID>
+<family>METOP_MHS</family>
+<display_name>Metop MHS</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>32</familyID>
+<family>METOP_NOAA_ATOVS_SOUNDING_PRODUCTS</family>
+<display_name>Metop/NOAA ATOVS Sounding Products</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>33</familyID>
+<family>MODIS_GLOBAL_FIRE_PRODUCTS</family>
+<display_name>MODIS Global Fire products</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>34</familyID>
+<family>MODIS_POLAR_WINDS</family>
+<display_name>MODIS Polar Winds</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>35</familyID>
+<family>MSG_RSS</family>
+<display_name>Meteosat Rapid Scanning Service (RSS) 9.5 degrees East **</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>36</familyID>
+<family>NASA_SERVIR</family>
+<display_name>NASA-SERVIR</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>38</familyID>
+<family>NOAA_AMSU_A</family>
+<display_name>NOAA AMSU_A</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>39</familyID>
+<family>NOAA_AVHRR</family>
+<display_name>NOAA AVHRR</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>40</familyID>
+<family>NOAA_HIRS</family>
+<display_name>NOAA HIRS</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>41</familyID>
+<family>NOAA_MHS</family>
+<display_name>NOAA MHS</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>42</familyID>
+<family>NOT_DEFINED</family>
+</tbl_families>
+<tbl_families>
+<familyID>43</familyID>
+<family>O3M_SAF</family>
+<display_name>Ozone &amp; Atmospheric Chemistry Applications (O3M-SAF Products)</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>44</familyID>
+<family>SAF_GRAS</family>
+<display_name>GRAS Meteorology (GRAS SAF)</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>45</familyID>
+<family>SAF_OSI</family>
+<display_name>Ocean &amp; Sea Ice Applications (OSI-SAF Products)</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>46</familyID>
+<family>VITO</family>
+<display_name>VITO - VEGETATION products (restricted to African NMS and partner organisations)</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>47</familyID>
+<family>HR_SEVIRI_HALF</family>
+<display_name>High Rate SEVIRI Image Data 0º longitude: 1/2-hourly data transmissions **</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>48</familyID>
+<family>HR_SEVIRI_1_HOUR</family>
+<display_name>High Rate SEVIRI Image Data 0º longitude: 1-hourly data transmissions **</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>49</familyID>
+<family>HR_SEVIRI_3_HOUR</family>
+<display_name>High Rate SEVIRI Image Data 0º longitude: 3-hourly data transmissions **</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>50</familyID>
+<family>HR_SEVIRI_6_HOUR</family>
+<display_name>High Rate SEVIRI Image Data 0º longitude: 6-hourly data transmissions</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>51</familyID>
+<family>LR_SEVIRI_1_HOUR</family>
+<display_name>Low Rate SEVIRI Image Data 0º longitude (near real time data):</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>53</familyID>
+<family>LR_SEVIRI_3_HOUR</family>
+<display_name>Low Rate SEVIRI Image Data 0º longitude (near real time data):</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>54</familyID>
+<family>LR_SEVIRI_6_HOUR</family>
+<display_name>Low Rate SEVIRI Image Data 0º longitude (near real time data):</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>55</familyID>
+<family>IODC_1_HOUR</family>
+<display_name>High Resolution Image Indian Ocean Data Coverage: 1-hourly data transmission</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>56</familyID>
+<family>IODC_3_HOUR</family>
+<display_name>High Resolution Image Indian Ocean Data Coverage: 3-hourly data transmission</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>57</familyID>
+<family>IODC_6_HOUR</family>
+<display_name>High Resolution Image Indian Ocean Data Coverage: 6-hourly data transmission</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>58</familyID>
+<family>TRIAL</family>
+<display_name>Trial Products</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>59</familyID>
+<family>ESSENTIAL</family>
+</tbl_families>
+<tbl_families>
+<familyID>60</familyID>
+<family>MODIS_GLOBAL_OCEAN_COLOUR_PROD</family>
+<display_name>MODIS Global Ocean Colour products</display_name>
+</tbl_families>
+<tbl_families>
+<familyID>61</familyID>
+<family>MODIS_THINNED</family>
+<display_name>MODIS thinned level 1 products</display_name>
+</tbl_families>
+</dataroot>

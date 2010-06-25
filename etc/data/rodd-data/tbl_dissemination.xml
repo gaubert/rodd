@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataroot xmlns:od="urn:schemas-microsoft-com:officedata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  xsi:noNamespaceSchemaLocation="tbl_dissemination.xsd" generated="2010-06-25T11:54:34">
+<tbl_dissemination>
+<ID>1</ID>
+<Field1>Archive </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>2</ID>
+<Field1>AVISO  </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>3</ID>
+<Field1>CLASS </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>4</ID>
+<Field1>Direct </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>5</ID>
+<Field1>EUMETCast</Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>6</ID>
+<Field1>EUMETCast-Africa </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>7</ID>
+<Field1>EUMETCast-Americas </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>8</ID>
+<Field1>EUMETCast-Europe </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>9</ID>
+<Field1>EUMETSAT Data Centre</Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>10</ID>
+<Field1>EUMETSATWebsite </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>11</ID>
+<Field1>FENGYUNCast</Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>12</ID>
+<Field1>FTP </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>13</ID>
+<Field1>GEONETCast-Americas </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>14</ID>
+<Field1>GTS</Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>15</ID>
+<Field1>Internet </Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>16</ID>
+<Field1>NOAA</Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>17</ID>
+<Field1>SAF Archive</Field1>
+</tbl_dissemination>
+<tbl_dissemination>
+<ID>18</ID>
+<Field1>SAF Software </Field1>
+</tbl_dissemination>
+</dataroot>
