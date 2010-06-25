@@ -101,3 +101,15 @@ INSERT into orbit_type (name) values("GEO");
 -- status, instrument, frequency, should be expressed differently
 -- for frequency, it will be very difficult
 
+CREATE TABLE IF NOT EXISTS channel (
+   chanID INTEGER NOT NULL PRIMARY KEY,
+   channel VARCHAR(256),
+   multicastAddress VARCHAR(256),
+   minRate INTEGER NOT NULL,
+   maxRate INTEGER NOT NULL,
+   channelFunction VARCHAR(256),
+   PID_EB9 INTEGER NOT NULL,
+   PID_AB3 INTEGER,
+   PID_NSS INTEGER
+);
+
