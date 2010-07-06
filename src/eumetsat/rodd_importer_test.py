@@ -5,7 +5,7 @@ Created on 25 Jun 2010
 '''
 import unittest
 
-from eumetsat import rodd_extractor
+#from eumetsat import rodd_extractor
 import eumetsat.db.rodd_importer
 
 class RoddImporterTest(unittest.TestCase):
