@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
 	descKeywordDiscipline VARCHAR(256),
 	descKeywordPlace VARCHAR(256),
 	dissemination VARCHAR(1024),
-	hrpt_dir BOOLEAN DEFAULT FALSE,
+	hrptDir BOOLEAN DEFAULT FALSE,
     filesize VARCHAR(1024),
 	oicd VARCHAR(256),
 	frequency VARCHAR(256),

@@ -5,8 +5,7 @@ Created on 25 Jun 2010
 '''
 import unittest
 
-import eumetsat.readers.xml_rodd_extractor
-import eumetsat.readers.csv_rodd_extractor
+import eumetsat.rodd_extractor
 import eumetsat.db.rodd_importer
 
 def tests():
@@ -20,6 +19,7 @@ def tests():
     
     
     unittest.TextTestRunner(verbosity=2).run(suite)
+    
 
 class RoddImporterTest(unittest.TestCase):
     """ LexerTest """
@@ -28,24 +28,14 @@ class RoddImporterTest(unittest.TestCase):
         """ setUp method """
         pass
       
-    def ztest_rodd_xml_extractor(self):
-        ''' test rodd extractor '''
+    def test_print(self):
+        pass
         
-        extractor = eumetsat.readers.xml_rodd_extractor.RoddExtractor('/cygdrive/h/Dev/ecli-workspace/rodd/etc/data/rodd-data')
-        extractor.read_xml()
-    
-    def test_rodd_csv_extractor(self):
-        ''' test csv rodd extractor '''
-        
-        extractor = eumetsat.readers.csv_rodd_extractor.RoddExtractor('/cygdrive/h/Dev/ecli-workspace/rodd/etc/data/rodd-data')
-        extractor.read_csv()
-        
-    def ztest_rodd_importer(self):
-        ''' test rodd importer '''
+    def test_simply(self):
+        " Very simple test"
         importer = eumetsat.db.rodd_importer.RoddImporter("mysql://root@127.0.0.1/rodd")
-        
-        importer.import_table_products([])
 
 
 if __name__ == '__main__':
+    
     tests()

@@ -44,7 +44,8 @@ if __name__ == '__main__':
     #import os
     #os.chdir('/cygdrive/h/Dev/ecli-workspace/rodd/src')
     
-    #importlib.import_module('testrodd_importer_test',)
+    print("exec %s\n" %(python_program))
+    
     execfile(python_program)
     
     exit(0)
