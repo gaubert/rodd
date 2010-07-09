@@ -37,8 +37,12 @@ class RoddImporterTest(unittest.TestCase):
     def test_rodd_csv_extractor(self):
         ''' test csv rodd extractor '''
         
-        extractor = eumetsat.readers.csv_rodd_extractor.RoddExtractor('/cygdrive/h/Dev/ecli-workspace/rodd/etc/data/rodd-data')
-        extractor.read_csv()
+        db_url   = "mysql://root@127.0.0.1/rodd"
+        root_dir = "/cygdrive/h/Dev/ecli-workspace/rodd/etc/data/rodd-data/csv"
+        
+        extractor = eumetsat.readers.csv_rodd_extractor.RoddExtractor(root_dir, db_url)
+        extractor.clean_table("rodd", "products")
+        extractor.read_csv_and_insert_product_sql()
         
     def ztest_rodd_importer(self):
         ''' test rodd importer '''
