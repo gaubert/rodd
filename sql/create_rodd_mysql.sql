@@ -1,11 +1,13 @@
 -- create RODD SCHEMA or DATABASE if not there
-DROP SCHEMA IF EXISTS rodd; 
-CREATE SCHEMA IF NOT EXISTS rodd;
+DROP SCHEMA IF EXISTS RODD; 
+CREATE SCHEMA IF NOT EXISTS RODD;
 
 USE RODD;
 
--- GRANT ALL PRIVILEGES on rodd.* to 'rodd@localhost' IDENTIFIED BY 'ddor';
--- GRANT ALL PRIVILEGES on rodd.* to 'rodd@localhost.localdomain' IDENTIFIED BY 'ddor';
+GRANT ALL PRIVILEGES on RODD.* to rodd@'localhost' IDENTIFIED BY 'ddor';
+GRANT ALL PRIVILEGES on RODD.* to rodd@'localhost.localdomain' IDENTIFIED BY 'ddor';
+-- add access from tclogin1
+GRANT ALL PRIVILEGES on RODD.* to rodd@'10.11.0.130' IDENTIFIED BY 'ddor';
 
 -- Drop all tables
 
@@ -92,7 +94,7 @@ INSERT into format_type (name,description) values("LRIT-WMO","WMO GTS in LRIT");
 -- orbit type
 CREATE TABLE IF NOT EXISTS orbit_type (
    orbitID INTEGER AUTO_INCREMENT PRIMARY KEY,
-   name VARCHAR(256),
+   name VARCHAR(256)
 );
 
 INSERT into orbit_type (name) values("LEO");
