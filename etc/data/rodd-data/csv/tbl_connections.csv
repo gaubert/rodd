@@ -1,0 +1,3 @@
+Field1,Entity,ip_address_to,ftp_account,OICD_name,OICD_number,DOCS_REF,ip_address_from,web_address,in_control_room,update_needed
+1,"O3M_SAF","217.5.133.242","safo3m","EUMETSAT - O3M SAF JOP/OICD","EUM/OPS/ICD/06/0739 ","","","","",""
+2,"VITO","217.5.133.242","vgt4afr","EUMETCast, VITO - EUMETSAT Operations Interface Control Document","EUM/OPS/ICD/05/2338  ","","193.191.168.140","www.vgt4africa.org","","y"

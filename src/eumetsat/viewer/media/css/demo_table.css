@@ -129,6 +129,7 @@ table.display thead th {
 	padding: 3px 18px 3px 10px;
 	border-bottom: 1px solid black;
 	font-weight: bold;
+	font-color: white;
 	cursor: pointer;
 	* cursor: hand;
 }
@@ -182,14 +183,16 @@ table.display td.center {
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * DataTables row classes
+ * DataTables row classes background-color: 
  */
+ /* light blue: #e7efff */
 table.display tr.odd.gradeA {
-	background-color: #ddffdd;
+    background-color: #BFCDFF; 
+	
 }
 
 table.display tr.even.gradeA {
-	background-color: #eeffee;
+	background-color: #ffffff;
 }
 
 table.display tr.odd.gradeC {
@@ -313,6 +316,7 @@ td.details {
 	background-color: #99B3FF;
 }
 
+/*  */
 table.display tr.even.row_selected td {
 	background-color: #B0BED9;
 }
@@ -324,10 +328,14 @@ table.display tr.odd.row_selected td {
 
 /*
  * Sorting classes for columns
- */
+ * #D3D6FF/
 /* For the standard odd/even */
 tr.odd td.sorting_1 {
-	background-color: #D3D6FF;
+	background-color: FFFFFF;
+}
+
+tr.even td.sorting_1 {
+	background-color: #EAEBFF;
 }
 
 tr.odd td.sorting_2 {
@@ -338,9 +346,7 @@ tr.odd td.sorting_3 {
 	background-color: #E0E2FF;
 }
 
-tr.even td.sorting_1 {
-	background-color: #EAEBFF;
-}
+
 
 tr.even td.sorting_2 {
 	background-color: #F2F3FF;
@@ -361,21 +367,25 @@ tr.even td.sorting_3 {
 	  dd > d1
 	  ee > e2
  */
+/* light blue: e7efff */
 tr.odd.gradeA td.sorting_1 {
-	background-color: #c4ffc4;
+	background-color: #BFCDFF;
+}
+
+/* color going with light blue #BFCDFF */
+tr.even.gradeA td.sorting_1 {
+	background-color: #ffffff;
 }
 
 tr.odd.gradeA td.sorting_2 {
-	background-color: #d1ffd1;
+	background-color: #BFCDFF;
 }
 
 tr.odd.gradeA td.sorting_3 {
 	background-color: #d1ffd1;
 }
 
-tr.even.gradeA td.sorting_1 {
-	background-color: #d5ffd5;
-}
+
 
 tr.even.gradeA td.sorting_2 {
 	background-color: #e2ffe2;
@@ -513,8 +523,9 @@ table.KeyTable td.focus {
 	border: 3px solid #3366FF;
 }
 
+/*old color eeffee */
 table.display tr.gradeA {
-	background-color: #eeffee;
+	background-color: #ffffff;
 }
 
 table.display tr.gradeC {

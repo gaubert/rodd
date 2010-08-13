@@ -8,7 +8,7 @@
 		<style type="text/css" title="currentStyle">
 			@import "/media/css/demo_page.css";
 			@import "/media/css/demo_table.css";
-			@import "/media/themes/ui-darkness/jquery-ui-1.8.2.custom.css";
+			@import "/media/themes/eumetsat-theme/jquery-ui-1.8.4.custom.css";
 		</style>
 		<script type="text/javascript" language="javascript" src="/media/js/jquery.js"></script>
 		<script type="text/javascript" language="javascript" src="/media/js/jquery.dataTables.js"></script>

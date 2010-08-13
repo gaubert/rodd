@@ -1,242 +1,242 @@
-"serviceID","service_directory","channel"
-1.00,"Not_Required",
-2.00,"aida-1-test",25
-3.00,"channel-12-test-1",13
-4.00,"channel-4-test",5
-5.00,"channel-4-test-1",5
-6.00,"channel-4-test-2",5
-7.00,"channel-5-test",6
-8.00,"channel-6-test",7
-9.00,"channel-7-test",8
-10.00,"channel-8-test-1",9
-11.00,"channel-8-test-2",9
-12.00,"dailylog-trial",15
-13.00,"dbwinds-modis",5
-14.00,"devcocast-1-test",23
-15.00,"devcocast-1-trial",23
-16.00,"devcocast-afr",23
-17.00,"devcocast-sam",23
-18.00,"devcocast-vgt-sam",23
-19.00,"DWD-DWDintern",17
-20.00,"DWD-ECM",17
-21.00,"DWD-EUM",17
-22.00,"DWD-GDS",17
-23.00,"DWD-GME",17
-24.00,"DWD-LM",17
-25.00,"DWD-LMK",17
-26.00,"DWD-MOS",17
-27.00,"DWD-RAD",17
-28.00,"DWD-RBSN",17
-29.00,"DWD-SYN",17
-30.00,"DWD-WAFS",17
-31.00,"DWD-WWW",17
-32.00,"ears",2
-33.00,"ears-ascat",2
-34.00,"ears-atovs",2
-35.00,"ears-avhrr",2
-36.00,"ears-ers-scat",2
-37.00,"ears-iasi",2
-38.00,"ears-test",2
-39.00,"EPS-METOP-ADCS-L0",27
-40.00,"EPS-METOP-AMSA-L0",28
-41.00,"EPS-METOP-AMSA-L1",28
-42.00,"EPS-METOP-ASCA-L0",29
-43.00,"EPS-METOP-ASCA-L1",29
-44.00,"EPS-METOP-ASCA-L2",29
-45.00,"EPS-METOP-ATOV-L2",46
-46.00,"EPS-METOP-AVHR-L0",36
-47.00,"EPS-METOP-AVHR-L1",36
-48.00,"EPS-METOP-GOME-L0",31
-49.00,"EPS-METOP-GOME-L1",31
-50.00,"EPS-METOP-GRAS-L0",32
-51.00,"EPS-METOP-GRAS-L1",32
-52.00,"EPS-METOP-HIRS-L0",33
-53.00,"EPS-METOP-HIRS-L1",33
-54.00,"EPS-METOP-HKTM-L0",38
-55.00,"EPS-METOP-IASI-L0",37
-56.00,"EPS-METOP-IASI-L1",37
-57.00,"EPS-METOP-IASI-L2",37
-58.00,"EPS-METOP-MHS-L0",34
-59.00,"EPS-METOP-MHS-L1",34
-60.00,"EPS-METOP-SEM-L0",35
-61.00,"EPS-NOAA-AMSA-L1",39
-62.00,"EPS-NOAA-ATOV-L2",46
-63.00,"EPS-NOAA-AVHR-L1",41
-64.00,"EPS-NOAA-COM",45
-65.00,"EPS-NOAA-GAC-L0",41
-66.00,"EPS-NOAA-HIRS-L1",42
-67.00,"EPS-NOAA-MHS-L1",43
-68.00,"EPS-SERVICE",44
-69.00,"EPS-TEST",45
-70.00,"geonetcast-test",22
-71.00,"gnc-cn-cma",12
-72.00,"gnc-eum-csir",25
-73.00,"gnc-eum-dmi",23
-74.00,"gnc-eum-inpe",23
-75.00,"gnc-eum-pml",23
-76.00,"gnc-eum-saws",13
-77.00,"gnc-eum-tamsat",13
-78.00,"gnc-eum-tamsat-test",13
-79.00,"gnc-eum-vito",23
-80.00,"gnc-us-epa",22
-81.00,"gnc-us-inpe",9
-82.00,"gnc-us-noaa-nesdis",22
-83.00,"gnc-us-ranet",24
-84.00,"gnc-us-ranet-test",24
-85.00,"gnc-us-servir",22
-86.00,"gnc-us-test",22
-87.00,"hrit-test",3
-88.00,"info-1",14
-89.00,"info-2",14
-90.00,"info-3",14
-91.00,"ipps",15
-92.00,"jason",11
-93.00,"jason-low",11
-94.00,"jason-test",11
-95.00,"jason-trial",11
-96.00,"lrit-test",4
-97.00,"lrit-test-1",4
-98.00,"lrit-test-2",4
-99.00,"lrit-test-3",4
-100.00,"mdd-acmad",4
-101.00,"mdd-acmad-low",4
-102.00,"mdd-com-acmad",7
-103.00,"mdd-com-nominal",7
-104.00,"mdd-nominal",4
-105.00,"mdd-nominal-low",4
-106.00,"mdd_5",4
-107.00,"modis-fire",13
-108.00,"modis-l1",5
-109.00,"msg-com-hrit-15m",6
-110.00,"msg-com-hrit-30m",6
-111.00,"msg-com-hrit-3h",6
-112.00,"msg-com-hrit-60m",6
-113.00,"msg-com-hrit-6h",6
-114.00,"msg-com-lrit-30m",7
-115.00,"msg-com-lrit-3h",7
-116.00,"msg-com-lrit-60m",7
-117.00,"msg-com-lrit-6h",7
-118.00,"msg-com-lrit-dcp",7
-119.00,"msg-com-lrit-fsd",7
-120.00,"msg-com-lrit-mpef",7
-121.00,"msg-com-lrit-mpef-CRM",7
-122.00,"msg-com-lrit-mpef-low",7
-123.00,"msg-hrit-15m",3
-124.00,"msg-hrit-30m",3
-125.00,"msg-hrit-3h",3
-126.00,"msg-hrit-60m",3
-127.00,"msg-hrit-6h",3
-128.00,"msg-lrit-30m",4
-129.00,"msg-lrit-3h",4
-130.00,"msg-lrit-60m",4
-131.00,"msg-lrit-6h",4
-132.00,"msg-lrit-dcp",10
-133.00,"msg-lrit-dcp-test",10
-134.00,"msg-lrit-fsd",4
-135.00,"msg-lrit-fsd-60m",5
-136.00,"msg-lrit-fsd-sam",8
-137.00,"msg-lrit-mpef",4
-138.00,"msg-lrit-mpef-CRM",4
-139.00,"msg-lrit-mpef-eur",5
-140.00,"msg-lrit-mpef-eur-low",5
-141.00,"msg-lrit-mpef-low",4
-142.00,"msg-lrit-mpef-sam",8
-143.00,"msg-lrit-mpef-sam-low",8
-144.00,"msg-rss-lrit-mpef",7
-145.00,"msg-rss-lrit-mpef-low",7
-146.00,"msg-rss-seviri",6
-147.00,"mtp-iodc-30m",4
-148.00,"mtp-iodc-3h",4
-149.00,"mtp-iodc-60m",4
-150.00,"mtp-iodc-6h",4
-151.00,"ninjo-aux",17
-152.00,"ninjo-gme",17
-153.00,"ninjo-lme",17
-154.00,"ninjo-ptp",17
-155.00,"ninjo-radar",17
-156.00,"ocean-modis",8
-787.00,"SAF-Africa-test",20
-788.00,"SAF-Americas-test",19
-789.00,"SAF-Europe-test",18
-790.00,"SAF-Global-test",21
-791.00,"SAF-GRAS-eur",18
-792.00,"SAF-GRAS-eur-test",18
-793.00,"SAF-LSA",20
-794.00,"SAF-LSA-15m",20
-795.00,"SAF-LSA-afr",20
-796.00,"SAF-LSA-afr-15m",20
-797.00,"SAF-LSA-afr-test",20
-798.00,"SAF-LSA-afr-trial",20
-799.00,"SAF-LSA-eur",18
-800.00,"SAF-LSA-eur-15m",18
-801.00,"SAF-LSA-eur-test",18
-802.00,"SAF-LSA-eur-trial",18
-803.00,"SAF-LSA-glob-test",21
-804.00,"SAF-LSA-sam",19
-805.00,"SAF-LSA-sam-15m",19
-806.00,"SAF-LSA-sam-test",19
-807.00,"SAF-LSA-sam-trial",19
-808.00,"SAF-LSA-test",4
-809.00,"SAF-O3M-eur",18
-810.00,"SAF-O3M-eur-test",18
-811.00,"SAF-O3M-eur-trial",18
-812.00,"SAF-OSI",4
-813.00,"SAF-OSI-eur",18
-814.00,"SAF-OSI-eur-test",18
-815.00,"SAF-OSI-eur-trial",18
-816.00,"SAF-OSI-glob",21
-817.00,"SAF-OSI-glob-test",21
-818.00,"SAF-OSI-glob-trial",21
-819.00,"SAF-OSI-test",4
-820.00,"system-update-1",14
-821.00,"training",15
-822.00,"UNS-general",15
-823.00,"UNS-test",15
-824.00,"UNS-trial",15
-825.00,"vgt-africa",4
-826.00,"vgt-africa-test",4
-827.00,"wmo-ra6",16
-828.00,"wmo-ra6-ecmwf",16
-829.00,"wmo-ra6-test",16
-830.00,"www-eumetsat",26
-831.00,"www-test",26
-832.00,"EPS-Africa-test",47
-833.00,"EPS-Global-test",46
-834.00,"dmsp-ssmis",5
-836.00," ln-dailylog-dcp",15
-837.00," ln-dailylog-ears-ascat",15
-838.00," ln-dailylog-ears-atovs",15
-839.00," ln-dailylog-ears-avhrr",15
-840.00," ln-dailylog-ears-ers-scat",15
-841.00," ln-dailylog-ears-iasi",15
-842.00," ln-dailylog-eps-m-adcs-0",15
-843.00," ln-dailylog-eps-m-amsa-1",15
-844.00," ln-dailylog-eps-m-asca-1",15
-845.00," ln-dailylog-eps-m-asca-2",15
-846.00," ln-dailylog-eps-m-atov-2",15
-847.00," ln-dailylog-eps-m-avhr-1",15
-848.00," ln-dailylog-eps-m-gome-1",15
-849.00," ln-dailylog-eps-m-gras-1",15
-850.00," ln-dailylog-eps-m-hirs-1",15
-851.00," ln-dailylog-eps-m-iasi-1",15
-852.00," ln-dailylog-eps-m-iasi-2",15
-853.00," ln-dailylog-eps-m-mhs-1",15
-854.00," ln-dailylog-eps-m-saf-o3m",15
-855.00," ln-dailylog-eps-m-saf-osi",15
-856.00," ln-dailylog-eps-n-amsa-1",15
-857.00," ln-dailylog-eps-n-atov-2",15
-858.00," ln-dailylog-eps-n-avhr-1",15
-859.00," ln-dailylog-eps-n-hirs-1",15
-860.00," ln-dailylog-eps-n-mhs-1",15
-861.00," ln-dailylog-fsd",15
-862.00," ln-dailylog-iodc-hri",15
-863.00," ln-dailylog-mdd-nominal",15
-864.00," ln-dailylog-msg-hrit",15
-865.00," ln-dailylog-msg-lrit-seviri",15
-866.00," ln-dailylog-msg-mpef",15
-867.00," ln-dailylog-msg-rss-mpef",15
-868.00," ln-dailylog-msg-rss-seviri",15
-869.00," ln-dailylog-msg-saf-lsa-afr",15
-870.00," ln-dailylog-msg-saf-lsa-eur",15
-871.00," ln-dailylog-msg-saf-lsa-sam",15
-872.00,"SAF-LSA-Glob",21
+serviceID,service_directory,channel
+1,"Not_Required",
+2,"aida-1-test",25
+3,"channel-12-test-1",13
+4,"channel-4-test",5
+5,"channel-4-test-1",5
+6,"channel-4-test-2",5
+7,"channel-5-test",6
+8,"channel-6-test",7
+9,"channel-7-test",8
+10,"channel-8-test-1",9
+11,"channel-8-test-2",9
+12,"dailylog-trial",15
+13,"dbwinds-modis",5
+14,"devcocast-1-test",23
+15,"devcocast-1-trial",23
+16,"devcocast-afr",23
+17,"devcocast-sam",23
+18,"devcocast-vgt-sam",23
+19,"DWD-DWDintern",17
+20,"DWD-ECM",17
+21,"DWD-EUM",17
+22,"DWD-GDS",17
+23,"DWD-GME",17
+24,"DWD-LM",17
+25,"DWD-LMK",17
+26,"DWD-MOS",17
+27,"DWD-RAD",17
+28,"DWD-RBSN",17
+29,"DWD-SYN",17
+30,"DWD-WAFS",17
+31,"DWD-WWW",17
+32,"ears",2
+33,"ears-ascat",2
+34,"ears-atovs",2
+35,"ears-avhrr",2
+36,"ears-ers-scat",2
+37,"ears-iasi",2
+38,"ears-test",2
+39,"EPS-METOP-ADCS-L0",27
+40,"EPS-METOP-AMSA-L0",28
+41,"EPS-METOP-AMSA-L1",28
+42,"EPS-METOP-ASCA-L0",29
+43,"EPS-METOP-ASCA-L1",29
+44,"EPS-METOP-ASCA-L2",29
+45,"EPS-METOP-ATOV-L2",46
+46,"EPS-METOP-AVHR-L0",36
+47,"EPS-METOP-AVHR-L1",36
+48,"EPS-METOP-GOME-L0",31
+49,"EPS-METOP-GOME-L1",31
+50,"EPS-METOP-GRAS-L0",32
+51,"EPS-METOP-GRAS-L1",32
+52,"EPS-METOP-HIRS-L0",33
+53,"EPS-METOP-HIRS-L1",33
+54,"EPS-METOP-HKTM-L0",38
+55,"EPS-METOP-IASI-L0",37
+56,"EPS-METOP-IASI-L1",37
+57,"EPS-METOP-IASI-L2",37
+58,"EPS-METOP-MHS-L0",34
+59,"EPS-METOP-MHS-L1",34
+60,"EPS-METOP-SEM-L0",35
+61,"EPS-NOAA-AMSA-L1",39
+62,"EPS-NOAA-ATOV-L2",46
+63,"EPS-NOAA-AVHR-L1",41
+64,"EPS-NOAA-COM",45
+65,"EPS-NOAA-GAC-L0",41
+66,"EPS-NOAA-HIRS-L1",42
+67,"EPS-NOAA-MHS-L1",43
+68,"EPS-SERVICE",44
+69,"EPS-TEST",45
+70,"geonetcast-test",22
+71,"gnc-cn-cma",12
+72,"gnc-eum-csir",25
+73,"gnc-eum-dmi",23
+74,"gnc-eum-inpe",23
+75,"gnc-eum-pml",23
+76,"gnc-eum-saws",13
+77,"gnc-eum-tamsat",13
+78,"gnc-eum-tamsat-test",13
+79,"gnc-eum-vito",23
+80,"gnc-us-epa",22
+81,"gnc-us-inpe",9
+82,"gnc-us-noaa-nesdis",22
+83,"gnc-us-ranet",24
+84,"gnc-us-ranet-test",24
+85,"gnc-us-servir",22
+86,"gnc-us-test",22
+87,"hrit-test",3
+88,"info-1",14
+89,"info-2",14
+90,"info-3",14
+91,"ipps",15
+92,"jason",11
+93,"jason-low",11
+94,"jason-test",11
+95,"jason-trial",11
+96,"lrit-test",4
+97,"lrit-test-1",4
+98,"lrit-test-2",4
+99,"lrit-test-3",4
+100,"mdd-acmad",4
+101,"mdd-acmad-low",4
+102,"mdd-com-acmad",7
+103,"mdd-com-nominal",7
+104,"mdd-nominal",4
+105,"mdd-nominal-low",4
+106,"mdd_5",4
+107,"modis-fire",13
+108,"modis-l1",5
+109,"msg-com-hrit-15m",6
+110,"msg-com-hrit-30m",6
+111,"msg-com-hrit-3h",6
+112,"msg-com-hrit-60m",6
+113,"msg-com-hrit-6h",6
+114,"msg-com-lrit-30m",7
+115,"msg-com-lrit-3h",7
+116,"msg-com-lrit-60m",7
+117,"msg-com-lrit-6h",7
+118,"msg-com-lrit-dcp",7
+119,"msg-com-lrit-fsd",7
+120,"msg-com-lrit-mpef",7
+121,"msg-com-lrit-mpef-CRM",7
+122,"msg-com-lrit-mpef-low",7
+123,"msg-hrit-15m",3
+124,"msg-hrit-30m",3
+125,"msg-hrit-3h",3
+126,"msg-hrit-60m",3
+127,"msg-hrit-6h",3
+128,"msg-lrit-30m",4
+129,"msg-lrit-3h",4
+130,"msg-lrit-60m",4
+131,"msg-lrit-6h",4
+132,"msg-lrit-dcp",10
+133,"msg-lrit-dcp-test",10
+134,"msg-lrit-fsd",4
+135,"msg-lrit-fsd-60m",5
+136,"msg-lrit-fsd-sam",8
+137,"msg-lrit-mpef",4
+138,"msg-lrit-mpef-CRM",4
+139,"msg-lrit-mpef-eur",5
+140,"msg-lrit-mpef-eur-low",5
+141,"msg-lrit-mpef-low",4
+142,"msg-lrit-mpef-sam",8
+143,"msg-lrit-mpef-sam-low",8
+144,"msg-rss-lrit-mpef",7
+145,"msg-rss-lrit-mpef-low",7
+146,"msg-rss-seviri",6
+147,"mtp-iodc-30m",4
+148,"mtp-iodc-3h",4
+149,"mtp-iodc-60m",4
+150,"mtp-iodc-6h",4
+151,"ninjo-aux",17
+152,"ninjo-gme",17
+153,"ninjo-lme",17
+154,"ninjo-ptp",17
+155,"ninjo-radar",17
+156,"ocean-modis",8
+787,"SAF-Africa-test",20
+788,"SAF-Americas-test",19
+789,"SAF-Europe-test",18
+790,"SAF-Global-test",21
+791,"SAF-GRAS-eur",18
+792,"SAF-GRAS-eur-test",18
+793,"SAF-LSA",20
+794,"SAF-LSA-15m",20
+795,"SAF-LSA-afr",20
+796,"SAF-LSA-afr-15m",20
+797,"SAF-LSA-afr-test",20
+798,"SAF-LSA-afr-trial",20
+799,"SAF-LSA-eur",18
+800,"SAF-LSA-eur-15m",18
+801,"SAF-LSA-eur-test",18
+802,"SAF-LSA-eur-trial",18
+803,"SAF-LSA-glob-test",21
+804,"SAF-LSA-sam",19
+805,"SAF-LSA-sam-15m",19
+806,"SAF-LSA-sam-test",19
+807,"SAF-LSA-sam-trial",19
+808,"SAF-LSA-test",4
+809,"SAF-O3M-eur",18
+810,"SAF-O3M-eur-test",18
+811,"SAF-O3M-eur-trial",18
+812,"SAF-OSI",4
+813,"SAF-OSI-eur",18
+814,"SAF-OSI-eur-test",18
+815,"SAF-OSI-eur-trial",18
+816,"SAF-OSI-glob",21
+817,"SAF-OSI-glob-test",21
+818,"SAF-OSI-glob-trial",21
+819,"SAF-OSI-test",4
+820,"system-update-1",14
+821,"training",15
+822,"UNS-general",15
+823,"UNS-test",15
+824,"UNS-trial",15
+825,"vgt-africa",4
+826,"vgt-africa-test",4
+827,"wmo-ra6",16
+828,"wmo-ra6-ecmwf",16
+829,"wmo-ra6-test",16
+830,"www-eumetsat",26
+831,"www-test",26
+832,"EPS-Africa-test",47
+833,"EPS-Global-test",46
+834,"dmsp-ssmis",5
+836," ln-dailylog-dcp",15
+837," ln-dailylog-ears-ascat",15
+838," ln-dailylog-ears-atovs",15
+839," ln-dailylog-ears-avhrr",15
+840," ln-dailylog-ears-ers-scat",15
+841," ln-dailylog-ears-iasi",15
+842," ln-dailylog-eps-m-adcs-0",15
+843," ln-dailylog-eps-m-amsa-1",15
+844," ln-dailylog-eps-m-asca-1",15
+845," ln-dailylog-eps-m-asca-2",15
+846," ln-dailylog-eps-m-atov-2",15
+847," ln-dailylog-eps-m-avhr-1",15
+848," ln-dailylog-eps-m-gome-1",15
+849," ln-dailylog-eps-m-gras-1",15
+850," ln-dailylog-eps-m-hirs-1",15
+851," ln-dailylog-eps-m-iasi-1",15
+852," ln-dailylog-eps-m-iasi-2",15
+853," ln-dailylog-eps-m-mhs-1",15
+854," ln-dailylog-eps-m-saf-o3m",15
+855," ln-dailylog-eps-m-saf-osi",15
+856," ln-dailylog-eps-n-amsa-1",15
+857," ln-dailylog-eps-n-atov-2",15
+858," ln-dailylog-eps-n-avhr-1",15
+859," ln-dailylog-eps-n-hirs-1",15
+860," ln-dailylog-eps-n-mhs-1",15
+861," ln-dailylog-fsd",15
+862," ln-dailylog-iodc-hri",15
+863," ln-dailylog-mdd-nominal",15
+864," ln-dailylog-msg-hrit",15
+865," ln-dailylog-msg-lrit-seviri",15
+866," ln-dailylog-msg-mpef",15
+867," ln-dailylog-msg-rss-mpef",15
+868," ln-dailylog-msg-rss-seviri",15
+869," ln-dailylog-msg-saf-lsa-afr",15
+870," ln-dailylog-msg-saf-lsa-eur",15
+871," ln-dailylog-msg-saf-lsa-sam",15
+872,"SAF-LSA-Glob",21
