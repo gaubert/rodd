@@ -11,7 +11,26 @@ def view_format_type():
     
         result = conn.execute("select * from format_type")
         
-        output = template('make_table', rows=result)
+        output = template('format_type_table', rows=result)
+        
+        print("got output\n")
+
+        return output
+
+    except Exception,e:
+        return e
+
+@route('/products')
+def view_products():
+    
+    try:
+        conn = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
+    
+        conn.connect()
+    
+        result = conn.execute("select * from products")
+        
+        output = template('products_table', rows=result)
         
         print("got output\n")
 

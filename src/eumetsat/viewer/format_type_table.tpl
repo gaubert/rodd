@@ -25,7 +25,7 @@
 	<body id="dt_example">
 		<div id="container">
 			<div class="full_width big">
-				<i>RODD (Repository of Dissemniation Data)</i></div>
+				<i>RODD (Repository of Dissemination Data)</i></div>
 			
 			<h1>format_type table</h1>
 			<p>First table accessed with the RODD viewer</p>

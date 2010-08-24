@@ -6,7 +6,7 @@ Created on 25 Jun 2010
 import unittest
 
 import eumetsat.readers.xml_rodd_extractor
-import eumetsat.readers.csv_rodd_extractor
+import eumetsat.readers.csv_light_rodd_extractor as csv_extractor
 import eumetsat.db.rodd_importer
 
 def tests():
@@ -37,12 +37,12 @@ class RoddImporterTest(unittest.TestCase):
     def test_rodd_csv_extractor(self):
         ''' test csv rodd extractor '''
         
-        db_url   = "mysql://root@127.0.0.1/rodd"
-        root_dir = "/cygdrive/h/Dev/ecli-workspace/rodd/etc/data/rodd-data/csv"
+        db_url   = "mysql://rodd:ddor@tclxs30/RODD"
+        root_dir = "/homespace/gaubert/ecli-workspace/rodd/etc/data/rodd-data/csv"
         
-        extractor = eumetsat.readers.csv_rodd_extractor.RoddExtractor(root_dir, db_url)
-        extractor.clean_table("rodd", "products")
-        extractor.read_csv_and_insert_product_sql()
+        extractor = csv_extractor.LCSVRoddExtractor(root_dir, db_url)
+        extractor.clean_table("RODD", "products")
+        extractor.read_csv_and_insert_product_sql(csv_extractor.LCSVRoddExtractor.LIGHT_PRODUCT_TABLE_COLS)
         
     def ztest_rodd_importer(self):
         ''' test rodd importer '''

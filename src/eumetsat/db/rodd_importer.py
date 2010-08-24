@@ -37,10 +37,10 @@ class RoddImporter(object):
         """
             import into the table product
           
-            :param section: Section where to find the option
-            :type  section: str
+            :param a_values: values to import
+            :type  a_values: str
         
-            :returns: the option as a string
+            :returns: None
             
             :except Exception: if the content cannot be imported
         """
