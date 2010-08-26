@@ -41,8 +41,19 @@ class RoddImporterTest(unittest.TestCase):
         root_dir = "/homespace/gaubert/ecli-workspace/rodd/etc/data/rodd-data/csv"
         
         extractor = csv_extractor.LCSVRoddExtractor(root_dir, db_url)
+        
         extractor.clean_table("RODD", "products")
+        extractor.clean_table("RODD", "channels")
+        extractor.clean_table("RODD", "service_dirs")
+        extractor.clean_table("RODD", "products_2_servdirs")
+        
         extractor.read_csv_and_insert_product_sql(csv_extractor.LCSVRoddExtractor.LIGHT_PRODUCT_TABLE_COLS)
+        
+        extractor.read_csv_and_insert_channel_sql(csv_extractor.LCSVRoddExtractor.CHANNEL_TABLE_COLS)
+        
+        extractor.read_csv_and_insert_servicedir_sql(csv_extractor.LCSVRoddExtractor.SERVICE_COLS)
+        
+        extractor.read_csv_and_insert_product2service_sql(csv_extractor.LCSVRoddExtractor.PROD2SERV_COLS)
         
     def ztest_rodd_importer(self):
         ''' test rodd importer '''

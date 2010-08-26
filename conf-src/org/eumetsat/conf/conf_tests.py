@@ -208,7 +208,7 @@ class TestConf(unittest.TestCase):
         #set environment
         os.environ["TESTENV"] = "/tmp/foo/foo.bar"
         
-         #set cli arg
+        #set cli arg
         sys.argv.append("--LongName")
         sys.argv.append("My Cli Value")
         

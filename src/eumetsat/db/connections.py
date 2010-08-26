@@ -9,11 +9,11 @@ from eumetsat.common.logging_utils import LoggerFactory
 class DatabaseConnector:
     """ Class used to access the IDC database """
     
-    def __init__(self,aUrl,aTimeReqs=False):
+    def __init__(self,aUrl, a_time_reqs =False):
         
-        self._activateTimer = aTimeReqs
+        self._activateTimer = a_time_reqs
         
-        self._connected     = False; #IGNORE:W0104
+        self._connected     = False #IGNORE:W0104
         
         self._url = aUrl
         
@@ -22,16 +22,14 @@ class DatabaseConnector:
         
         self._log    = LoggerFactory.get_logger(self)
     
-    def user(self):
-        return self._user
-
     def connect(self):
         """ connect to the database. 
             raise CTBTOError in case of problems
         """
         
         # return if already connected
-        if self._connected: return
+        if self._connected: 
+            return
         
         # preconditions
         if self._url is None: raise Exception("Need a connection url")

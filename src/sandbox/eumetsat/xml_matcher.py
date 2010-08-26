@@ -52,9 +52,14 @@ def run_matcher():
         print("file = %s\n" % (file))
         doc = xml.dom.minidom.parse(file).documentElement
     
+        lid = xpath.findvalues('/gmi:MI_Metadata/gmd:fileIdentifier/gco:CharacterString', doc, namespaces=context)
+        print("[id:%s , path:%s]\n" % (lid[0], file))
         
-        [id]= xpath.findvalues('/gmi:MI_Metadata/gmd:fileIdentifier/gco:CharacterString', doc, namespaces=context)
-        print("[id:%s , path:%s]\n" % (id, file))
+        lid = xpath.findvalues('/gmi:MI_Metadata/gmd:fileIdentifier/gco:CharacterString', doc, namespaces=context)
+        print("[id:%s , path:%s]\n" % (lid[0], file))
+        
+        
+        
         
 
 

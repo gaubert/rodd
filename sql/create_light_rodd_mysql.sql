@@ -30,14 +30,28 @@ CREATE TABLE IF NOT EXISTS products (
 -- information regarding the service directories
 CREATE TABLE IF NOT EXISTS service_dirs (
     servID INTEGER AUTO_INCREMENT PRIMARY KEY,
-    serviceDirectoryName VARCHAR(255) NOT NULL,
-	channelID VARCHAR(256)
+    name VARCHAR(255) NOT NULL,
+	chanID VARCHAR(256)
   );
 
 -- information regarding the service directories
 CREATE TABLE IF NOT EXISTS products_2_servdirs (
     roddID INTEGER,
     servID INTEGER
+  ); 
+  
+-- information regarding the channels
+
+CREATE TABLE IF NOT EXISTS channels (
+    chanID               INTEGER AUTO_INCREMENT PRIMARY KEY,
+    name               VARCHAR(1024),
+    multicastAddress   VARCHAR(512),
+    minRate            DOUBLE,
+    maxRate            DOUBLE,
+    channelFunction    VARCHAR(512),
+    pidEB9             INTEGER,
+    pidAB3             INTEGER,
+    pidNSS             INTEGER
   ); 
  
 
@@ -91,15 +105,5 @@ INSERT into orbit_type (name) values("GEO");
 -- status, instrument, frequency, should be expressed differently
 -- for frequency, it will be very difficult
 
-CREATE TABLE IF NOT EXISTS channel (
-   chanID INTEGER NOT NULL PRIMARY KEY,
-   channel VARCHAR(256),
-   multicastAddress VARCHAR(256),
-   minRate INTEGER NOT NULL,
-   maxRate INTEGER NOT NULL,
-   channelFunction VARCHAR(256),
-   PID_EB9 INTEGER NOT NULL,
-   PID_AB3 INTEGER,
-   PID_NSS INTEGER
-);
+
 

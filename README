@@ -1,1 +1,25 @@
-oREADME File
+Scribbling the requirements
+---------------------------
+
+The software will be organised in 2 parts: a database containing some static information related to the dissemination and an extention on this database containing dynamic information for monitoring the real-time dissemination. Crawling workers for collecting the data will be launched and an analysis will be run from that.
+
+A) Static Database Details
+--------------------------
+
+The main goals of this part are:
+
+1. Maintain the Product to Service Directory relation,
+2. Maintain the Product information such as its UID, the regExp that could be used to match its corresponding product files,
+3. Maintain the info related to the Channel PID, IP and the association betweeb the Service Dir and the channel,
+4. Describe for each products its data path: through which nodes it should go. Possibly, it would be very interesting to build the data path map automatically from this database
+
+B) Dynamic Analysis
+-------------------
+
+The main requirements and goals for this part are:
+a) Match incoming data with the static information from RODD in order to build monthly statistics per product, ... on weekly, monthly basis,
+b) Unknowns: Detect products files that are not known by RODD but flowing through the dissemination (either RODD is not up to date or the product is not authorised and should not be distributed via EUMETCAST),
+c) Bad Matches: Detect products that are not distributed through the define service directory (either RODD is not up to date or the dissemination conf is wrong),
+e) Build statistics on the Data Volume
+
+In order to create these statistic results and control board, crwaler will be send to crunch the log files and other informations related to the dissemination.
