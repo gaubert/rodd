@@ -21,8 +21,6 @@ def view_table(a_table_name):
         
         output = template('generic_table', rows = result, heads = col_names, table= a_table_name)
         
-        print("got output\n")
-    
         return output
     
     except Exception, the_exc:
@@ -82,6 +80,13 @@ def view_channels():
        Viewer for channels 
     """
     return view_table("channels")
+
+@route('/families')
+def view_families():
+    """ 
+       Viewer for families 
+    """
+    return view_table("families")
 
 @route('/service_dirs')
 def view_services():

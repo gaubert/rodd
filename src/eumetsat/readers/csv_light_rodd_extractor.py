@@ -104,6 +104,16 @@ class LCSVRoddExtractor(object):
                        }
     
     PROD2SERV_COLS  = [ "roddID" , "servID" ]
+    
+    FAMILIES_MAPPER = {
+                         "familyID"     : "famID",
+                         "family"       : "name",
+                         "display_name" : "description"
+                       }
+    
+    FAMILIES_COLS  = [ "famID" , "name", "description" ]
+    
+    
         
     def __init__(self, a_directory, a_db_url):
         """ constructor """
@@ -299,6 +309,72 @@ class LCSVRoddExtractor(object):
                 cpt_keys += 1
                 
             insert = insert_line % ("RODD", "channels", columns, values)
+            
+            #print('[r%d]:insert = %s\n' %(nb_rows, insert) )
+            #file.write("%s;\n" %(insert))
+            self._conn.execute("%s;" %(insert))
+            
+            nb_rows += 1
+    
+    def read_csv_and_insert_families_sql(self, a_columns):
+        """ 
+           read csv families table 
+           
+           :param a_columns: list of colums to import
+           :type  a_columns: str
+        
+           :returns: None
+            
+           :except Exception: if the content cannot be imported
+        
+        """
+        
+        csv_reader = csv.DictReader(open('%s/tbl_families.csv' %(self._root_dir)))
+        
+        nb_rows = 0
+        
+        lookup_dict = Lookup(LCSVRoddExtractor.FAMILIES_MAPPER)
+        
+        # for each line of data create an insert line
+
+        insert_line = "INSERT INTO %s.%s (%s) VALUES (%s)"
+        
+        
+        columns = self._create_sql_columns(a_columns)
+        
+        #file = open("/tmp/insert_products.sql","w+")
+
+        for row in csv_reader:
+            cpt_keys    = 0
+            values      = ""
+            
+            for elem in a_columns:
+                
+                #get list of matching keys
+                key = lookup_dict.get_key(elem)
+                
+                if not key:
+                    raise Exception("Error: %s as no matching keys in %s" %(elem, LCSVRoddExtractor.FAMILIES_MAPPER))
+                
+                val = row.get(key[0], None)
+                
+                # and elem == "resources_1"
+                if nb_rows == 200 and ("%" in val):
+                    print("This is the break")
+                
+            
+                val = "%s" % ( "'%s'" % (val) if val else "NULL")
+                    
+                # add in values
+                if cpt_keys == 0:
+                    values += "%s" % ( val )
+                else:
+                    values += ", %s" % ( val )
+                
+    
+                cpt_keys += 1
+                
+            insert = insert_line % ("RODD", "families", columns, values)
             
             #print('[r%d]:insert = %s\n' %(nb_rows, insert) )
             #file.write("%s;\n" %(insert))

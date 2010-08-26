@@ -37,6 +37,7 @@
 			           <span class="flickspan"><a href="/products">Products</a></span>
 			           <span class="flickspan"><a href="/service_dirs">ServiceDirs</a></span>
 			           <span class="flickspan"><a href="/channels">Channels</a></span>
+			           <span class="flickspan"><a href="/families">Families</a></span>
 			           <span class="flickspan"><a href="/products_2_servdirs">Products2ServiceDirs</a></span>
 			           <wbr>
 			           <span class="photo_navi_contact" id="photo_navi_contact_span_87741494@N00"></span>

@@ -46,6 +46,8 @@ class RoddImporterTest(unittest.TestCase):
         extractor.clean_table("RODD", "channels")
         extractor.clean_table("RODD", "service_dirs")
         extractor.clean_table("RODD", "products_2_servdirs")
+        extractor.clean_table("RODD", "families")
+        
         
         extractor.read_csv_and_insert_product_sql(csv_extractor.LCSVRoddExtractor.LIGHT_PRODUCT_TABLE_COLS)
         
@@ -54,6 +56,8 @@ class RoddImporterTest(unittest.TestCase):
         extractor.read_csv_and_insert_servicedir_sql(csv_extractor.LCSVRoddExtractor.SERVICE_COLS)
         
         extractor.read_csv_and_insert_product2service_sql(csv_extractor.LCSVRoddExtractor.PROD2SERV_COLS)
+        
+        extractor.read_csv_and_insert_families_sql(csv_extractor.LCSVRoddExtractor.FAMILIES_COLS)
         
     def ztest_rodd_importer(self):
         ''' test rodd importer '''

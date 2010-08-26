@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS products_2_servdirs (
   ); 
   
 -- information regarding the channels
-
 CREATE TABLE IF NOT EXISTS channels (
     chanID               INTEGER AUTO_INCREMENT PRIMARY KEY,
     name               VARCHAR(1024),
@@ -52,6 +51,13 @@ CREATE TABLE IF NOT EXISTS channels (
     pidEB9             INTEGER,
     pidAB3             INTEGER,
     pidNSS             INTEGER
+  ); 
+  
+-- information regarding the families
+CREATE TABLE IF NOT EXISTS families (
+    famID              INTEGER AUTO_INCREMENT PRIMARY KEY,
+    name               VARCHAR(512),
+    description        VARCHAR(2048)
   ); 
  
 
