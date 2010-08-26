@@ -71,13 +71,13 @@
      padding-bottom:	    0;
      padding-left:   	    0;
      border-top-width:	    0;
-     border-right-width:	1px;
      border-bottom-width:	0;
      border-left-width:	    0;
      border-top-color:	    #000000;
-     border-right-color:	#DADADA;
      border-bottom-color:	#000000;
      border-left-color:	    #000000;
+     
+     border-right:1px dotted #DADADA;
 }
 
 #dt_example h1 {
