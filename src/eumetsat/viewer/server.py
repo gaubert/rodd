@@ -182,6 +182,15 @@ def view_tbl_servdirs_2_families():
     """
     return view_table("servdirs_2_families")
 
+
+#route index.html and default to product details page
+@route('/')
+@route('/index.html')
+def index():
+    return view_products_details()
+
+
+
 #route static files like (css, js, ...)
 @route('/media/:filename#.*#')
 def static_file(filename):
