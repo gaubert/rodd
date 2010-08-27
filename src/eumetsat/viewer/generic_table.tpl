@@ -11,14 +11,23 @@
 			@import "/media/themes/eumetsat-theme/jquery-ui-1.8.4.custom.css";
 		</style>
 		<script type="text/javascript" language="javascript" src="/media/js/jquery.js"></script>
-		<script type="text/javascript" language="javascript" src="/media/js/jquery.dataTables.js"></script>
+		<script type="text/javascript" language="javascript" src="/media/js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" language="javascript" src="/media/js/FixedHeader.min.js"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(document).ready(function() {
-				$('#example').dataTable({
-				    "bJQueryUI": true,
-				    "sPaginationType": "full_numbers",
-				    
-				});
+				var oTable = $('#example').dataTable({
+				               // enable the JQueryUI Theme Roller
+				               "bJQueryUI": true,
+				               // change pagination in full_number mode
+				               "sPaginationType": "full_numbers",
+				               // save users preferences
+				               "bStateSave": true,
+				               // change defaults for pagination value
+				               "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
+				    });
+				
+				new FixedHeader( oTable );
+				
 			} );
 		</script>
 	</head>
@@ -27,21 +36,18 @@
 			<div class="flickh1">
 				<i>RODD (Repository of Dissemination Data)</i>
 			</div>
-			<wbr>
+			<wbr/>
 			<table cellspacing="0" id="SubNav">
 	          <tr>
 		         <td class="dt_section">
 		            <div class="full_width big"> Your Tables: </div>
-			        <p class="LinksNewP">
-			         <span class="LinksNew">
-			           <span class="flickspan"><a href="/products">Products</a></span>
+		               <span class="flickspan"><a href="/products_details">Products Details</a></span>
+			           <span class="flickspan"><a href="/tbl_products">Products Tbl</a></span>
 			           <span class="flickspan"><a href="/service_dirs">ServiceDirs</a></span>
 			           <span class="flickspan"><a href="/channels">Channels</a></span>
 			           <span class="flickspan"><a href="/families">Families</a></span>
 			           <span class="flickspan"><a href="/products_2_servdirs">Products2ServiceDirs</a></span>
-			           <wbr>
-			           <span class="photo_navi_contact" id="photo_navi_contact_span_87741494@N00"></span>
-			        </p>
+			           <span class="flickspan"><a href="/servdirs_2_families">ServiceDirs2Families</a></span>
 		        </td>
 		      </tr>
 		    </table>

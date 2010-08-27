@@ -113,6 +113,13 @@ class LCSVRoddExtractor(object):
     
     FAMILIES_COLS  = [ "famID" , "name", "description" ]
     
+    SERV2FAMILY_MAPPER = {
+                         "serviceID"     : "servID",
+                         "familyID"      : "famID",
+                         }
+    
+    SERV2FAMILY_COLS  = [ "servID" , "famID" ]
+    
     
         
     def __init__(self, a_directory, a_db_url):
@@ -559,3 +566,97 @@ class LCSVRoddExtractor(object):
             result = self._conn.execute("%s;" %(insert))
             
             nb_rows += 1
+            
+    def read_csv_and_insert_service2family_sql(self, a_columns):
+        """ 
+           read csv channel table 
+           
+           :param a_columns: list of colums to import
+           :type  a_columns: str
+        
+           :returns: None
+            
+           :except Exception: if the content cannot be imported
+        
+        """
+        
+        csv_services  = csv.DictReader(open('%s/tbl_service.csv'  %(self._root_dir)))
+        csv_families  = csv.DictReader(open('%s/tbl_families.csv' %(self._root_dir)))
+        
+        # need also the channels
+        csv_service2family = csv.DictReader(open('%s/tbl_service_family_link.csv' %(self._root_dir)))
+        
+        
+        #create ID to channel index
+        service_idx = {}
+        for row in csv_services:
+            service_idx[row['serviceID']] = row
+            
+        family_idx = {}
+        for row in csv_families:
+            family_idx[row['familyID']] = row
+        
+        lookup_dict = Lookup(LCSVRoddExtractor.SERV2FAMILY_MAPPER)
+        
+        # for each line of data create an insert line
+
+        insert_line = "INSERT INTO %s.%s (%s) VALUES (%s)"
+        
+        
+        columns = self._create_sql_columns(a_columns)
+        
+        #file = open("/tmp/insert_products.sql","w+")
+
+        for row in csv_service2family:
+            cpt_keys    = 0
+            values      = ""
+            
+            for elem in a_columns:
+                
+                #get list of matching keys
+                key = lookup_dict.get_key(elem)
+                
+                if not key:
+                    raise Exception("Error: %s as no matching keys in %s" %(elem, LCSVRoddExtractor.SERV2FAMILY_MAPPER))
+                
+                val = row.get(key[0], None)
+                
+                #if elem is roddID then we need the right channel ID in the DB
+                if elem == "familyID":
+                    
+                    family_name = family_idx[val]['family']
+                    
+                    if not family_name:
+                        print("No internal family name for csv family %s\n" % (val) )
+                    
+                    #print("produid = %s\n" % (prod_uid))
+                    
+                    result = self._conn.execute("select famID from families where name like '%s'" %(family_name))
+                    
+                    val = result.scalar()
+                    
+                    result.close()
+                elif elem == "serviceID":
+                    
+                    service_name = service_idx[val]['service_directory']
+                    result = self._conn.execute("select servID from services where name like '%s'" %(service_name))
+                    
+                    val = result.scalar()
+                    
+                    
+                val = "%s" % ( "'%s'" % (val) if val else "NULL")
+                    
+                # add in values
+                if cpt_keys == 0:
+                    values += "%s" % ( val )
+                else:
+                    values += ", %s" % ( val )
+                
+    
+                cpt_keys += 1
+                
+            insert = insert_line % ("RODD", "servdirs_2_families", columns, values)
+            
+            #print('[r%d]:insert = %s\n' %(nb_rows, insert) )
+            #file.write("%s;\n" %(insert))
+            result = self._conn.execute("%s;" %(insert))

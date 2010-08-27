@@ -59,8 +59,16 @@ CREATE TABLE IF NOT EXISTS families (
     name               VARCHAR(512),
     description        VARCHAR(2048)
   ); 
- 
 
+-- information regarding the families
+CREATE TABLE IF NOT EXISTS servdirs_2_families (
+    servID             INTEGER,
+    famID              INTEGER
+  );
+CREATE INDEX serv2fam_servid_index ON servdirs_2_families (servID);
+CREATE INDEX serv2fam_famid_index ON servdirs_2_families (famID);
+ 
+ 
 -- products formats to link the formats and the products
 CREATE TABLE IF NOT EXISTS products_formats (
    roddID INTEGER PRIMARY KEY,
