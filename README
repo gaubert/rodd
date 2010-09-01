@@ -23,3 +23,10 @@ c) Bad Matches: Detect products that are not distributed through the define serv
 e) Build statistics on the Data Volume
 
 In order to create these statistic results and control board, crwaler will be send to crunch the log files and other informations related to the dissemination.
+
+
+Reporting Errors on Product Navigator Content
+---------------------------------------------
+
+- Product Meteorological Data Dissemination: There are 2 file types (GRIB and BUFR) that have got the smae typical filename. This is not correct because there is one file type that is LRIT.
+

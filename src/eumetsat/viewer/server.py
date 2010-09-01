@@ -116,41 +116,17 @@ def view_products_details():
     """
     #return view_table("products_2_servdirs")
     return view_request_results("products details", 
-                                "select products.title as 'Product Name',\
-                                 service_dirs.name as 'Service Dir Name',\
-                                 channels.name as 'Channel Name',\
-                                 families.name as 'Family Name',\
-                                 products.internalID as 'prod UID'\
-                                 from products, service_dirs, products_2_servdirs as p2s, channels, families, servdirs_2_families \
-                                 where p2s.roddID=products.roddID \
-                                 and p2s.servID=service_dirs.servID \
-                                 and service_dirs.chanID = channels.chanID \
-                                 and service_dirs.servID = servdirs_2_families.servID \
-                                 and servdirs_2_families.famID = families.famID")
-    
-@route('/full_products_details')
-def view_full_products_details():
-    """ 
-       Viewer for full_products_details 
-    """
-   
-    return view_request_results("products details", 
-                                "select products.title as 'Product Name',\
-                                 service_dirs.name as 'Service Dir Name',\
-                                 channels.name as 'Channel Name',\
-                                 families.name as 'Family Name',\
-                                 products.internalID as 'prod UID',\
-                                 products.roddID as 'roddID',\
-                                 service_dirs.servID as 'servID',\
-                                 channels.chanID as 'chanID',\
-                                 families.famID as 'famID'\
-                                 from products, service_dirs, products_2_servdirs as p2s, channels, families, servdirs_2_families \
-                                 where p2s.roddID=products.roddID \
-                                 and p2s.servID=service_dirs.servID \
-                                 and service_dirs.chanID = channels.chanID \
-                                 and service_dirs.servID = servdirs_2_families.servID \
-                                 and servdirs_2_families.famID = families.famID")
-
+                                "select products.internalID as 'Prod UID', service_dirs.name as 'Serv Name',\
+                                        channels.name as 'Chan Name', families.name as 'Fam Name', products.title 'Prod Name', products.roddID as 'roddID' \
+                                from products  \
+                                left join (service_dirs, products_2_servdirs as p2s, \
+                                           channels, families, servdirs_2_families)  \
+                                on  ( p2s.roddID=products.roddID and p2s.servID=service_dirs.servID \
+                                      and service_dirs.chanID = channels.chanID \
+                                      and service_dirs.servID = servdirs_2_families.servID \
+                                      and servdirs_2_families.famID = families.famID) \
+                                order by products.roddID")
+       
 
 @route('/tbl_products_2_servdirs')
 def view_tbl_products_2_servdirs():
