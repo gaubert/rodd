@@ -28,5 +28,34 @@ In order to create these statistic results and control board, crwaler will be se
 Reporting Errors on Product Navigator Content
 ---------------------------------------------
 
-- Product Meteorological Data Dissemination: There are 2 file types (GRIB and BUFR) that have got the smae typical filename. This is not correct because there is one file type that is LRIT.
+- Product Meteorological Data Dissemination: There are 2 file types (GRIB and BUFR) that have got the same typical filename. This is not correct because there is one file type that is LRIT.
+- Product Colour Composite CCD-HRC - CBERS (EO_EUM_DAT_CBERS_CHC). The file type is wrong it can be INPE_CBERS_2B_CHC_(AF|SA|...)_20081225_072_D_095_5.tif.gz. The 2 letters between CHC and the date are variable.
+
+Questions
+---------
+In the filetypes $ is a letter and # is a number
+
+- On which ServiceDir does Colour Composite CCD-HRC goes (id EO_EUM_DAT_CBERS_CHC and filetype INPE_CBERS_2B_CHC_$$_YYYYMMDD_###_$_###_#.tif.gz ?
+
+
+- EO:EUM:DAT:CBERS:CHC          ->    Chan Devcocast1            => Service Dir ?
+- EO:EUM:DAT:DMSP:SSMIS:EDR     ->    Chan America               => probably gnc-us-noaa-nesdis
+- EO:EUM:DAT:F-X:GBLSIC         ->    Saf-Global                 => Service Dir SAF-LSA-Glob or SAF-OSI-Glob ?
+- EO:EUM:DAT:F-X:GBLSIE         ->    Saf-Global                 => Service Dir SAF-LSA-Glob or SAF-OSI-Glob ?
+- EO:EUM:DAT:F-X:GBLSIT         ->    Saf-Global                 => Service Dir SAF-LSA-Glob or SAF-OSI-Glob ?
+- EO_EUM_DAT_FENGYUN_CMA-AMV    ->    EUMETSAT Data Channel 11   => Should be gnc-cn-cma
+- EO:EUM:DAT:FENGYUN:DMG        ->   Only on fenyung cast for the moment
+- EO_EUM_DAT_FENGYUN_LWRF       ->   Only on fenyung cast for the moment
+- EO:EUM:DAT:FENGYUN:PREO       ->   Only on fenyung cast for the moment
+- EO:EUM:DAT:FENGYUN:PRI        ->   Only on fenyung cast for the moment 
+- EO_EUM_DAT_GOES_FAG:          ->   DEVCOCAST-1                 => Which of the devcocast channels
+- EO:EUM:DAT:GOES:GOES-ATLSST 	->   Unknown chan                => Unknown                                      =>  Atlantic GOES-E Sea Surface Temperature (Unknown on portal but instead found 	EO:EUM:DAT:MULT:ATLSST) which seems to be the same
+- EO:EUM:DAT:GOES:SAE           ->   Geonetcast Americas         => nothing geonetcast 
+- EO:EUM:DAT:GOES:SAI           ->   Geonetcast Americas         => nothing geonetcast 
+- EO:EUM:DAT:GOES:SAV           ->   Geonetcast Americas
+- EO:EUM:DAT:GOES:SAW           ->   Geonetcast Americas
+- EO_EUM_DAT_INFO_DAILY         ->   Info-Channel-2              => Probably servdir info-2 ?
+- EO_EUM_DAT_JASON_GDR-SSHA     ->  AVISO ?                      => ?
+- 
+
 
