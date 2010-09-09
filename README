@@ -10,7 +10,7 @@ The main goals of this part are:
 
 1. Maintain the Product to Service Directory relation,
 2. Maintain the Product information such as its UID, the regExp that could be used to match its corresponding product files,
-3. Maintain the info related to the Channel PID, IP and the association betweeb the Service Dir and the channel,
+3. Maintain the info related to the Channel PID, IP and the association between the Service Dir and the channel,
 4. Describe for each products its data path: through which nodes it should go. Possibly, it would be very interesting to build the data path map automatically from this database
 
 B) Dynamic Analysis
@@ -20,7 +20,7 @@ The main requirements and goals for this part are:
 a) Match incoming data with the static information from RODD in order to build monthly statistics per product, ... on weekly, monthly basis,
 b) Unknowns: Detect products files that are not known by RODD but flowing through the dissemination (either RODD is not up to date or the product is not authorised and should not be distributed via EUMETCAST),
 c) Bad Matches: Detect products that are not distributed through the define service directory (either RODD is not up to date or the dissemination conf is wrong),
-e) Build statistics on the Data Volume
+e) Build statistics on the Data Volume, Service availability, timeliness
 
 In order to create these statistic results and control board, crwaler will be send to crunch the log files and other informations related to the dissemination.
 
@@ -37,25 +37,72 @@ In the filetypes $ is a letter and # is a number
 
 - On which ServiceDir does Colour Composite CCD-HRC goes (id EO_EUM_DAT_CBERS_CHC and filetype INPE_CBERS_2B_CHC_$$_YYYYMMDD_###_$_###_#.tif.gz ?
 
-
 - EO:EUM:DAT:CBERS:CHC          ->    Chan Devcocast1            => Service Dir ?
 - EO:EUM:DAT:DMSP:SSMIS:EDR     ->    Chan America               => probably gnc-us-noaa-nesdis
 - EO:EUM:DAT:F-X:GBLSIC         ->    Saf-Global                 => Service Dir SAF-LSA-Glob or SAF-OSI-Glob ?
 - EO:EUM:DAT:F-X:GBLSIE         ->    Saf-Global                 => Service Dir SAF-LSA-Glob or SAF-OSI-Glob ?
 - EO:EUM:DAT:F-X:GBLSIT         ->    Saf-Global                 => Service Dir SAF-LSA-Glob or SAF-OSI-Glob ?
 - EO_EUM_DAT_FENGYUN_CMA-AMV    ->    EUMETSAT Data Channel 11   => Should be gnc-cn-cma
-- EO:EUM:DAT:FENGYUN:DMG        ->   Only on fenyung cast for the moment
-- EO_EUM_DAT_FENGYUN_LWRF       ->   Only on fenyung cast for the moment
-- EO:EUM:DAT:FENGYUN:PREO       ->   Only on fenyung cast for the moment
-- EO:EUM:DAT:FENGYUN:PRI        ->   Only on fenyung cast for the moment 
-- EO_EUM_DAT_GOES_FAG:          ->   DEVCOCAST-1                 => Which of the devcocast channels
-- EO:EUM:DAT:GOES:GOES-ATLSST 	->   Unknown chan                => Unknown                                      =>  Atlantic GOES-E Sea Surface Temperature (Unknown on portal but instead found 	EO:EUM:DAT:MULT:ATLSST) which seems to be the same
+- EO:EUM:DAT:FENGYUN:DMG        ->    Only on fenyung cast for the moment
+- EO_EUM_DAT_FENGYUN_LWRF       ->    Only on fenyung cast for the moment
+- EO:EUM:DAT:FENGYUN:PREO       ->    Only on fenyung cast for the moment
+- EO:EUM:DAT:FENGYUN:PRI        ->    Only on fenyung cast for the moment 
+- EO_EUM_DAT_GOES_FAG:          ->    DEVCOCAST-1                => Which of the devcocast channels
+- EO:EUM:DAT:GOES:GOES-ATLSST 	->    Unknown chan               => Unknown                                      =>  Atlantic GOES-E Sea Surface Temperature (Unknown on portal but instead found 	EO:EUM:DAT:MULT:ATLSST) which seems to be the same
 - EO:EUM:DAT:GOES:SAE           ->   Geonetcast Americas         => nothing geonetcast 
 - EO:EUM:DAT:GOES:SAI           ->   Geonetcast Americas         => nothing geonetcast 
 - EO:EUM:DAT:GOES:SAV           ->   Geonetcast Americas
 - EO:EUM:DAT:GOES:SAW           ->   Geonetcast Americas
 - EO_EUM_DAT_INFO_DAILY         ->   Info-Channel-2              => Probably servdir info-2 ?
-- EO_EUM_DAT_JASON_GDR-SSHA     ->  AVISO ?                      => ?
-- 
+- EO_EUM_DAT_JASON_GDR-SSHA     ->   AVISO ?                     => ?
+- EO:EUM:DAT:JASON:GDR          ->   AVISO ?                     => ?
+- EO_EUM_DAT_JASON_IGDR-SSHA     ->  AVISO ?                     => ?
+- EO:EUM:DAT:JASON:IGDR          ->  AVISO ?                     => ?
+- EO:EUM:DAT:METEOSAT:CDS-IODC  ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:CLA-IODC  ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:CMW1      ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:CMW1-IODC ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:CSR-IODC  ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:CSR1      ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:CSR1-IODC ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:CSR1-ADC  ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:CSR1-XADC ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:ELW-IODC  ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:ELW1      ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:ELW1-IODC ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:ELW1-XADC ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:ELW1-ADC  ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:HPI-IODC  ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:HRI       ->   EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:HRI-ADC.html  ->   EUMETSAT Data Centre (not disseminated) => .html is a bug ?
+- EO:EUM:DAT:METEOSAT:HRI-XADC.html ->   EUMETSAT Data Centre (not disseminated) => .html is a bug ?
+- EO:EUM:DAT:METEOSAT:HRV-IODC  ->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:HRV1      ->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:HRV1-ADC      ->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:HRV1-IODC      ->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:HRV1-XADC      ->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:HWW-IODC      ->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MFG-CDS  	->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MFG-CLA1->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MFG-HPI1->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MFG-HRV1->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MFG-HWW1 ->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MPE-GRIB-IODC->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MPE-JPG-IODC->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MPE1-GRIB->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MSA1-IODC ->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MSA1->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:MTP15-RSS->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:SST-IODC->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:SST1->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:SST1-IODC  	->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:UTH-IODC ->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:UTH1->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:UTH1-ADC->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:UTH1-IODC->  EUMETSAT Data Centre (not disseminated)
+- EO:EUM:DAT:METEOSAT:UTH1-XAD->  EUMETSAT Data Centre (not disseminated)
+
+
+
 
 

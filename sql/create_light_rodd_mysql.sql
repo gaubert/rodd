@@ -8,6 +8,7 @@ GRANT ALL PRIVILEGES on RODD.* to rodd@'localhost' IDENTIFIED BY 'ddor';
 GRANT ALL PRIVILEGES on RODD.* to rodd@'localhost.localdomain' IDENTIFIED BY 'ddor';
 -- add access from tclogin1
 GRANT ALL PRIVILEGES on RODD.* to rodd@'10.11.0.130' IDENTIFIED BY 'ddor';
+GRANT ALL PRIVILEGES on RODD.* to rodd@'tclogin1' IDENTIFIED BY 'ddor';
 
 -- Drop all tables
 
@@ -24,8 +25,23 @@ CREATE TABLE IF NOT EXISTS products (
     title VARCHAR(255) NOT NULL,
 	internalID VARCHAR(256),
 	regularExpr VARCHAR(1024),
+	isDisseminated BOOLEAN,
 	status VARCHAR(256)
   );
+
+-- information regarding the distributionTypes
+CREATE TABLE IF NOT EXISTS distribution_type (
+    disID INTEGER AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+  );
+
+INSERT into distribution_type (name) values("EUMETCAST"),("GTS"),("DIRECT"),("GEONETCAST"),("ARCHIVE");
+
+-- information regarding the service directories
+CREATE TABLE IF NOT EXISTS products_2_distribution (
+    roddID INTEGER,
+    disID INTEGER
+  ); 
   
 -- information regarding the service directories
 CREATE TABLE IF NOT EXISTS service_dirs (

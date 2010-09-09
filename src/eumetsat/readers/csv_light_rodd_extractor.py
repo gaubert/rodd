@@ -182,6 +182,20 @@ class LCSVRoddExtractor(object):
         """ clean a given table """
         
         self._conn.execute("delete from %s.%s;" %(a_schema, a_table))
+        
+    def get_distribution_type_info(self):
+        """ return the distribution info """
+        
+        result = self._conn.execute("select * from distribution_type")
+        
+        res_dict = {}
+        rows = result.fetch_all()
+        
+        for row in rows:
+            res_dict[row['disID']] = row['name']
+        
+        return res_dict
+        
     
     def read_csv_and_insert_product_sql(self, a_columns):
         """ 
@@ -206,16 +220,36 @@ class LCSVRoddExtractor(object):
 
         insert_line = "INSERT INTO %s.%s (%s) VALUES (%s)"
         
-        
         columns = self._create_sql_columns(a_columns)
         
-        #file = open("/tmp/insert_products.sql","w+")
+        #INSERT products_2_distribution (roddID,disID) SELECT p.roddID, p2d.disID FROM products p, products_2_distribution p2d ,distribution_type d WHERE d.name = 'ARCHIVE' and p.internalID = 'EO:EUM:SW:MULT:035'
+        insert_in_prod2dis_p1 = "INSERT RODD.products_2_distribution (roddID,disID) SELECT p.roddID, p2d.disID FROM products p, products_2_distribution p2d, distribution_type d WHERE d.name = '%s'"
+        
+        insert_in_prod2dis_p2 = " and p.internalID = '%s'"
+
+        prod2dis_insert_list = []
 
         for row in csv_reader:
             cpt_keys    = 0
             values      = ""
             has_changed = False
             
+            val = ""
+            
+            if row.get('EUMETCast') == 'Y':
+                val = 'EUMETCAST'
+            
+            if row.get('GTS') == 'Y':
+                val = 'GTS'
+            
+            if row.get('MSGDirect') == 'Y':
+                val = 'MSGDIRECT'
+            
+            if val == "":
+                val = 'ARCHIVE'
+            
+            prod2dis_insert_list.append(insert_in_prod2dis_p1 % (val))
+            internalID = ''
             for elem in a_columns:
                 
                 #get list of matching keys
@@ -226,20 +260,22 @@ class LCSVRoddExtractor(object):
                 
                 val = row.get(key[0], None)
                 
+                # memorize the internalID if necessary
+                if elem == "internalID":
+                    internalID = val
+                
                 # and elem == "resources_1"
                 if nb_rows == 200 and ("%" in val):
                     print("This is the break")
                 
                 has_changed, val = self._transform_product_table_data(elem, val)
                 
-                
-                
                 # if no transformations performed apply the standard rule taht considers the value as a string
                 if has_changed:
                     val = val if val else "null"
                 else:
                     val = "%s" % ( "'%s'" % (val) if val else "NULL")
-                    
+                        
                 # add in values
                 if cpt_keys == 0:
                     values += "%s" % ( val )
@@ -254,6 +290,10 @@ class LCSVRoddExtractor(object):
             #print('[r%d]:insert = %s\n' %(nb_rows, insert) )
             #file.write("%s;\n" %(insert))
             self._conn.execute("%s;" %(insert))
+            
+            for req in prod2dis_insert_list:
+                s = req + insert_in_prod2dis_p2 % (internalID)
+                self._conn.execute(s)
             
             nb_rows += 1
         

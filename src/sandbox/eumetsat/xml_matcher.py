@@ -160,7 +160,7 @@ def print_filetype_tree():
             for ch in list_of_channels:
                 chans += " ".join(t.nodeValue for t in ch.childNodes if t.nodeType == t.TEXT_NODE)
             #print("chans = %s\n" %(chans))
-            if contains(availability_type, ['EUMETCAST','GEONETCAST','DIRECT']): 
+            if contains(availability_type, ['EUMETCAST','GTS','DIRECT']): 
                 
                 #write name
                 if not filename_written:
