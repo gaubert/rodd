@@ -1,4 +1,3 @@
-%#template to generate a HTML table from a list of tuples (or list of lists, or tuple of tuples or ...)
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 	<head>
@@ -6,13 +5,13 @@
 		
 		<title>{{table}} table</title>
 		<style type="text/css" title="currentStyle">
-			@import "/media/css/rodd_page.css";
-			@import "/media/css/rodd_table.css";
-			@import "/media/themes/eumetsat-theme/jquery-ui-1.8.4.custom.css";
+			@import "/static/css/rodd_page.css";
+			@import "/static/css/rodd_table.css";
+			@import "/static/themes/eumetsat-theme/jquery-ui-1.8.4.custom.css";
 		</style>
-		<script type="text/javascript" language="javascript" src="/media/js/jquery.js"></script>
-		<script type="text/javascript" language="javascript" src="/media/js/jquery.dataTables.min.js"></script>
-		<script type="text/javascript" language="javascript" src="/media/js/FixedHeader.min.js"></script>
+		<script type="text/javascript" language="javascript" src="/static/js/jquery.js"></script>
+		<script type="text/javascript" language="javascript" src="/static/js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" language="javascript" src="/static/js/FixedHeader.min.js"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(document).ready(function() {
 				var oTable = $('#example').dataTable({
@@ -58,19 +57,19 @@
 <table cellpadding="0" cellspacing="0" border="0" class="display" id="example">
  <thead>
    <tr class="gradeA">
-     %for h in heads:
+     {% for h in heads %}
         <th>{{h}}</th>
-     %end
+     {% endfor %}
    </tr>
  </thead>
  <tbody>
-  %for row in rows:
-  <tr class="gradeA">
-	  %for r in row:
-	    <td>{{r}}</td>
-	  %end
-  </tr>
- %end
+  {% for row in rows %}
+	  <tr class="gradeA">
+		  {% for col in row %}
+		    <td>{{col}}</td>
+		  {% endfor %}
+	  </tr>
+  {% endfor %}
   </tbody>
 </table>
 </div>

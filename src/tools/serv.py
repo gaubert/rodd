@@ -1,9 +1,9 @@
 # Echo server program
 import socket
 
-HOST = '10.11.0.130' # Symbolic name meaning the local host
+HOST = '10.11.15.30' # Symbolic name meaning the local host
 #HOST = '' # Symbolic name meaning the local host
-PORT = 9080 # Arbitrary non-privileged port
+PORT = 80 # Arbitrary non-privileged port
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((HOST, PORT))
