@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<script src="js/class_UTCTimeString.js" type="text/javascript"></script>
+	<script src="js/gemsChecks.js"  type="text/javascript"></script>
+	<title>EUMETCast Overview</title>
+</head>
+	
+<body style="text-align:center; background-color:lightblue">
+<h1 style="color:green">
+EUMETCast Overview/GEMS check
+</h1>
+
+<hr/>
+<i style="color:darkslategrey">
+<script type="text/javascript">
+write_time_now();
+</script>
+</i>
+
+<noscript>Javascript not enabled. Check security settings.</noscript>
+
+<hr/>
+<h2>David Taylors Missed Packets</h2>
+<a href="http://www.satsignal.eu/mrtg/EumetcastEurope_MissedPackets.html" target="_blank"><img src="http://www.satsignal.eu/mrtg/tellicast-feenix-day.png"></a><br/>
+<h2>EUMETCast Bandwidth Usage</h2>
+<a href="http://eumct06:3000/plugins/rrdPlugin?mode=zoom&action=arbreq&which=graph&arbfile=throughput&arbiface=dummy0&arbip=&start=now-1h&end=now&counter=&title=All+Channels" target="_blank"><img src="http://eumct06:3000/plugins/rrdPlugin?action=arbreq&which=graph&arbfile=throughput&arbiface=dummy0&arbip=&start=now-1d&end=now&counter=&title=All+Channels"></a><br/>
+<a href="./Per_PID_24hrs.html">View Usage Per PID (24hrs)</a>
+<hr/>
+
+<h3>Check alarms and warnings for: </h3> 
+<h4>EUMETCast - DVB_EUR_UPLINK, DVB_KUBAND, DVB_CBAND_AFR, DVB_CBAND_SAM, EPS_DIF_COMMON</h4>
+<h5>Ignores "eumcr04" and "Throwing away packets. Check bandwidth"</h5>
+<script type="text/javascript">
+    gems_writeLink_Check_Morning_EUMETCAST(2160,0,0,0,'Last 36 Hours');
+</script>
+<hr/>
+<a href="./DIFcheck.htm"> EPS On-call Overview</a>
+<hr/>
+<script type="text/javascript">
+    mail_me();
+</script>
+
+</body>
+</html>
