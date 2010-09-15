@@ -9,7 +9,8 @@
 			@import "/static/css/rodd_table.css";
 			@import "/static/themes/eumetsat-theme/jquery-ui-1.8.4.custom.css";
 		</style>
-		<script type="text/javascript" language="javascript" src="/static/js/jquery.js"></script>
+		<!-- <script type="text/javascript" language="javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script> -->
+		<script type="text/javascript" language="javascript" src="/static/js/jquery.js"></script> 
 		<script type="text/javascript" language="javascript" src="/static/js/jquery.dataTables.min.js"></script>
 		<script type="text/javascript" language="javascript" src="/static/js/FixedHeader.min.js"></script>
 		<script type="text/javascript" charset="utf-8">

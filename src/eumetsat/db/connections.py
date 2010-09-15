@@ -62,7 +62,14 @@ class DatabaseConnector:
         """ is connected ? """
         return self._connected
        
-        
+    
+    def get_metadata(self):
+        """ return sql alchemy metadata object """
+        return self._metadata
+    
+    def get_connection(self):
+        return self._conn
+    
     def get_table_metadata(self, a_table_name):
         """ Return the metadata related to a table """
         

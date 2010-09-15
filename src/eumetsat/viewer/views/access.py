@@ -45,15 +45,12 @@ def _view_request_results(a_request_name, a_sql_req):
         result = conn.execute(a_sql_req)
         
         col_names = result.keys()
-       
-        cols = result.fetchall()
         
         output = render_template('generic_table.tpl', rows = result, heads = col_names, table= a_request_name)
         
         return output
     
     except Exception, the_exc:
-        app.logger.error(the_exc)
         return the_exc
 
 @access.route('/tbl_products')

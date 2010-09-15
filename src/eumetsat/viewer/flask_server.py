@@ -4,8 +4,9 @@ Created on Sep 13, 2010
 @author: guillaume.aubert@eumetsat.int
 '''
 
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import g, Flask, render_template, request, redirect, flash, url_for, jsonify
 from wtforms import Form, PasswordField, BooleanField, TextField, validators
+import sqlalchemy
 
 from eumetsat.db import connections
 from eumetsat.common.logging_utils import LoggerFactory
@@ -16,6 +17,21 @@ from eumetsat.viewer.views.access import access
 app = Flask(__name__)
 app.register_module(access)
 
+@app.before_request
+def before_request():
+    
+    conn = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
+    
+    conn.connect()
+    
+    g.db_conn = conn
+
+@app.after_request
+def after_request(response):
+    g.db_conn.disconnect()
+    return response
+
+
 class RegistrationForm(Form):
     username = TextField('Username', [validators.Length(min=4, max=25)])
     email = TextField('Email Address', [validators.Length(min=6, max=35)])
@@ -24,6 +40,19 @@ class RegistrationForm(Form):
         validators.EqualTo('confirm', message='Passwords must match')
     ])
     confirm = PasswordField('Repeat Password')
+
+
+@app.route('/count_numbers')
+def _add_numbers():
+    app.logger.info("Hello numbers")
+    a = request.args.get('a', 0, type=int)
+    b = request.args.get('b', 0, type=int)
+    return jsonify(result=a + b)
+
+
+@app.route('/add_numbers')
+def add_numbers():
+    return render_template('numbers.tpl')
 
 
 
@@ -36,9 +65,11 @@ def register():
         email    = form.email.data
         password = form.password.data
         
+        users = sqlalchemy.Table('users', g.db_conn.get_metadata(), autoload=True)
+
+        g.db_conn.execute(users.insert().values(useID=None, login=username, password=password, email=email))
         
-        #db_session.add(user)
-        flash('Thanks for registering (%s,%s,%s)' % (username, email, password))
+        flash('Thanks for registering (%s,%s)' % (username, email))
         return redirect(url_for('login'))
     
     return render_template('register.tpl', form=form)
