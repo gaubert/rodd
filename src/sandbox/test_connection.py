@@ -1,7 +1,8 @@
 import MySQLdb
 
-#conn = MySQLdb.connect (host = "localhost", user = "testuser", passwd = "testpass", db = "test")
-conn = MySQLdb.connect (host = "127.0.0.1", user="root", db = "rodd")
+# connection on windows
+#conn = MySQLdb.connect (host = "127.0.0.1", user="root", db = "RODD")
+conn = MySQLdb.connect (host = "tclxs30", user="rodd",  passwd="ddor", db = "RODD")
 cursor = conn.cursor ()
 cursor.execute ("SELECT VERSION()")
 row = cursor.fetchone ()

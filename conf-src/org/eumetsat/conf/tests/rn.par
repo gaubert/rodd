@@ -1,0 +1,11 @@
+
+overloading=not_overloaded
+
+#include par
+par=$(DIRCONFENV)/rn1.par
+
+RMS_USER=rmsauto
+RMS_USER_PASS=apassword
+value=$(variable)
+val1=my_path/val
+val2=/root/$(val1)/root1
