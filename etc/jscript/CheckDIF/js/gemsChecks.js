@@ -231,31 +231,39 @@ function gems_writeLink_Check_Morning_DIF(mToGoBack, mEToGoBack, mm, hh, msg, pr
  * @author    guillaume.aubert@eumetsat.int
  */
 function gems_getURL_Check_Morning_DIF(mToGoBack, mEToGoBack, mm, hh, msg, id, facilities, filter) {
+    // returned object 
+    var result = new Array();
+
 	var now   = new Date();
 	var strHint = '';
 	var strHint2 = '';
 
-	if (mToGoBack == undefined) {
+	if (mToGoBack == undefined) 
+	{
 		//now.setUTCMinutes(00);         // set to 00 minutes
 		mToGoBack = 120;                 // start hours in the past
 		strHint = ' ';
 	}
 
-	if (mEToGoBack == undefined) {
+	if (mEToGoBack == undefined) 
+	{
 		//now.setUTCMinutes(00);         // set to 00 minutes
 		mEToGoBack = 120;                 // start hours in the past
 		strHint2 = ' ';
 	}
 
-	if (mm != undefined) {
+	if (mm != undefined) 
+	{
 		now.setUTCMinutes(mm);//15/04/2008 11:57
 	}
 
-	if (hh != undefined) {
+	if (hh != undefined) 
+	{
 		now.setUTCHours(hh);
 	}
 
-	if (id == undefined) {
+	if (id == undefined) 
+	{
 	   id = 'result'
 	}
 
@@ -283,10 +291,18 @@ function gems_getURL_Check_Morning_DIF(mToGoBack, mEToGoBack, mm, hh, msg, id, f
 	var strStart = start.adoyhhmm;
 	var strEnd   = end.adoyhhmm;
 
-	var href = gems_getLink_Check(strStart, strEnd, 'A&severity=W', facilities,  '', '', filter, 999);
-	//console.log("Generated URL = " + href);
-	return href;
+	if (msg == undefined) 
+	{
+	   result['msg'] = 'EPS DIF Morning Checks - Last 36 hours  ' + strStart + ' to ' + strEnd;
+	}
+	else
+	{
+	   result['msg'] = msg + ' : ' + strStart + ' to ' + strEnd;
+	}
 
+	result['href'] = gems_getLink_Check(strStart, strEnd, 'A&severity=W', facilities,  '', '', filter, 999);;
+	
+	return result;
 }
 
 function gems_writeLink_Check_Morning_EUMETCAST(mToGoBack, mEToGoBack, mm, hh, msg, pre, post) {
