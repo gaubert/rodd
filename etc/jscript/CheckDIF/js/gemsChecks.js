@@ -74,7 +74,6 @@ function create_facilities_string(facilities) {
 
 function create_search_expr(toFilter) 
 {
-  items = toFilter.split(/\|/) 
   
   if(typeof(String.prototype.trim) === "undefined")
   {
@@ -84,7 +83,15 @@ function create_search_expr(toFilter)
     };
   }
 
-  var result = "^((?!";
+  if (toFilter === undefined || toFilter.trim() === "")
+  {
+    return "";
+  }
+
+
+  var items = toFilter.split(/\|/) 
+
+  var result = "%5E%28%28%3F%21";
   for (var i = 0; i < items.length; i++)
   {
      if (i == 0)
@@ -97,8 +104,8 @@ function create_search_expr(toFilter)
 	    result += "|" + items[i].trim().replace(/ /g,"+");
 	 }
   }
-  // add the end string toc omplete the expr
-  result += ").)*";
+  // add the end string to complete the expr
+  result += "%29.%29*%24&regExp=1";
 
   return result;
 
@@ -269,7 +276,7 @@ function gems_getURL_Check_Morning_DIF(mToGoBack, mEToGoBack, mm, hh, msg, id, f
 	{
 	  filter = create_search_expr(filter);
 	}
-	console.log("Filter = " + filter);
+	//console.log("Filter = " + filter);
 
 	var end   = new UTCTimeString(now);
 	var start = new UTCTimeString(now - mToGoBack * 60000);
@@ -277,6 +284,7 @@ function gems_getURL_Check_Morning_DIF(mToGoBack, mEToGoBack, mm, hh, msg, id, f
 	var strEnd   = end.adoyhhmm;
 
 	var href = gems_getLink_Check(strStart, strEnd, 'A&severity=W', facilities,  '', '', filter, 999);
+	//console.log("Generated URL = " + href);
 	return href;
 
 }

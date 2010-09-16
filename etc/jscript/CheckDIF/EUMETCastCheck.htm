@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<script src="js/class_UTCTimeString.js" type="text/javascript"></script>
@@ -38,26 +38,26 @@ write_time_now();
 <hr/>
 <p>Select Facilities to monitor:</p>
 <div align="center">
-<table id="c_a" width="50%" style="text-align:left; background-color:white" border="1" cellpadding="2" cellspacing="0">
+<table id="c_b" width="50%" style="text-align:left; background-color:white" border="1" cellpadding="2" cellspacing="0">
 	<tr>
-		<td><input type="checkbox" name="DVB_CBAND_AFR"    value="DVB_CBAND_AFR">DVB_CBAND_AFR</input></td>
-		<td><input type="checkbox" name="DVB_CBAND_SAM"    value="DVB_CBAND_SAM"/>DVB_CBAND_SAM</input></td>
-		<td><input type="checkbox" name="DVB_EUR_UPLINK"   value="DVB_EUR_UPLINK"/>DVB_EUR_UPLINK</input></td>
+		<td><input type="checkbox" name="DVB_CBAND_AFR"    value="DVB_CBAND_AFR" checked>DVB_CBAND_AFR</input></td>
+		<td><input type="checkbox" name="DVB_CBAND_SAM"    value="DVB_CBAND_SAM" checked/>DVB_CBAND_SAM</input></td>
+		<td><input type="checkbox" name="DVB_EUR_UPLINK"   value="DVB_EUR_UPLINK" checked/>DVB_EUR_UPLINK</input></td>
 	</tr>
 	<tr>
-		<td><input type="checkbox" name="DVB_KUBAND"       value="DVB_KUBAND"/>DVB_KUBAND</input></td>
+		<td><input type="checkbox" name="DVB_KUBAND"       value="DVB_KUBAND" checked/>DVB_KUBAND</input></td>
 		<td><input type="checkbox" name="EPSKDS"           value="EPSKDS"/>EPSKDS</input></td>
 		<td><input type="checkbox" name="EPS_COMMS"        value="EPS_COMMS"/>EPS_COMMS</input></td>
 	</tr>
 	<tr>
 		<td><input type="checkbox" name="EPS_DIF_COMMON"   value="EPS_DIF_COMMON" checked/>EPS_DIF_COMMON</input></td>
-		<td><input type="checkbox" name="EPS_DIF_GS1"      value="EPS_DIF_GS1" checked/>EPS_DIF_GS1</input></td>
+		<td><input type="checkbox" name="EPS_DIF_GS1"      value="EPS_DIF_GS1" />EPS_DIF_GS1</input></td>
 		<td><input type="checkbox" name="EPS_DIF_GS2"      value="EPS_DIF_GS2"/>EPS_DIF_GS2</input></td>
 	</tr>
 	<tr>
 		<td><input type="checkbox" name="EPS_DIF_GS3"      value="EPS_DIF_GS3"/>EPS_DIF_GS3</input></td>
-		<td><input type="checkbox" name="EPS_EXGATE"       value="EPS_EXGATE" checked/>EPS_EXGATE</input></td>
-		<td><input type="checkbox" name="EPS_GFT_CS"       value="EPS_GFT_CS" checked/>EPS_GFT_CS</input></td>
+		<td><input type="checkbox" name="EPS_EXGATE"       value="EPS_EXGATE" />EPS_EXGATE</input></td>
+		<td><input type="checkbox" name="EPS_GFT_CS"       value="EPS_GFT_CS" />EPS_GFT_CS</input></td>
 	</tr>
 	<tr>
 		<td><input type="checkbox" name="EPS_GFT_GS3"      value="EPS_GFT_GS3"/>EPS_GFT_GS3</input></td>
@@ -71,7 +71,7 @@ write_time_now();
 	</tr>
 	<tr>
 		<td><input type="checkbox" name="EPS_PPF_GS3"      value="EPS_PPF_GS3"/>EPS_PPF_GS3</input></td>
-		<td><input type="checkbox" name="EXGATE"           value="EXGATE"/>EXGATE</input></td>
+		<td><input type="checkbox" name="EXGATE"           value="EXGATE" checked/>EXGATE</input></td>
 		<td><input type="checkbox" name="UPLINK_SERVER"    value="UPLINK_SERVER"/>UPLINK_SERVER</input></td>
 	</tr>
 </table>
@@ -84,7 +84,7 @@ write_time_now();
          
 		 var result = "";
 		 var i = 0;
-         $('#c_a :checked').each(function() {
+         $('#c_b :checked').each(function() {
 		   if (i == 0)
 		   {
 		      result += $(this).val();
@@ -95,29 +95,27 @@ write_time_now();
 		   }
 		   i +=1;
          });
-         $('#t').html(result);
+         $('#facilities').html(result);
+		 //console.log("ignore = " + $('#facilities').text());
       }
      $(function() {
-       $('#c_a input').click(updateTextArea);
+       $('#c_b input').click(updateTextArea);
        updateTextArea();
      });
 
     // rewrite 36hrs nd 80hrs href using gems_getURL_Check_Morning_DIF when user clicks on link
 	$(function() {
 		$('a#c_36hrs').bind('click', function() {
-          var last36hrs =  gems_getURL_Check_Morning_DIF(2160,0,0,0,'Last 36 Hours','36hrs', $('input[name="facilities"]').val());		  
+          var last36hrs =  gems_getURL_Check_Morning_DIF(2160,0,0,0,'Last 36 Hours','36hrs', $('#facilities').text(), $('#ignore').val());		  
  
-		  //$("#80hrs").replaceWith(last80hrs);
-
           $(this).attr("href",last36hrs);
 
           $('#busy_36').attr("style","margin-right: 6px; margin-top: 5px; visibility: visible;");
           $('#busy_80').attr("style","margin-right: 6px; margin-top: 5px; visibility: hidden;");
-		  return false;
     });
 
 	   $('a#c_80hrs').bind('click', function() {
-          var last80hrs =  gems_getURL_Check_Morning_DIF(2160,0,0,0,'Last 36 Hours','36hrs', $('input[name="facilities"]').val());		  
+          var last80hrs =  gems_getURL_Check_Morning_DIF(2160,0,0,0,'Last 36 Hours','36hrs', $('#facilities').text(), $('#ignore').val());		  
  
           $(this).attr("href",last80hrs);
 
@@ -126,13 +124,13 @@ write_time_now();
     });
  }); 
 </script>
-<h4>Facilities to monitor:<div id="t">aaa</div><!--<input id="t" type=text size=150 name=facilities>--></h4>
+<h4>Facilities to monitor:<div id="facilities" name="facilities"></div>
 <h4>Ignore the following fields:<input id="ignore" type=text size=150 name=ignoreFilter></h4>
 <p><a href=# id="c_36hrs">click to get the last 36hrs</a>
 <img id="busy_36" src="img/mozilla_blu.gif" style="margin-right: 6px; margin-top: 5px; visibility: hidden;" alt="mozilla blue"/>
 <p><a href=# id="c_80hrs">click to get the last 80hrs</a>
 <img id="busy_80" src="img/mozilla_blu.gif" style="margin-right: 6px; margin-top: 5px; visibility: hidden;" alt="mozilla blue"/>
-<span id="36hrs"></span>
+<hr/>
 <a href="./DIFcheck.htm"> EPS On-call Overview</a>
 <hr/>
 <script type="text/javascript">

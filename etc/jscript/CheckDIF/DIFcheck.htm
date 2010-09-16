@@ -31,7 +31,7 @@ write_time_now();
 
 <p>Select Facilities to monitor:</p>
 <div align="center">
-<table id="c_a" width="50%" style="text-align:left; background-color:white" border="1" cellpadding="2" cellspacing="0">
+<table id="c_b" width="50%" style="text-align:left; background-color:white" border="1" cellpadding="2" cellspacing="0">
 	<tr>
 		<td><input type="checkbox" name="DVB_CBAND_AFR"    value="DVB_CBAND_AFR">DVB_CBAND_AFR</input></td>
 		<td><input type="checkbox" name="DVB_CBAND_SAM"    value="DVB_CBAND_SAM"/>DVB_CBAND_SAM</input></td>
@@ -70,47 +70,37 @@ write_time_now();
 </table>
 </td></tr></table>
 </div>
-<script>
-
-     // get all values from the checked boxes and fill the text area below
-     function updateTextArea() {
-         
-         var allVals = [];
-         $('#c_a :checked').each(function() {
-           allVals.push($(this).val());
-         });
-         $('#t').val(allVals)
-      }
-     $(function() {
-       $('#c_a input').click(updateTextArea);
-       updateTextArea();
-     });
-
-</script>
-
 <script type="text/javascript">
 
      // get all values from the checked boxes and fill the text area below
      function updateTextArea() {
          
-         var allVals = [];
-         $('#c_a :checked').each(function() {
-           allVals.push($(this).val());
+		 var result = "";
+		 var i = 0;
+         $('#c_b :checked').each(function() {
+		   if (i == 0)
+		   {
+		      result += $(this).val();
+		   }
+		   else
+		   {
+		      result += ", " + $(this).val();
+		   }
+		   i +=1;
          });
-         $('#t').val(allVals)
+         $('#facilities').html(result);
+		 //console.log("ignore = " + $('#facilities').text());
       }
      $(function() {
-       $('#c_a input').click(updateTextArea);
+       $('#c_b input').click(updateTextArea);
        updateTextArea();
      });
 
     // rewrite 36hrs nd 80hrs href using gems_getURL_Check_Morning_DIF when user clicks on link
 	$(function() {
 		$('a#c_36hrs').bind('click', function() {
-          var last36hrs =  gems_getURL_Check_Morning_DIF(2160,0,0,0,'Last 36 Hours','36hrs', $('input[name="facilities"]').val());		  
+          var last36hrs =  gems_getURL_Check_Morning_DIF(2160,0,0,0,'Last 36 Hours','36hrs', $('#facilities').text(), $('#ignore').val());		  
  
-		  //$("#80hrs").replaceWith(last80hrs);
-
           $(this).attr("href",last36hrs);
 
           $('#busy_36').attr("style","margin-right: 6px; margin-top: 5px; visibility: visible;");
@@ -118,7 +108,7 @@ write_time_now();
     });
 
 	   $('a#c_80hrs').bind('click', function() {
-          var last80hrs =  gems_getURL_Check_Morning_DIF(2160,0,0,0,'Last 36 Hours','36hrs', $('input[name="facilities"]').val());		  
+          var last80hrs =  gems_getURL_Check_Morning_DIF(2160,0,0,0,'Last 36 Hours','36hrs', $('#facilities').text(), $('#ignore').val());		  
  
           $(this).attr("href",last80hrs);
 
@@ -127,13 +117,12 @@ write_time_now();
     });
  }); 
 </script>
-<h4>Facilities to monitor:<input id="t" type=text size=150 name=facilities></h4>
+<h4>Facilities to monitor:<div id="facilities" name="facilities"></div>
+<h4>Ignore the following fields:<input id="ignore" type=text size=150 name=ignoreFilter></h4>
 <p><a href=# id="c_36hrs">click to get the last 36hrs</a>
 <img id="busy_36" src="img/mozilla_blu.gif" style="margin-right: 6px; margin-top: 5px; visibility: hidden;" alt="mozilla blue"/>
 <p><a href=# id="c_80hrs">click to get the last 80hrs</a>
 <img id="busy_80" src="img/mozilla_blu.gif" style="margin-right: 6px; margin-top: 5px; visibility: hidden;" alt="mozilla blue"/>
-<span id="36hrs"></span>
-<span id="80hrs"></span>
 <hr/>
 <a href="./EUMETCastCheck.htm"> EUMETCast Overview</a>
 <hr/>
