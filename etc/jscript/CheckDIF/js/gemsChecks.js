@@ -1,5 +1,5 @@
 /**
- * @author    Andreas Tusche <andreas.tusche@eumetsat.int>
+ * @author    Andreas Tusche <andreas.tusche@eumetsat.int>, Guillaume Aubert <guillaume.aubert@eumetsat.int
  * @copyright &copy; 2006, {@link http://www.eumetsat.int}, 64295 Darmstadt
  * @package   Knowledge Base
  * @todo      merge and or compact functions
@@ -40,6 +40,14 @@ function gems_getLink_Check(startTime, endTime, severity, facility, host, proces
 //http://omasif.eumetsat.org/GEMS/HistoryFilterController.jsp?startTime=10.237&severity=A&endTime=10.238.00.00&severity=W&facility=DVB_KUBAND&host=&process=&search=%5E%28%28%3F%21eumcr04%29.%29*%24&regExp=1&pageSize=999&x=58&y=10
 //TS START
 
+/**
+* function create_facilities_string
+*
+* Split the string containing all the facilities. Use all spaces char and , are split characters
+*
+* @param string facilities String of facilities
+* @author guillaume.aubert@eumetsat.int
+*/
 function create_facilities_string(facilities) {
 
   // apply regular expression
@@ -59,6 +67,38 @@ function create_facilities_string(facilities) {
 	    result += "&facility="+f_arr[i];
      }
   }
+
+  return result;
+
+}
+
+function create_search_expr(toFilter) 
+{
+  items = toFilter.split(/\|/) 
+  
+  if(typeof(String.prototype.trim) === "undefined")
+  {
+    String.prototype.trim = function() 
+    {
+        return String(this).replace(/^\s+|\s+$/g, '');
+    };
+  }
+
+  var result = "^((?!";
+  for (var i = 0; i < items.length; i++)
+  {
+     if (i == 0)
+	 {
+	    result += items[i].trim().replace(/ /g,"+"); 
+	 }
+	 else
+	 {
+        // replace all spaces with +   
+	    result += "|" + items[i].trim().replace(/ /g,"+");
+	 }
+  }
+  // add the end string toc omplete the expr
+  result += ").)*";
 
   return result;
 
@@ -178,10 +218,12 @@ function gems_writeLink_Check_Morning_DIF(mToGoBack, mEToGoBack, mm, hh, msg, pr
  * @param     string  msg        optional the hyperlink text
  * @param     string  id         optional tag id that will be used with jquery
  * @param     string  facilities optional list of facilities to search
+ * @param     string  filter     optional filters to apply
  * @package   Knowledge Base
  * @uses      UTCTimeString
+ * @author    guillaume.aubert@eumetsat.int
  */
-function gems_getURL_Check_Morning_DIF(mToGoBack, mEToGoBack, mm, hh, msg, id, facilities) {
+function gems_getURL_Check_Morning_DIF(mToGoBack, mEToGoBack, mm, hh, msg, id, facilities, filter) {
 	var now   = new Date();
 	var strHint = '';
 	var strHint2 = '';
@@ -212,20 +254,79 @@ function gems_getURL_Check_Morning_DIF(mToGoBack, mEToGoBack, mm, hh, msg, id, f
 
     if (facilities== undefined || facilities == '') 
 	{ 
-	   facilities = 'EPS_EXGATE&facility=EPS_COMMS&facility=EPS_DIF_G1&facility=EPS_DIF_COMMON&facility=EPS_GFT_CS';    } 
+	   facilities = 'EPS_EXGATE&facility=EPS_COMMS&facility=EPS_DIF_G1&facility=EPS_DIF_COMMON&facility=EPS_GFT_CS';    
+	} 
 	else 
 	{ 
 	  facilities = create_facilities_string(facilities); 
 	}
+
+	if (filter == undefined)
+	{
+	  filter = '' 
+	}
+	else
+	{
+	  filter = create_search_expr(filter);
+	}
+	console.log("Filter = " + filter);
 
 	var end   = new UTCTimeString(now);
 	var start = new UTCTimeString(now - mToGoBack * 60000);
 	var strStart = start.adoyhhmm;
 	var strEnd   = end.adoyhhmm;
 
-	var href = gems_getLink_Check(strStart, strEnd, 'A&severity=W', facilities,  '', '', '', 999);
+	var href = gems_getLink_Check(strStart, strEnd, 'A&severity=W', facilities,  '', '', filter, 999);
 	return href;
 
+}
+
+function gems_writeLink_Check_Morning_EUMETCAST(mToGoBack, mEToGoBack, mm, hh, msg, pre, post) {
+	var now   = new Date();
+	var strHint = '';
+	var strHint2 = '';
+
+	if (mToGoBack == undefined) {
+		//now.setUTCMinutes(00);         // set to 00 minutes
+		mToGoBack = 120;                 // start hours in the past
+		strHint = ' ';
+	}
+
+	if (mEToGoBack == undefined) {
+		//now.setUTCMinutes(00);         // set to 00 minutes
+		mEToGoBack = 120;                 // start hours in the past
+		strHint2 = ' ';
+	}
+
+	if (mm != undefined) {
+		now.setUTCMinutes(mm);//15/04/2008 11:57
+	}
+
+	if (hh != undefined) {
+		now.setUTCHours(hh);
+	}
+
+	if (pre == undefined) {
+		pre = '<p class="linkCheckGEMS">';
+	}
+
+	if (post == undefined) {
+		post = "</p>\n";
+	}
+	var end   = new UTCTimeString(now);
+	var start = new UTCTimeString(now - mToGoBack * 60000);
+	var strStart = start.adoyhhmm;
+	var strEnd   = end.adoyhhmm;
+
+		msg = msg + ' : ' + strStart + ' to ' + strEnd;
+
+	if (msg == undefined) {
+		msg = 'EPS DIF Morning Checks - Last 36 hours  ' + strStart + ' to ' + strEnd;
+	}
+
+	var href = gems_getLink_Check(strStart, strEnd, 'A&severity=W', 'DVB_EUR_UPLINK&facility=DVB_KUBAND&facility=DVB_CBAND_AFR&facility=EPS_DIF_COMMON&facility=DVB_CBAND_SAM',  '', '','%5E%28%28%3F%21eumcr04%7CThrowing+away+packets.+Check+bandwidth%29.%29*%24&regExp=1', 999);
+	document.write(pre + '<a href="' + href + '">' + msg + '</a>' + strHint + strHint2 +  post);
+	return;
 }
 
 function write_time_now() {
