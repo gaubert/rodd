@@ -5,7 +5,7 @@
 	<script src="js/gemsChecks.js"  type="text/javascript"></script>
 	<!--<script type=text/javascript src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>-->
 	<script type=text/javascript src="js/jquery.js"></script>
-	<title>On-call DIF checks</title>
+	<title>On-call EUMETCAST checks</title>
 </head>
 	
 <body style="text-align:center; background-color:lightblue">
@@ -66,8 +66,8 @@ write_time_now();
 	</tr>
 	<tr>
 		<td><input type="checkbox" name="EPS_PPF_GS3"      value="EPS_PPF_GS3"/>EPS_PPF_GS3</input></td>
-		<td><input type="checkbox" name="EXGATE"           value="EXGATE" checked/>EXGATE</input></td>
-		<td><input type="checkbox" name="UPLINK_SERVER"    value="UPLINK_SERVER"/>UPLINK_SERVER</input></td>
+		<td><input type="checkbox" name="EXGATE"           value="EXGATE" />EXGATE</input></td>
+		<td><input type="checkbox" name="UPLINK_SERVER"    value="UPLINK_SERVER" checked/>UPLINK_SERVER</input></td>
 	</tr>
 </table>
 </td></tr></table>
@@ -120,7 +120,7 @@ write_time_now();
     });
 </script>
 <h4>Facilities to monitor:<div id="facilities" name="facilities"></div>
-<h4>Ignore Event lines with the following words (eg. A|D):<input id="ignore" type=text size=110 name=ignoreFilter value="eumcr04|Throwing away packets. Check bandwidth"></h4>
+<h4>Ignore Event lines with the following words (eg. A,D):<input id="ignore" type=text size=110 name=ignoreFilter value="eumcr04,Throwing away packets. Check bandwidth"></h4>
 <p><a href=# id="c_36hrs">click to get the last 36hrs</a>
 <img id="busy_36" src="img/mozilla_blu.gif" style="margin-right: 6px; margin-top: 5px; visibility: hidden;" alt="mozilla blue"/>
 <p><a href=# id="c_80hrs">click to get the last 80hrs</a>

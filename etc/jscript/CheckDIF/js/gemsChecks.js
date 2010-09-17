@@ -89,7 +89,7 @@ function create_search_expr(toFilter)
   }
 
 
-  var items = toFilter.split(/\|/) 
+  var items = toFilter.split(/,/) 
 
   var result = "%5E%28%28%3F%21";
   for (var i = 0; i < items.length; i++)
