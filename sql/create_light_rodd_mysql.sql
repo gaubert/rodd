@@ -45,11 +45,27 @@ CREATE TABLE IF NOT EXISTS distribution_type (
 
 INSERT into distribution_type (name) values("EUMETCAST"),("GTS"),("DIRECT"),("GEONETCAST"),("ARCHIVE");
 
--- information regarding the service directories
+-- information regarding the distribution
 CREATE TABLE IF NOT EXISTS products_2_distribution (
     roddID INTEGER,
     disID INTEGER
   ); 
+  
+-- information regarding the service directories
+CREATE TABLE IF NOT EXISTS file_info (
+    fID    INTEGER AUTO_INCREMENT PRIMARY KEY,
+    name   VARCHAR(255) NOT NULL,
+	regexp VARCHAR(255) NOT NULL,
+	size   INTERGER NOT NULL,
+	type   VARCHAR(255) NOT NULL,
+  );
+  
+-- information regarding file2servdirs
+CREATE TABLE IF NOT EXISTS file_2_servdirs (
+    roddID INTEGER,
+    servID INTEGER
+); 
+
   
 -- information regarding the service directories
 CREATE TABLE IF NOT EXISTS service_dirs (

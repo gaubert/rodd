@@ -78,25 +78,42 @@ def register():
 def login():
     error = None
     if request.method == 'POST':
-        if request.form['username'] != 'admin' or \
-           request.form['password'] != 'secret':
-            error = 'Invalid credentials'
-        else:
+        
+        users = sqlalchemy.Table('users', g.db_conn.get_metadata(), autoload=True)
+        
+        sql_request = sqlalchemy.select( [users.c.login, users.c.password] )\
+                                .where( (users.c.login == request.form['username']) &  (users.c.password == request['form']) )
+        
+        result = g.db_conn.execute(sql_request)
+        
+        if result:
             flash('You were sucessfully logged in','error')
             return redirect(url_for('index'))
+        else:
+            error = 'Invalid credentials'
+        
     return render_template('login.tpl', error=error)
 
 #route index.html and default to product details page
 @app.route('/')
 @app.route('/index.html')
 def index():
-    return view_products_details()
+    return redirect(url_for('access.view_products_details'))
 
 @app.route("/hello")
 def hello():
     return "Hello World!"
 
+@app.route('/add', methods=['POST'])
+def add():
+    #return unicode(request.json)
+    return unicode("result =  %s\n" % (request.json['a'] + request.json['b']))
+        
 
+@app.route("/json", methods=['GET','POST'])
+def post_json():
+    
+    return jsonify(result=request.json)
 
 
 # set the secret key.  keep this really secret:
