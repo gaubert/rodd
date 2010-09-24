@@ -22,7 +22,7 @@ DROP TABLE if EXISTS file_info;
 
 -- users
 CREATE TABLE IF NOT EXISTS users (
-    useID    INTEGER AUTO_INCREMENT PRIMARY KEY,
+    user_id    INTEGER AUTO_INCREMENT PRIMARY KEY,
     login    VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     email    VARCHAR(255) NOT NULL
@@ -30,84 +30,89 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- information regarding products
 CREATE TABLE IF NOT EXISTS products (
-    roddID INTEGER AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-	internalID VARCHAR(256),
-	regularExpr VARCHAR(1024),
-	isDisseminated BOOLEAN,
-	status VARCHAR(256)
+    rodd_id         INTEGER AUTO_INCREMENT PRIMARY KEY,
+    title           VARCHAR(255) NOT NULL,
+	internal_id     VARCHAR(256),
+	regular_expr    VARCHAR(1024),
+	is_disseminated BOOLEAN,
+	status          VARCHAR(256)
   );
 
 -- information regarding the distributionTypes
 CREATE TABLE IF NOT EXISTS distribution_type (
-    disID INTEGER AUTO_INCREMENT PRIMARY KEY,
+    dis_id INTEGER AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL
   );
-
+  
 INSERT into distribution_type (name) values("EUMETCAST"),("GTS"),("DIRECT"),("GEONETCAST"),("ARCHIVE");
 
--- information regarding the distribution
-CREATE TABLE IF NOT EXISTS products_2_distribution (
-    roddID INTEGER,
-    disID INTEGER
-  ); 
-  
--- information regarding the service directories
-CREATE TABLE IF NOT EXISTS products_2_servdirs (
-    roddID INTEGER,
-    servID INTEGER
-); 
-
--- information regarding the service directories
-CREATE TABLE IF NOT EXISTS service_dirs (
-    servID INTEGER AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-	chanID VARCHAR(256)
-);
-
--- information regarding file2servdirs
-CREATE TABLE IF NOT EXISTS file_2_servdirs (
-    roddID INTEGER,
-    servID INTEGER
-); 
-
--- information regarding the service directories
+-- information regarding the file_info
 CREATE TABLE IF NOT EXISTS file_info (
-    fID        INTEGER AUTO_INCREMENT PRIMARY KEY,
+    file_id        INTEGER AUTO_INCREMENT PRIMARY KEY,
     name       VARCHAR(255) NOT NULL,
     reg_expr   VARCHAR(255) NOT NULL,
 	size       INTEGER,
 	type       VARCHAR(255) NOT NULL
-  );
-  
-  
+);
+
 -- information regarding the channels
 CREATE TABLE IF NOT EXISTS channels (
-    chanID               INTEGER AUTO_INCREMENT PRIMARY KEY,
-    name               VARCHAR(1024),
-    multicastAddress   VARCHAR(512),
-    minRate            DOUBLE,
-    maxRate            DOUBLE,
-    channelFunction    VARCHAR(512),
-    pidEB9             INTEGER,
-    pidAB3             INTEGER,
-    pidNSS             INTEGER
+    chan_id             INTEGER AUTO_INCREMENT PRIMARY KEY,
+    name                VARCHAR(1024),
+    multicast_address   VARCHAR(512),
+    min_rate            DOUBLE,
+    max_rate            DOUBLE,
+    channel_function    VARCHAR(512),
+    pid_EB9             INTEGER,
+    pid_AB3             INTEGER,
+    pid_NSS             INTEGER
   ); 
+
+-- information regarding the service directories
+CREATE TABLE IF NOT EXISTS service_dirs (
+    serv_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+	chan_id VARCHAR(256)
+);
+
+-- information regarding the distribution
+CREATE TABLE IF NOT EXISTS products_2_distribution (
+    rodd_id INTEGER,
+    dis_id INTEGER
+); 
+
+-- information regarding the distribution
+CREATE TABLE IF NOT EXISTS products_2_fileinfos (
+    rodd_id INTEGER,
+    file_id INTEGER
+);
+  
+-- information regarding the service directories
+CREATE TABLE IF NOT EXISTS products_2_servdirs (
+    rodd_id INTEGER,
+    serv_id INTEGER
+); 
+
+-- information regarding file2servdirs
+CREATE TABLE IF NOT EXISTS file_2_servdirs (
+    file_id INTEGER,
+    serv_id INTEGER
+); 
   
 -- information regarding the families
 CREATE TABLE IF NOT EXISTS families (
-    famID              INTEGER AUTO_INCREMENT PRIMARY KEY,
+    fam_id              INTEGER AUTO_INCREMENT PRIMARY KEY,
     name               VARCHAR(512),
     description        VARCHAR(2048)
   ); 
 
 -- information regarding the families
 CREATE TABLE IF NOT EXISTS servdirs_2_families (
-    servID             INTEGER,
-    famID              INTEGER
+    serv_id            INTEGER,
+    fam_id             INTEGER
   );
-CREATE INDEX serv2fam_servid_index ON servdirs_2_families (servID);
-CREATE INDEX serv2fam_famid_index ON servdirs_2_families (famID);
+CREATE INDEX serv2fam_servid_index ON servdirs_2_families (serv_id);
+CREATE INDEX serv2fam_famid_index ON servdirs_2_families (fam_id);
  
  
 -- products formats to link the formats and the products
@@ -118,7 +123,7 @@ CREATE TABLE IF NOT EXISTS products_formats (
 
 -- format type
 CREATE TABLE IF NOT EXISTS format_type (
-   formatTypeID INTEGER AUTO_INCREMENT PRIMARY KEY,
+   format_id INTEGER AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(256),
    description VARCHAR(1024)
 );
@@ -150,7 +155,7 @@ INSERT into format_type (name,description) values("LRIT-WMO","WMO GTS in LRIT");
 
 -- orbit type
 CREATE TABLE IF NOT EXISTS orbit_type (
-   orbitID INTEGER AUTO_INCREMENT PRIMARY KEY,
+   orbit_id INTEGER AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(256)
 );
 

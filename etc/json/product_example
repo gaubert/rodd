@@ -18,7 +18,7 @@
 	          "service_dir": "EPS-METOP-ASCA-L1"
 	       },
 	       {
-	          "name": "ascat_nativr",
+	          "name": "ascat_native",
 	          "regexpr": "ASCA_SZR_1B_M02_20070630222400Z_20070630222658Z_ N_O_20070701001421Z",
 	          "size": "740KB",
 	          "type": "native",
@@ -65,8 +65,11 @@
     ],
   "channels" : [
      {
-       "name": "EPS-3",
-       "freq": "afrequence"
+       "name"              : "EPS-3",
+       "multicast_address" : "224.223.222.232:2320",
+       "min_rate"          : 163000,
+       "max_rate"          : 440000,
+       "channel_function"  : "Metop ASCA"
      }
   ]
 }  
