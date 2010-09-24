@@ -15,6 +15,7 @@ GRANT ALL PRIVILEGES on RODD.* to rodd@'tclogin1' IDENTIFIED BY 'ddor';
 DROP TABLE if EXISTS products;
 DROP TABLE if EXISTS products_formats;
 DROP TABLE if EXISTS format_type;
+DROP TABLE if EXISTS file_info;
 
 
 -- Create the tables
@@ -52,33 +53,33 @@ CREATE TABLE IF NOT EXISTS products_2_distribution (
   ); 
   
 -- information regarding the service directories
-CREATE TABLE IF NOT EXISTS file_info (
-    fID    INTEGER AUTO_INCREMENT PRIMARY KEY,
-    name   VARCHAR(255) NOT NULL,
-	regexp VARCHAR(255) NOT NULL,
-	size   INTERGER NOT NULL,
-	type   VARCHAR(255) NOT NULL,
-  );
-  
+CREATE TABLE IF NOT EXISTS products_2_servdirs (
+    roddID INTEGER,
+    servID INTEGER
+); 
+
+-- information regarding the service directories
+CREATE TABLE IF NOT EXISTS service_dirs (
+    servID INTEGER AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+	chanID VARCHAR(256)
+);
+
 -- information regarding file2servdirs
 CREATE TABLE IF NOT EXISTS file_2_servdirs (
     roddID INTEGER,
     servID INTEGER
 ); 
 
-  
 -- information regarding the service directories
-CREATE TABLE IF NOT EXISTS service_dirs (
-    servID INTEGER AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-	chanID VARCHAR(256)
+CREATE TABLE IF NOT EXISTS file_info (
+    fID        INTEGER AUTO_INCREMENT PRIMARY KEY,
+    name       VARCHAR(255) NOT NULL,
+    reg_expr   VARCHAR(255) NOT NULL,
+	size       INTEGER,
+	type       VARCHAR(255) NOT NULL
   );
-
--- information regarding the service directories
-CREATE TABLE IF NOT EXISTS products_2_servdirs (
-    roddID INTEGER,
-    servID INTEGER
-  ); 
+  
   
 -- information regarding the channels
 CREATE TABLE IF NOT EXISTS channels (

@@ -110,10 +110,13 @@ def add():
     return unicode("result =  %s\n" % (request.json['a'] + request.json['b']))
         
 
-@app.route("/json", methods=['GET','POST'])
+@app.route("/json", methods=['POST'])
 def post_json():
     
-    return jsonify(result=request.json)
+    input_data = request.json
+    
+    
+    return jsonify(result=input_data)
 
 
 # set the secret key.  keep this really secret:
