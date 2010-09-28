@@ -6,18 +6,19 @@ Created on Sep 23, 2010
 import time
 
 import sqlalchemy
-from sqlalchemy.orm import mapper, relationship
+import simplejson as json
+
+from sqlalchemy.orm import mapper, relationship, backref
 from eumetsat.db import connections
 
 
 
 class Product(object):
     """ Product Object """
-    def __init__(self, title, internal_id, reg_expr, disseminated, status):
+    def __init__(self, title, internal_id, disseminated, status):
         self.rodd_id            = None
         self.title              = title
         self.internal_id        = internal_id
-        self.regular_expr       = reg_expr
         self.is_disseminated    = disseminated
         self.status             = status
         self.data_centre_infos  = []
@@ -26,17 +27,25 @@ class Product(object):
         self.geonetcast_infos   = []
   
     def __repr__(self):
-        return "<Product(%s'%s', '%s', '%s', '%s', '%s', files= [ eumetcast = ('%s'), gts = ('%s'), data_centre= ('%s'), geonetcast = ('%s') )>" % ( ( "'rodd_id:%s', " % (self.rodd_id if self.rodd_id else "")), self.title, self.internal_id, self.regular_expr, self.is_disseminated, self.status, self.eumetcast_infos, self.gts_infos, self.data_centre_infos, self.geonetcast_infos)
+        return "<Product(%s'%s', '%s', %s', '%s', files= [ eumetcast = ('%s'), gts = ('%s'), data_centre= ('%s'), geonetcast = ('%s') )>" \
+               % ( ( "'rodd_id:%s', " % (self.rodd_id if self.rodd_id else "")), \
+                     self.title, self.internal_id, \
+                     self.is_disseminated, \
+                     self.status, \
+                     self.eumetcast_infos, \
+                     self.gts_infos, \
+                     self.data_centre_infos, \
+                     self.geonetcast_infos)
 
 class ServiceDir(object):
     """ServiceDir object """
-    def __init__(self, name, chan_id):
+    def __init__(self, name, channel):
         self.serv_id     = None
         self.name        = name
-        self.chan_id     = chan_id
+        self.channel     = channel
     
     def __repr__(self):
-        return "<ServiceDir('%s', '%s')>" % (self.name, self.chan_id)
+        return "<ServiceDir('%s', '%s')>" % (self.name, self.channel)
     
 class DistributionType(object):
     """ DistributionType object """
@@ -72,6 +81,193 @@ class FileInfo(object):
     
     def __repr__(self):
         return "<FileInfo('%s','%s', '%s', '%s', '%s')>" % (self.name, self.reg_expr, self.size, self.type, self.service_dirs)
+
+class DAO(object):
+    
+    def __init__(self):
+        
+        self.conn     = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
+        self.metadata = None
+        self.tbl_dict = {}
+        
+    def load(self):
+        
+        self.conn.connect()
+        
+        self.metadata = self.conn.get_metadata()
+        
+        self.tbl_dict['products']      = sqlalchemy.Table('products', self.metadata, autoload = True)
+    
+        # load service dirs table
+        self.tbl_dict['service_dirs']  = sqlalchemy.Table('service_dirs', self.metadata, sqlalchemy.ForeignKeyConstraint(['chan_id'], ['channels.chan_id']), autoload= True)
+        
+        # load file_info table
+        self.tbl_dict['file_info']     = sqlalchemy.Table('file_info', self.metadata, autoload= True)
+        
+        # load file_info table
+        self.tbl_dict['channels']      = sqlalchemy.Table('channels', self.metadata, autoload= True)
+        
+        
+        #create many to many relation table
+        # beware add foreign key constraints manually as they do not exist in MYSQL
+        products_2_eumetcast_table      = sqlalchemy.Table('products_2_eumetcast', self.metadata, \
+                                                     sqlalchemy.ForeignKeyConstraint(['rodd_id'], ['products.rodd_id']), \
+                                                     sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
+                                                     autoload = True)
+        
+        self.tbl_dict['products_2_eumetcast'] = products_2_eumetcast_table
+        
+        products_2_geonetcast_table      = sqlalchemy.Table('products_2_geonetcast', self.metadata, \
+                                                     sqlalchemy.ForeignKeyConstraint(['rodd_id'], ['products.rodd_id']), \
+                                                     sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
+                                                     autoload = True)
+        
+        self.tbl_dict['products_2_geonetcast'] = products_2_geonetcast_table
+        
+        products_2_gts_table            = sqlalchemy.Table('products_2_gts', self.metadata, \
+                                                     sqlalchemy.ForeignKeyConstraint(['rodd_id'], ['products.rodd_id']), \
+                                                     sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
+                                                     autoload = True)
+        
+        self.tbl_dict['products_2_gts'] = products_2_gts_table
+        
+        products_2_data_centre_table    = sqlalchemy.Table('products_2_data_centre', self.metadata, \
+                                                     sqlalchemy.ForeignKeyConstraint(['rodd_id'], ['products.rodd_id']), \
+                                                     sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
+                                                     autoload = True)
+        
+        self.tbl_dict['products_2_data_centre'] = products_2_data_centre_table
+        
+        file_2_servdirs_table           = sqlalchemy.Table('file_2_servdirs', self.metadata, \
+                                                     sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
+                                                     sqlalchemy.ForeignKeyConstraint(['serv_id'], ['service_dirs.serv_id']), \
+                                                     autoload = True)
+        
+        self.tbl_dict['file_2_servdirs'] = file_2_servdirs_table
+    
+        # create many to many relation ship between service_dirs and products with products_2_servdirs assoc table
+        mapper(Product, self.tbl_dict['products'], properties={
+        'data_centre_infos'  :  relationship(FileInfo,   secondary=products_2_data_centre_table, single_parent=True, cascade="all, delete, delete-orphan"),
+        'gts_infos'          :  relationship(FileInfo,   secondary=products_2_gts_table, single_parent=True, cascade="all, delete, delete-orphan"),
+        'eumetcast_infos'    :  relationship(FileInfo  , secondary=products_2_eumetcast_table, single_parent=True, cascade="all, delete, delete-orphan"),
+        'geonetcast_infos'   :  relationship(FileInfo  , secondary=products_2_geonetcast_table, single_parent=True, cascade="all, delete, delete-orphan"),
+        })
+      
+        # map file_info table
+        mapper(FileInfo, self.tbl_dict['file_info'], properties={
+        'service_dirs'   : relationship(ServiceDir, secondary=file_2_servdirs_table),
+        })
+        
+        # map channels table
+        mapper(Channel, self.tbl_dict['channels'])
+        
+           # map ServiceDir obj to service_dirs table
+        mapper(ServiceDir, self.tbl_dict['service_dirs'], properties = {
+            'channel': relationship(Channel, backref=backref('service_dirs', uselist=False))
+        })
+        
+
+    def get_table(self, name):
+        return self.tbl_dict[name]
+    
+    def get_session(self):
+        return self.conn.get_session()
+
+def func_jsonised_test():
+    """ func test """
+     
+    f = open('/homespace/gaubert/ecli-workspace/rodd/etc/json/product_example')
+    
+    product2 = f.read()
+
+    prod_dir = json.loads(product2)
+    
+    dao = DAO()
+    
+    dao.load()
+    
+    session = dao.get_session()
+    
+    #add channels if there are any
+    channels = prod_dir.get('channels', [])
+    
+    for chan in channels:
+        #if it doesn't exist create it
+        if not session.query(Channel).filter_by(name=chan['name']).first():
+            session.add(Channel(chan['name'],chan['multicast_address'],chan['min_rate'],chan['max_rate'],chan['channel_function']))
+
+    service_dirs = prod_dir.get('service_dirs', [])
+    
+    
+    for serv_dir in service_dirs:
+        if not session.query(ServiceDir).filter_by(name=serv_dir['name']).first():
+            ch = session.query(Channel).filter_by(name=serv_dir['channel']).first()
+            session.add(ServiceDir(serv_dir['name'], ch))
+            
+    products = prod_dir.get('products', [])
+    
+    for prod in products:
+        if not session.query(Product).filter_by(internal_id='EO:EUM:DAT:METOP:ASCSZR1B').first():
+            product = Product(prod['name'], prod['uid'], True if prod['distribution'] else False, "Operational")
+
+            file_dict = {}
+
+            for a_file in prod['eumetcast-info']['files']:
+                 
+                #create file object
+                finfo = FileInfo(  a_file["name"], \
+                                   a_file.get("regexpr", ""), \
+                                   a_file["size"], \
+                                   a_file["type"])
+                  
+                #add serviceDirs if there are any
+                serv_dir_name = a_file.get("service_dir", None)
+                 
+                if serv_dir_name:
+                    service_d = session.query(ServiceDir).filter_by(name=serv_dir_name).first()    
+                    finfo.service_dirs.append(service_d)
+                
+                 
+                product.eumetcast_infos.append(finfo)
+                
+                file_dict[finfo.name] = finfo
+                 
+            
+            for file in prod['gts-info']['files']:
+                 
+                #look for existing file-info
+                finfo = session.query(FileInfo).filter_by(name=file['name']).first()    
+                if not finfo:    
+                    finfo = file_dict.get(file['name'], None)
+                    if not finfo:             
+                        #create file object
+                        finfo = FileInfo(file["name"], \
+                                           file.get("regexpr", ""), \
+                                           file["size"], \
+                                           file["type"])
+                
+                product.gts_infos.append(finfo)
+            
+            for file in prod['data-centre-info']['files']:
+                 
+                #look for existing file-info
+                finfo = session.query(FileInfo).filter_by(name=file['name']).first()    
+                if not finfo:    
+                    finfo = file_dict.get(file['name'], None)
+                    if not finfo:          
+                        #create file object
+                        finfo = FileInfo(file["name"], \
+                                           file.get("regexpr", ""), \
+                                           file["size"], \
+                                           file["type"])
+                
+                product.data_centre_infos.append(finfo)
+            
+            session.add(product)    
+                  
+    session.commit()
+
+    session.close()
 
 def func_test():
     """ func test """
@@ -230,4 +426,4 @@ def func_test():
 
 
 if __name__ == '__main__':
-    func_test()
+    func_jsonised_test()

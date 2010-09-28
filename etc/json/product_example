@@ -73,7 +73,3 @@
      }
   ]
 }  
-
-8,"ASCAT GDS Level 1 normalised backscatter (12.5 km node grid)","Y","","Y","","data","","EO:EUM:DAT:METOP:ASCSZR1B","ASCSZR1B","","","EUM-EPS","Satellite Data  Marine ","EPS-3 ","Satellite Data","GEONETCast  Full Global","EUMETSAT Data Centre  GTS  EUMETCast-Europe ","","","25.0 MB  27.0 MB  200.0 KB  200.0 KB  740.0 KB ","","BUFR ","15 (per day)  15 (per day)  480 (per day)  480 (per day)  480 (per day) ","ASCAT ","EUMETSAT Data Centre http://archive.eumetsat.int/umarf/Jnlp?acronym=ASCSZR1B","","ascat_20070630_222400_metopa_03612_eps_o_125.l1_bufr  ASCA_SZR_1B_M02_20070630222400Z_20070630222658Z_N_O_20070701001421Z ","LEO","Observation  Wind  Satellite_Data  Marine ","EUMETSAT","EO_EUM_DAT_METOP_ASCSZR1B.html",,"ASCAT Product Guide http://oiswww.eumetsat.org/WEBOPS/eps-pg/ASCAT/ASCAT-PG-index.htm","","Metop","Operational"
-
-209,"Meteosat HRI Image Data - 0 degree","N","","","","","","EO:EUM:DAT:METEOSAT:HRI","HRI","","","","Satellite Data ","","Satellite Data","Full Disk from 0 degrees","EUMETSAT Data Centre ","","","38.0 MB  38.0 MB  4.0 MB  1.0 MB  1.0 MB  80.0 MB  4.6 MB  1.0 MB ","","","48 (per day)  48 (per day)  48 (per day)  48 (per day)  48 (per day)  48 (per day)  48 (per day)  48 (per day) ","MVIRI ","EUMETSAT Data Centre http://archive.eumetsat.int/umarf/Jnlp?acronym=MTP15","","","GEO","Observation  Satellite_Data ","EUMETSAT","EO_EUM_DAT_METEOSAT_HRI.html",1,"HRI-IODC http://www.eumetsat.int/Home/Main/Access_to_Data/Meteosat_Image_Services/SP_1119363946419?l=en","","Meteosat","Operational"

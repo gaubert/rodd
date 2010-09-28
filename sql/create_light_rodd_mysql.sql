@@ -33,7 +33,6 @@ CREATE TABLE IF NOT EXISTS products (
     rodd_id         INTEGER AUTO_INCREMENT PRIMARY KEY,
 	internal_id     VARCHAR(256) UNIQUE,
     title           VARCHAR(255) NOT NULL,
-	regular_expr    VARCHAR(1024),
 	is_disseminated BOOLEAN,
 	status          VARCHAR(256)
   );
@@ -51,7 +50,7 @@ CREATE TABLE IF NOT EXISTS file_info (
     file_id    INTEGER AUTO_INCREMENT PRIMARY KEY,
     name       VARCHAR(255) UNIQUE NOT NULL,
     reg_expr   VARCHAR(255),
-	size       INTEGER,
+	size       VARCHAR(255),
 	type       VARCHAR(255) NOT NULL
 );
 
