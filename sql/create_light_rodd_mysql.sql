@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS users (
 -- information regarding products
 CREATE TABLE IF NOT EXISTS products (
     rodd_id         INTEGER AUTO_INCREMENT PRIMARY KEY,
+	internal_id     VARCHAR(256) UNIQUE,
     title           VARCHAR(255) NOT NULL,
-	internal_id     VARCHAR(256),
 	regular_expr    VARCHAR(1024),
 	is_disseminated BOOLEAN,
 	status          VARCHAR(256)
@@ -48,9 +48,9 @@ INSERT into distribution_type (name) values("EUMETCAST"),("GTS"),("DIRECT"),("GE
 
 -- information regarding the file_info
 CREATE TABLE IF NOT EXISTS file_info (
-    file_id        INTEGER AUTO_INCREMENT PRIMARY KEY,
-    name       VARCHAR(255) NOT NULL,
-    reg_expr   VARCHAR(255) NOT NULL,
+    file_id    INTEGER AUTO_INCREMENT PRIMARY KEY,
+    name       VARCHAR(255) UNIQUE NOT NULL,
+    reg_expr   VARCHAR(255),
 	size       INTEGER,
 	type       VARCHAR(255) NOT NULL
 );
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS file_info (
 -- information regarding the channels
 CREATE TABLE IF NOT EXISTS channels (
     chan_id             INTEGER AUTO_INCREMENT PRIMARY KEY,
-    name                VARCHAR(1024),
+    name                VARCHAR(1000) UNIQUE NOT NULL,
     multicast_address   VARCHAR(512),
     min_rate            DOUBLE,
     max_rate            DOUBLE,
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS channels (
 -- information regarding the service directories
 CREATE TABLE IF NOT EXISTS service_dirs (
     serv_id INTEGER AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) UNIQUE NOT NULL,
 	chan_id VARCHAR(256)
 );
 
@@ -81,18 +81,30 @@ CREATE TABLE IF NOT EXISTS products_2_distribution (
     dis_id INTEGER
 ); 
 
--- information regarding the distribution
-CREATE TABLE IF NOT EXISTS products_2_fileinfos (
+-- information to create relation between products and fileinfos for products using EUMETCAST
+CREATE TABLE IF NOT EXISTS products_2_eumetcast (
+    rodd_id INTEGER,
+    file_id INTEGER
+);
+
+-- information to create relation between products and fileinfos for products using GTS
+CREATE TABLE IF NOT EXISTS products_2_gts (
+    rodd_id INTEGER,
+    file_id INTEGER
+);
+
+-- information to create relation between products and fileinfos for products using GEONETCAST
+CREATE TABLE IF NOT EXISTS products_2_geonetcast (
+    rodd_id INTEGER,
+    file_id INTEGER
+);
+
+-- information to create relation between products and fileinfos for products using DATA CENTRE
+CREATE TABLE IF NOT EXISTS products_2_data_centre (
     rodd_id INTEGER,
     file_id INTEGER
 );
   
--- information regarding the service directories
-CREATE TABLE IF NOT EXISTS products_2_servdirs (
-    rodd_id INTEGER,
-    serv_id INTEGER
-); 
-
 -- information regarding file2servdirs
 CREATE TABLE IF NOT EXISTS file_2_servdirs (
     file_id INTEGER,
