@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS products (
     rodd_id         INTEGER AUTO_INCREMENT PRIMARY KEY,
 	internal_id     VARCHAR(256) UNIQUE,
     title           VARCHAR(255) NOT NULL,
+    description     VARCHAR(2048) NOT NULL,
 	is_disseminated BOOLEAN,
 	status          VARCHAR(256)
   );
@@ -57,7 +58,7 @@ CREATE TABLE IF NOT EXISTS file_info (
 -- information regarding the channels
 CREATE TABLE IF NOT EXISTS channels (
     chan_id             INTEGER AUTO_INCREMENT PRIMARY KEY,
-    name                VARCHAR(1000) UNIQUE NOT NULL,
+    name                VARCHAR(512) UNIQUE NOT NULL,
     multicast_address   VARCHAR(512),
     min_rate            DOUBLE,
     max_rate            DOUBLE,

@@ -109,6 +109,10 @@ def add():
     #return unicode(request.json)
     return unicode("result =  %s\n" % (request.json['a'] + request.json['b']))
         
+@app.route('/product', methods=['GET'])
+def get_products():
+    """ Return product information """
+    return jsonify(result={ 'name' : 'hello' })
 
 @app.route("/json", methods=['POST'])
 def post_json():

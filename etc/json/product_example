@@ -15,7 +15,7 @@
 	          "size": "200KB",
 	          "type": "bufr",
 	          "frequency": "480 per day",
-	          "service_dir": "EPS-METOP-ASCA-L1"
+	          "service_dir": ["EPS-METOP-ASCA-L1"]
 	       },
 	       {
 	          "name": "ascat_native",
@@ -23,7 +23,7 @@
 	          "size": "740KB",
 	          "type": "native",
 	          "frequency": "480 per day",
-	          "service_dir": "EPS-METOP-ASCA-L1"
+	          "service_dir": ["EPS-METOP-ASCA-L1"]
 	       }
         
         ]
