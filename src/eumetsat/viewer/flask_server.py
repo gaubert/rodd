@@ -8,28 +8,22 @@ from flask import g, Flask, render_template, request, redirect, flash, url_for, 
 from wtforms import Form, PasswordField, BooleanField, TextField, validators
 import sqlalchemy
 
-from eumetsat.db import connections
 from eumetsat.common.logging_utils import LoggerFactory
 
 from eumetsat.viewer.views.access import access
+from eumetsat.viewer.views.json_access import json_access
+
+from eumetsat.db.rodd_db import DAO
 
 
 app = Flask(__name__)
 app.register_module(access)
+app.register_module(json_access)
 
 @app.before_request
 def before_request():
-    
-    conn = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
-    
-    conn.connect()
-    
-    g.db_conn = conn
-
-@app.after_request
-def after_request(response):
-    g.db_conn.disconnect()
-    return response
+    """ before request method """
+    g.dao = DAO()
 
 
 class RegistrationForm(Form):
@@ -53,8 +47,6 @@ def _add_numbers():
 @app.route('/add_numbers')
 def add_numbers():
     return render_template('numbers.tpl')
-
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -100,29 +92,11 @@ def login():
 def index():
     return redirect(url_for('access.view_products_details'))
 
-@app.route("/hello")
-def hello():
-    return "Hello World!"
-
 @app.route('/add', methods=['POST'])
 def add():
     #return unicode(request.json)
     return unicode("result =  %s\n" % (request.json['a'] + request.json['b']))
         
-@app.route('/product', methods=['GET'])
-def get_products():
-    """ Return product information """
-    return jsonify(result={ 'name' : 'hello' })
-
-@app.route("/json", methods=['POST'])
-def post_json():
-    
-    input_data = request.json
-    
-    
-    return jsonify(result=input_data)
-
-
 # set the secret key.  keep this really secret:
 app.secret_key = '\x82*-\x975\xeb\xcb-c\xe3\x1d\xf7\x90~\x9e\xbf\x08g\xe7\xb0\xca\x1e\x130'
 

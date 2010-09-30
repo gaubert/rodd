@@ -69,21 +69,21 @@ def view_format_type():
     """
     return _view_table("format_type")
 
-@access.route('/channels')
+@access.route('/view_channels')
 def view_channels():
     """ 
        Viewer for channels 
     """
     return _view_table("channels")
 
-@access.route('/families')
+@access.route('/view_families')
 def view_families():
     """ 
        Viewer for families 
     """
     return _view_table("families")
 
-@access.route('/service_dirs')
+@access.route('/view_service_dirs')
 def view_services():
     """ 
        Viewer for service_dirs 
