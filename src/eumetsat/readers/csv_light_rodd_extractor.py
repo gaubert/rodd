@@ -430,6 +430,7 @@ class LCSVRoddExtractor(object):
             nb_rows += 1
     
     
+
     
     def read_csv_and_insert_servicedir_sql(self, a_columns):
         """ 
