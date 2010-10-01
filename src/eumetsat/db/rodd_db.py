@@ -93,6 +93,15 @@ class ServiceDir(object):
     def __repr__(self):
         return "<ServiceDir('%s', '%s')>" % (self.name, self.channel)
     
+    def jsonize(self):
+        """ jsonize """
+        result = {}
+        
+        result['name']    = self.name
+        result['channel'] = self.channel.name if self.channel else "" 
+        
+        return result
+    
 class DistributionType(object):
     """ DistributionType object """
     def __init__(self, name):

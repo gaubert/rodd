@@ -244,9 +244,7 @@ def channels():
         the_channels = { "channels" : [] }
         for channel in session.query(Channel).order_by(channel_table.c.chan_id):
             the_channels["channels"].append(channel.jsonize())
-        
-        print("channels = %s\n" %(channels))
-        
+          
         session.close()
         
         return jsonify(the_channels)
@@ -254,6 +252,76 @@ def channels():
     elif request.method == 'POST':
         data = request.json
         return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
+
+@json_access.route('/servicedirs', methods=['GET','POST'])
+def servicedirs():
+    """ Restish return all servicedirs information """
+    
+    if request.method == 'GET':
+        session = g.dao.get_session()
+        
+        servicedirs_table = g.dao.get_table("service_dirs")
+        
+        the_result = { "service_dirs" : [] }
+        
+        for servdir in session.query(ServiceDir).order_by(servicedirs_table.c.serv_id):
+            the_result["service_dirs"].append(servdir.jsonize())
+        
+        session.close()
+        
+        return jsonify(the_result)
+    
+    elif request.method == 'POST':
+        data = request.json
+        return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
+
+@json_access.route('/servicedirs/<name>', methods=['GET','DELETE'])
+def get_servicedirs(name):
+    """ Restish get_channels per name """
+    
+    if request.method == 'GET':
+        # show the user profile for that user
+        session = g.dao.get_session()
+        
+        servicedirs_table = g.dao.get_table("service_dirs")
+        
+        the_result = { "service_dirs" : [] }
+        
+        #look for stars in uid and replace them with % for a like sql operation
+        if name.find('*'):
+            if len(name) == 1:
+                channel_table = g.dao.get_table("service_dirs")
+                #get everything because user asked for *
+                for servdir in session.query(ServiceDir).order_by(servicedirs_table.c.serv_id):
+                    the_result ["service_dirs"].append(servdir.jsonize())  
+            else:
+                #restrict to the wildcard matching string
+                name = name.replace('*', '%')
+                for servdir in session.query(ServiceDir).filter(ServiceDir.name.like(name)).order_by(servicedirs_table.c.serv_id):
+                    the_result["service_dirs"].append(servdir.jsonize())   
+        else:
+            servdir = session.query(ServiceDir).filter_by(name = name).first()
+            if servdir:
+               the_result["service_dirs"].append(servdir.jsonize())
+        
+        return jsonify(the_result)
+    
+    elif request.method == 'DELETE':
+        session = g.dao.get_session()
+        servdir = session.query(ServiceDir).filter_by(name = name).first()
+        
+        if servdir:
+            session.delete(servdir)
+            session.commit()
+            result = { "status" : "OK",
+                        "message"       : "service_dir %s deleted" %(name)
+                      }
+        else:
+            result = { "status" : "KO",
+                        "message"       : "service_dir %s not in database" % (name)
+                     }
+            
+        return jsonify(result)
 
 @json_access.route('/products', methods=['GET','POST'])
 def products():
@@ -267,9 +335,7 @@ def products():
         the_products = { "products" : [] }
         for product in session.query(Product).order_by(product_table.c.rodd_id):
             the_products["products"].append(product.jsonize())
-        
-        print("products = %s\n" %(products))
-        
+           
         session.close()
         
         return jsonify(the_products)
