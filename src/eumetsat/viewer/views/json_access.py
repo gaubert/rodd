@@ -38,11 +38,12 @@ def _add_jsonized_serv_dir(session, data):
     for serv_dir in data.get('service_dirs', []):
        if not session.query(ServiceDir).filter_by(name=serv_dir['name']).first():
            ch = session.query(Channel).filter_by(name=serv_dir['channel']).first()
-           session.add(ServiceDir(serv_dir['name'], ch))
+           the_service = ServiceDir(serv_dir['name'], ch)
+           session.add(the_service)
            messages.append("Added ServiceDir %s." %(serv_dir['name']))
        else:
-           messages.append("ServiceDir %s already exists." %(serv_dir['name']))  
-    
+           messages.append("ServiceDir %s already exists." %(serv_dir['name'])) 
+
     return messages
 
 def _add_jsonized_products(session, data):
@@ -51,12 +52,15 @@ def _add_jsonized_products(session, data):
     messages = []
     
     try:
-        
         # add channels if there are any
         messages.extend(_add_jsonized_channels(session, data))
+        # commit channels add-ons
+        session.commit()
             
         # add servdirs if there are any
         messages.extend(_add_jsonized_serv_dir(session, data))
+        # commit service dirs add-ons
+        session.commit()
                 
         
         for prod in data.get('products', []):

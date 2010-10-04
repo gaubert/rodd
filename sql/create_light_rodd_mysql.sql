@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS channels (
 CREATE TABLE IF NOT EXISTS service_dirs (
     serv_id INTEGER AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
-	chan_id VARCHAR(256)
+	chan_id VARCHAR(256) NOT NULL
 );
 
 -- information regarding the distribution

@@ -77,7 +77,6 @@ class DatabaseConnector:
     
     def get_session(self):
         """ return a Session """
-        
         return self._session_maker()
     
     def get_table_metadata(self, a_table_name):

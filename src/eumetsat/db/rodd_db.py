@@ -27,7 +27,7 @@ class Product(object):
   
     def __repr__(self):
         return "<Product(%s'%s', '%s', '%s', '%s', '%s', files= [ eumetcast = ('%s'), gts = ('%s'), data_centre= ('%s'), geonetcast = ('%s') )>" \
-               % ( ( "'rodd_id:%s', " % (self.rodd_id if self.rodd_id else "")), \
+               % ( (( "'rodd_id:%s', " % (self.rodd_id)) if self.rodd_id else ""), \
                      self.title, self.internal_id, \
                      self.description ,\
                      self.is_disseminated, \
@@ -91,7 +91,9 @@ class ServiceDir(object):
         self.channel     = channel
     
     def __repr__(self):
-        return "<ServiceDir('%s', '%s')>" % (self.name, self.channel)
+        return "<ServiceDir(%s'%s', '%s')>" % ( (("'serv_id:%s', " % (self.serv_id)) if self.serv_id else ""),\
+                                                self.name, \
+                                                self.channel)
     
     def jsonize(self):
         """ jsonize """
@@ -123,7 +125,8 @@ class Channel(object):
         self.channel_function  = channel_function
         
     def __repr__(self):
-        return "<Channel('%s', '%s', '%s', '%s', '%s')>" % (self.name, self.multicast_address, self.min_rate, self.max_rate, self.channel_function)
+        return "<Channel(%s'%s', '%s', '%s', '%s', '%s')>" % ( (( "'chan_id:%s', " % (self.chan_id)) if self.chan_id else ""),\
+                                                              self.name, self.multicast_address, self.min_rate, self.max_rate, self.channel_function)
     
     def jsonize(self):
         """ jsonize """
@@ -270,10 +273,11 @@ class DAO(object):
         # map channels table
         mapper(Channel, self.tbl_dict['channels'])
         
-        # map ServiceDir obj to service_dirs table
+        # one to many relationship servicedirs -> channel
         mapper(ServiceDir, self.tbl_dict['service_dirs'], properties = {
-            'channel': relationship(Channel, backref=backref('service_dirs', uselist=False))
+            'channel': relationship(Channel)
         })
+
         
 
     def get_table(self, name):
