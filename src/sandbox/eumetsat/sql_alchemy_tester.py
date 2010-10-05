@@ -4,6 +4,7 @@ Created on Sep 23, 2010
 @author: gaubert
 '''
 import time
+import datetime
 
 import sqlalchemy
 import simplejson as json
@@ -11,6 +12,7 @@ import simplejson as json
 from sqlalchemy.orm import mapper, relationship, backref
 from eumetsat.db.rodd_db import DAO, Channel, Product, ServiceDir, FileInfo
 
+from eumetsat.viewer.views.json_access import _add_jsonized_products
 
 
 
@@ -31,6 +33,41 @@ def func_return_jsonised_products():
     print("products = %s\n" %(products))
     
     session.close()
+
+def func_update_jsonised_products():
+    """ update jsonized products """
+    dao = DAO()
+    
+    session = dao.get_session()
+    
+    f = open('/homespace/gaubert/ecli-workspace/rodd/etc/json/product_example')
+    
+    product_dict = json.loads(f.read())
+    
+    #_add_jsonized_products(session, product_dict)
+    
+    # update product 
+    for prod in product_dict.get('products', []):
+        
+        prod['name']       = 'title with time %s' % (datetime.datetime.now())
+        prod['description'] = 'my description with time %s' % (datetime.datetime.now())
+        
+        retrieved_prod = session.query(Product).filter_by(internal_id='TEST:EO:EUM:DAT:METOP:ASCSZR1B').first()
+        
+        retrieved_prod.update(prod)
+        
+        #update the product
+        if retrieved_prod:
+            retrieved_prod.internal_id = 'TEST:EO:EUM:DAT:METOP:ASCSZRIB'
+            retrieved_prod.title = prod['name']
+            retrieved_prod.description = prod['description']
+            
+            print("retrieved prod modified = %s\n" % (retrieved_prod))
+            
+            session.add(retrieved_prod)
+            session.commit()
+           
+    
     
 
 def func_jsonised_test():
@@ -128,5 +165,6 @@ def func_jsonised_test():
     session.close()
 
 if __name__ == '__main__':
-    func_jsonised_test()
-    func_return_jsonised_products()
+    func_update_jsonised_products()
+    #func_jsonised_test()
+    #func_return_jsonised_products()

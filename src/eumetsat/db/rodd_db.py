@@ -24,6 +24,7 @@ class Product(object):
         self.gts_infos          = []
         self.eumetcast_infos    = []
         self.geonetcast_infos   = []
+        self._file_index        = None
   
     def __repr__(self):
         return "<Product(%s'%s', '%s', '%s', '%s', '%s', files= [ eumetcast = ('%s'), gts = ('%s'), data_centre= ('%s'), geonetcast = ('%s') )>" \
@@ -37,6 +38,64 @@ class Product(object):
                      self.data_centre_infos, \
                      self.geonetcast_infos)
     
+    def update(self, a_prod_dict):
+        """ update attributes of the product. Policy is to replace all attributes with existing ones """
+        
+        if a_prod_dict.get('name', None):
+            self.title = a_prod_dict['name']
+            
+        if a_prod_dict.get('description', None):
+            self.description = a_prod_dict['description']
+            
+        if a_prod_dict.get('gts-info', None):
+            self.gts_infos = a_prod_dict['gts-info']
+        
+        if a_prod_dict.get('eumetcast-info', None):
+            self.eumetcast_infos = a_prod_dict['eumetcast-info']
+            
+        if a_prod_dict.get('data-centre-info', None):
+            self.data_centre_infos = a_prod_dict['data-centre-info']
+        
+        if a_prod_dict.get('geonetcast-info', None):
+            self.geonetcast_infos = a_prod_dict['geonetcast-info']
+    
+    def add_files(self):
+        pass
+    
+    def get_index(self):
+        
+        if not self._file_index:
+            self._file_index = {}
+            
+            for file in self.data_centre_infos:
+                self.file_index[file.name] = file
+            
+            for file in self.gts_infos:
+                self.file_index[file.name] = file
+            
+            for file in self.eumetcast_infos:
+                self.file_index[file.name] = file
+            
+            for file in self.geonetcast_infos:
+                self.file_index[file.name] = file
+            
+        
+        return self._file_index
+           
+                
+    
+    def contains_file(self, name):
+        """ check if the product contains the file.
+            Return the distribution type if yes otherwise None 
+        """
+        return self.get_index().get(name,None)
+        
+        
+        
+        
+        
+    
+        
     def jsonize(self):
         
         result = {}
@@ -170,6 +229,12 @@ class FileInfo(object):
             result["service_dir"].append(service_dir.name)
             
         return result
+    
+    def update(self, file_dict):
+        
+        if file_dict.get('name', None):
+            self.title = file_dict['name']
+            
         
 
 class DAO(object):

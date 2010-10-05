@@ -11,6 +11,21 @@ from eumetsat.db.rodd_db import DAO, Channel, Product, ServiceDir, FileInfo
 
 json_access = Module(__name__)
 
+def add_files_in_product(session, uid, file_name, file_data):
+    """ associate a given file with a product """
+    
+    product = session.query(Product).filter_by(name=uid).first()
+    
+    if product:
+        file = product.contains_file()
+        if file:
+            
+        else:
+            "ERROR"
+    else:
+        "ERROR"
+    
+
 def _add_jsonized_channels(session, data):
     """ Add a jsonized channels """
     #add channels if there are any
@@ -45,6 +60,25 @@ def _add_jsonized_serv_dir(session, data):
            messages.append("ServiceDir %s already exists." %(serv_dir['name'])) 
 
     return messages
+
+def _update_jsonized_products(session, data):
+    """ update existing products with the given data """
+    
+    messages = []
+    
+    for prod in data.get('products', []):
+        retrieved_product = session.query(Product).filter_by(internal_id=prod['uid']).first()
+        if retrieved_product:
+            #update all the attributes of the product except uid
+            retrieved_product.update(prod)
+            
+            message.append("Update Product %s" % (prod['uid']))
+            
+        else:
+            messages.append("Product %s cannot be updated because it doesn't exist in RODD" % (prod['uid']))
+    
+    session.commit()
+            
 
 def _add_jsonized_products(session, data):
     """ Add a jsonized product """
@@ -134,18 +168,18 @@ def _add_jsonized_products(session, data):
         session.commit()
         
         return { "status" : "OK",
-                 "message"       : messages
+                 "messages"       : messages
                }
     
     except Exception, the_exception:
         return { "status"        : "KO",
-                 "message"       : messages,
-                 "error_message" : the_exception,
+                 "messages"       : messages,
+                 "error_messages" : the_exception,
                  "traceback"     : utils.get_exception_traceback()
                }
 
 @json_access.route('/products/<uid>', methods=['GET','DELETE'])
-def get_products(uid):
+def manage_product_with(uid):
     """ Restish get_product per uid """
     
     if request.method == 'GET':
@@ -181,17 +215,17 @@ def get_products(uid):
             session.delete(product)
             session.commit()
             result = { "status" : "OK",
-                        "message"       : "product %s deleted" %(uid)
+                        "messages"       : ["product %s deleted" %(uid)]
                       }
         else:
             result = { "status" : "KO",
-                        "message"       : "product %s not in database" % (uid)
+                        "messages"       : ["product %s not in database" % (uid)]
                      }
             
         return jsonify(result)
     
 @json_access.route('/channels/<name>', methods=['GET','DELETE'])
-def get_channels(name):
+def manage_channel_with(name):
     """ Restish get_channels per name """
     
     if request.method == 'GET':
@@ -227,17 +261,17 @@ def get_channels(name):
             session.delete(channel)
             session.commit()
             result = { "status" : "OK",
-                        "message"       : "channel %s deleted" %(name)
+                        "messages"       : ["channel %s deleted" %(name)]
                       }
         else:
             result = { "status" : "KO",
-                        "message"       : "channel %s not in database" % (name)
+                        "messages"       : ["channel %s not in database" % (name)]
                      }
             
         return jsonify(result)
 
 @json_access.route('/channels', methods=['GET','POST'])
-def channels():
+def get_all_channels():
     """ Restish return all channels information """
     
     if request.method == 'GET':
@@ -258,7 +292,7 @@ def channels():
         return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
 
 @json_access.route('/servicedirs', methods=['GET','POST'])
-def servicedirs():
+def get_all_servicedirs():
     """ Restish return all servicedirs information """
     
     if request.method == 'GET':
@@ -280,7 +314,7 @@ def servicedirs():
         return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
 
 @json_access.route('/servicedirs/<name>', methods=['GET','DELETE'])
-def get_servicedirs(name):
+def manager_servicedir_with(name):
     """ Restish get_channels per name """
     
     if request.method == 'GET':
@@ -318,19 +352,41 @@ def get_servicedirs(name):
             session.delete(servdir)
             session.commit()
             result = { "status" : "OK",
-                        "message"       : "service_dir %s deleted" %(name)
+                        "messages"       : "service_dir %s deleted" %(name)
                       }
         else:
             result = { "status" : "KO",
-                        "message"       : "service_dir %s not in database" % (name)
+                        "messages"       : "service_dir %s not in database" % (name)
                      }
             
         return jsonify(result)
+    
+# update all files for a product
+@json_access.route('/product/<uid>/files/<dist>', methods=['GET','PUT'])
+def manage_files_for_product(uid, dist):
+    
+    return jsonify(result= { 'order' : order, 'sub': sub })
 
-@json_access.route('/products', methods=['GET','POST'])
-def products():
+# update all files for a product
+@json_access.route('/product/<uid>/file/<name>', methods=['GET','PUT'])
+def manage_file_for_product(uid, name):
+    
+    result = { 
+               "status" : "KO",
+               messages : [] 
+             }
+    
+    if request.method == 'GET':
+        pass
+    elif request.method == 'PUT':
+        pass
+    return jsonify(result)
+
+@json_access.route('/products', methods=['GET','POST','PUT'])
+def get_all_products():
     """ Restish return all products information """
     
+    #get products
     if request.method == 'GET':
         session = g.dao.get_session()
         
@@ -343,7 +399,11 @@ def products():
         session.close()
         
         return jsonify(the_products)
-    
+    #insert new products
     elif request.method == 'POST':
         data = request.json
         return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
+    #update existing products
+    elif request.method == 'PUT':
+        data = request.json
+        return jsonify(result=_update_jsonized_products(g.dao.get_session(), data))
