@@ -66,8 +66,26 @@ def func_update_jsonised_products():
             
             session.add(retrieved_prod)
             session.commit()
-           
+            
+def func_get_product_index_test():
     
+    dao = DAO()
+    
+    session        = dao.get_session()
+    product_table  = dao.get_table("products")
+    retrieved_prod = session.query(Product).filter_by(internal_id='TEST:EO:EUM:DAT:METOP:ASCSZRIB').first()
+    
+    print(retrieved_prod.jsonize())
+    
+    tuple = retrieved_prod.contains_file('ascat_bufr')
+    if tuple:
+        grp_list, file = tuple
+        
+        file.reg_expr = 'alalalla'
+        file.size='900KB'
+        print(file)
+        #session.add(file)
+        session.commit()
     
 
 def func_jsonised_test():
@@ -165,6 +183,7 @@ def func_jsonised_test():
     session.close()
 
 if __name__ == '__main__':
-    func_update_jsonised_products()
+    func_get_product_index_test()
+    #func_update_jsonised_products()
     #func_jsonised_test()
     #func_return_jsonised_products()

@@ -1,0 +1,194 @@
+HTTP/1.0 500 INTERNAL SERVER ERROR
+Content-Type: text/html; charset=utf-8
+Connection: close
+Server: Werkzeug/0.6.2 Python/2.7
+Date: Mon, 04 Oct 2010 14:33:14 GMT
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <title>TypeError: InvalidRequestError('No transaction is begun.',) is not JSON serializable // Werkzeug Debugger</title>
+    <link rel="stylesheet" href="./__debugger__?cmd=resource&amp;f=style.css" type="text/css">
+    <script type="text/javascript" src="./__debugger__?cmd=resource&amp;f=jquery.js"></script>
+    <script type="text/javascript" src="./__debugger__?cmd=resource&amp;f=debugger.js"></script>
+    <script type="text/javascript">
+      var TRACEBACK = 146995308,
+          CONSOLE_MODE = false,
+          EVALEX = true;
+    </script>
+  </head>
+  <body>
+    <div class="debugger">
+      <h1>TypeError</h1>
+      <div class="detail">
+        <p class="errormsg">TypeError: InvalidRequestError('No transaction is begun.',) is not JSON serializable</p>
+      </div>
+      <h2 class="traceback">Traceback <em>(most recent call last)</em></h2>
+      <div class="traceback">
+          <ul>
+          <li><div class="frame" id="frame-147469772">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py"</cite>,
+      line <em class="line">874</em>,
+      in <code class="function">__call__</code></h4>
+  <pre>return self.wsgi_app(environ, start_response)</pre>
+</div></li>
+          <li><div class="frame" id="frame-147052492">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py"</cite>,
+      line <em class="line">864</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <pre>response = self.make_response(self.handle_exception(e))</pre>
+</div></li>
+          <li><div class="frame" id="frame-147469356">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py"</cite>,
+      line <em class="line">861</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <pre>rv = self.dispatch_request()</pre>
+</div></li>
+          <li><div class="frame" id="frame-147470444">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py"</cite>,
+      line <em class="line">696</em>,
+      in <code class="function">dispatch_request</code></h4>
+  <pre>return self.view_functions[rule.endpoint](**req.view_args)</pre>
+</div></li>
+          <li><div class="frame" id="frame-147470284">
+  <h4>File <cite class="filename">"/homespace/gaubert/Dev/projects/rodd/src/eumetsat/viewer/views/json_access.py"</cite>,
+      line <em class="line">369</em>,
+      in <code class="function">products</code></h4>
+  <pre>return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))</pre>
+</div></li>
+          <li><div class="frame" id="frame-147471628">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/helpers.py"</cite>,
+      line <em class="line">100</em>,
+      in <code class="function">jsonify</code></h4>
+  <pre>indent=None if request.is_xhr else 2), mimetype='application/json')</pre>
+</div></li>
+          <li><div class="frame" id="frame-147470796">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/__init__.py"</cite>,
+      line <em class="line">268</em>,
+      in <code class="function">dumps</code></h4>
+  <pre>use_decimal=use_decimal, **kw).encode(obj)</pre>
+</div></li>
+          <li><div class="frame" id="frame-147471532">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py"</cite>,
+      line <em class="line">216</em>,
+      in <code class="function">encode</code></h4>
+  <pre>chunks = list(chunks)</pre>
+</div></li>
+          <li><div class="frame" id="frame-147469452">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py"</cite>,
+      line <em class="line">485</em>,
+      in <code class="function">_iterencode</code></h4>
+  <pre>for chunk in _iterencode_dict(o, _current_indent_level):</pre>
+</div></li>
+          <li><div class="frame" id="frame-147470572">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py"</cite>,
+      line <em class="line">459</em>,
+      in <code class="function">_iterencode_dict</code></h4>
+  <pre>for chunk in chunks:</pre>
+</div></li>
+          <li><div class="frame" id="frame-147468812">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py"</cite>,
+      line <em class="line">459</em>,
+      in <code class="function">_iterencode_dict</code></h4>
+  <pre>for chunk in chunks:</pre>
+</div></li>
+          <li><div class="frame" id="frame-147468940">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py"</cite>,
+      line <em class="line">495</em>,
+      in <code class="function">_iterencode</code></h4>
+  <pre>o = _default(o)</pre>
+</div></li>
+          <li><div class="frame" id="frame-147470508">
+  <h4>File <cite class="filename">"/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py"</cite>,
+      line <em class="line">190</em>,
+      in <code class="function">default</code></h4>
+  <pre>raise TypeError(repr(o) + " is not JSON serializable")</pre>
+</div></li>
+        </ul>
+    <blockquote>TypeError: InvalidRequestError('No transaction is begun.',) is not JSON serializable</blockquote>
+  </div>
+      <div class="plain">
+        <form action="http://paste.pocoo.org/" method="post">
+          <p>
+            <input type="hidden" name="language" value="pytb">
+            This is the Copy/Paste friendly version of the traceback.  <span
+            class="pastemessage">You can also paste this traceback into the public
+            lodgeit pastebin: <input type="submit" value="create paste"></span>
+          </p>
+          <textarea cols="50" rows="10" name="code" readonly>Traceback (most recent call last):
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py", line 874, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py", line 864, in wsgi_app
+    response = self.make_response(self.handle_exception(e))
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py", line 861, in wsgi_app
+    rv = self.dispatch_request()
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py", line 696, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/homespace/gaubert/Dev/projects/rodd/src/eumetsat/viewer/views/json_access.py", line 369, in products
+    return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/helpers.py", line 100, in jsonify
+    indent=None if request.is_xhr else 2), mimetype='application/json')
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/__init__.py", line 268, in dumps
+    use_decimal=use_decimal, **kw).encode(obj)
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 216, in encode
+    chunks = list(chunks)
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 485, in _iterencode
+    for chunk in _iterencode_dict(o, _current_indent_level):
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 459, in _iterencode_dict
+    for chunk in chunks:
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 459, in _iterencode_dict
+    for chunk in chunks:
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 495, in _iterencode
+    o = _default(o)
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 190, in default
+    raise TypeError(repr(o) + " is not JSON serializable")
+TypeError: InvalidRequestError('No transaction is begun.',) is not JSON serializable</textarea>
+        </form>
+      </div>
+      <div class="explanation">
+        The debugger caught an exception in your WSGI application.  You can now
+        look at the traceback which led to the error.  <span class="nojavascript">
+        If you enable JavaScript you can also use additional features such as code
+        execution (if the evalex feature is enabled), automatic pasting of the
+        exceptions and much more.</span>
+      </div>
+      <div class="footer">
+        Brought to you by <strong class="arthur">DON'T PANIC</strong>, your
+        friendly Werkzeug powered traceback interpreter.
+      </div>
+    </div>
+  </body>
+</html>
+<!--
+
+Traceback (most recent call last):
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py", line 874, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py", line 864, in wsgi_app
+    response = self.make_response(self.handle_exception(e))
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py", line 861, in wsgi_app
+    rv = self.dispatch_request()
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/app.py", line 696, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/homespace/gaubert/Dev/projects/rodd/src/eumetsat/viewer/views/json_access.py", line 369, in products
+    return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/flask/helpers.py", line 100, in jsonify
+    indent=None if request.is_xhr else 2), mimetype='application/json')
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/__init__.py", line 268, in dumps
+    use_decimal=use_decimal, **kw).encode(obj)
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 216, in encode
+    chunks = list(chunks)
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 485, in _iterencode
+    for chunk in _iterencode_dict(o, _current_indent_level):
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 459, in _iterencode_dict
+    for chunk in chunks:
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 459, in _iterencode_dict
+    for chunk in chunks:
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 495, in _iterencode
+    o = _default(o)
+  File "/homespace/gaubert/python2.7/lib/python2.7/site-packages/simplejson/encoder.py", line 190, in default
+    raise TypeError(repr(o) + " is not JSON serializable")
+TypeError: InvalidRequestError('No transaction is begun.',) is not JSON serializable
+
+-->

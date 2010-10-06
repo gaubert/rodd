@@ -13,6 +13,7 @@ from eumetsat.db import connections
 
 class Product(object):
     """ Product Object """
+    
     def __init__(self, title, internal_id, description, disseminated, status):
         self.rodd_id            = None
         self.title              = title
@@ -64,23 +65,37 @@ class Product(object):
     
     def get_index(self):
         
-        if not self._file_index:
+        try:
+            return self._file_index
+        except AttributeError:
             self._file_index = {}
             
             for file in self.data_centre_infos:
-                self.file_index[file.name] = file
+                if file.name in self._file_index:
+                    self._file_index[file.name][0].append('data-centre-info')
+                else:
+                    self._file_index[file.name] = (['data-centre-info'], file)
             
             for file in self.gts_infos:
-                self.file_index[file.name] = file
+                if file.name in self._file_index:
+                    self._file_index[file.name][0].append('gts-info')
+                else:
+                    self._file_index[file.name] = (['gts-info'], file)
             
             for file in self.eumetcast_infos:
-                self.file_index[file.name] = file
+                if file.name in self._file_index:
+                    self._file_index[file.name][0].append('eumetcast-info')
+                else:
+                    self._file_index[file.name] = (['eumetcast-info'], file)
             
             for file in self.geonetcast_infos:
-                self.file_index[file.name] = file
+                if file.name in self._file_index:
+                    self._file_index[file.name][0].append('geonetcast-info')
+                else:
+                    self._file_index[file.name] = (['geonetcast-info'], file)
             
         
-        return self._file_index
+            return self._file_index
            
                 
     
@@ -90,11 +105,6 @@ class Product(object):
         """
         return self.get_index().get(name,None)
         
-        
-        
-        
-        
-    
         
     def jsonize(self):
         
@@ -116,7 +126,7 @@ class Product(object):
             
         
         result["gts-info"] = { "files": [] }
-        for finfo in self.eumetcast_infos:
+        for finfo in self.gts_infos:
             
             if "gts-info" not in result["distribution"]:
                 result["distribution"].append("gts-info")
@@ -124,7 +134,7 @@ class Product(object):
             result["gts-info"]["files"].append(finfo.jsonize())
         
         result["data-centre-info"] = { "files": [] }
-        for finfo in self.eumetcast_infos:
+        for finfo in self.data_centre_infos:
             
             if "data-centre-info" not in result["distribution"]:
                 result["distribution"].append("data-centre-info")
@@ -132,7 +142,7 @@ class Product(object):
             result["data-centre-info"]["files"].append(finfo.jsonize())
        
         result["geonetcast-info"] = { "files": [] }
-        for finfo in self.eumetcast_infos:
+        for finfo in self.geonetcast_infos:
             
             if "geonetcast-info" not in result["distribution"]:
                 result["distribution"].append("geonetcast-info")
@@ -207,6 +217,7 @@ class FileInfo(object):
     """ FileInfo object """
     def __init__(self, name, reg_expr, size, type):
          
+        self.file_id      = None
         self.name         = name
         self.reg_expr     = reg_expr
         self.size         = size
@@ -214,7 +225,7 @@ class FileInfo(object):
         self.service_dirs = []
     
     def __repr__(self):
-        return "<FileInfo('%s','%s', '%s', '%s', '%s')>" % (self.name, self.reg_expr, self.size, self.type, self.service_dirs)
+        return "<FileInfo(%s'%s','%s', '%s', '%s', '%s')>" % ((( "'file_id:%s', " % (self.file_id)) if self.file_id else ""), self.name, self.reg_expr, self.size, self.type, self.service_dirs)
 
     def jsonize(self):
         
@@ -230,11 +241,27 @@ class FileInfo(object):
             
         return result
     
-    def update(self, file_dict):
-        
+    def update(self, session, file_dict):
+        """ update FileInfo """
         if file_dict.get('name', None):
-            self.title = file_dict['name']
+            self.name = file_dict['name']
             
+        if file_dict.get('regexpr', None):
+            self.reg_expr = file_dict['regexpr']
+            
+        if file_dict.get('size', None):
+            self.size = file_dict['size']
+        
+        if file_dict.get('type', None):
+            self.type = file_dict['type']
+        
+        if file_dict.get('service_dir', None):
+            new_service_dir = []
+            for service_dir_name in file_dict.get('service_dir',[]):
+                service_d = session.query(ServiceDir).filter_by(name=service_dir_name).first()    
+                new_service_dir.append(service_d)
+            
+            self.service_dirs = new_service_dir
         
 
 class DAO(object):

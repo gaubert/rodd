@@ -1,0 +1,8 @@
+{
+  "service_dirs" : [
+    
+      { "name" : "EPS-METOP-ASCA-L21",
+        "channel": "EPS-3"
+      }
+   ]
+} 

@@ -1,0 +1,9 @@
+{
+        "regexpr": "hello",
+        "service_dir": [
+		  "EPS-METOP-ASCA-L1"
+        ],
+        "type": "bufr",
+        "name": "ascat_bufr",
+        "size": "500KB"
+}

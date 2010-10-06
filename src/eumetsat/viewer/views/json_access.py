@@ -11,19 +11,73 @@ from eumetsat.db.rodd_db import DAO, Channel, Product, ServiceDir, FileInfo
 
 json_access = Module(__name__)
 
-def add_files_in_product(session, uid, file_name, file_data):
-    """ associate a given file with a product """
+def _add_files_in_product(session, uid, dissemination_type, file_data):
+    """ add files in a dissemination type category """
     
-    product = session.query(Product).filter_by(name=uid).first()
+    product = session.query(Product).filter_by(internal_id=uid).first()
+    if product:
+        product.update({ dissemination_type : { 'files' : file_data  } })
+    else:
+        messages.append("No product %s in RODD." % (uid))
+    
+    return { "status"         : "KO",
+             "messages"       : messages
+           }
+
+def _get_file_in_product(session, uid, file_name):
+    """ get file in a product """
+    messages = []
+    
+    product = session.query(Product).filter_by(internal_id=uid).first()
     
     if product:
-        file = product.contains_file()
-        if file:
+        result = {}
+        tuple = product.contains_file(file_name)
+        if tuple:
+            grp_list, file = tuple
+            for group in grp_list:
+                result[group] = { "file" : [file.jsonize()] }
             
+            return result
         else:
-            "ERROR"
+            messages.append("No file %s in product %s." % (file_name, product.internal_id))
     else:
-        "ERROR"
+        messages.append("No product %s in RODD." % (uid))
+    
+    return { "status"         : "KO",
+             "messages"       : messages
+           }
+
+def _update_file_in_product(session, uid, file_name, file_data):
+    """ associate a given file with a product """
+    
+    messages = []
+    
+    product = session.query(Product).filter_by(internal_id=uid).first()
+    
+    if product:
+        tuple = product.contains_file(file_name)
+        if tuple:
+            grp_list, file = tuple
+            file.update(session, file_data)
+            
+            #update File independently of the product
+            session.add(product)
+            session.commit()
+            
+            messages.append("Updated file '%s' for product %s" % (file_name, uid))
+            
+            return { "status"         : "OK",
+                     "messages"       : messages
+                   }
+        else:
+            messages.append("No file %s in product %s." % (file_name, product.internal_id))
+    else:
+        messages.append("No product %s in RODD." % (uid))
+        
+    return { "status"         : "KO",
+             "messages"       : messages
+           }
     
 
 def _add_jsonized_channels(session, data):
@@ -362,24 +416,27 @@ def manager_servicedir_with(name):
         return jsonify(result)
     
 # update all files for a product
-@json_access.route('/product/<uid>/files/<dist>', methods=['GET','PUT'])
-def manage_files_for_product(uid, dist):
+@json_access.route('/product/<uid>/files/<diss_type>', methods=['GET','PUT'])
+def manage_files_for_product(uid, diss_type):
     
-    return jsonify(result= { 'order' : order, 'sub': sub })
+    if request.method == 'GET':
+        result = _get_file_in_product(g.dao.get_session(), uid, name)
+    elif request.method == 'PUT':
+        data = request.json
+        result = _add_files_in_product(g.dao.get_session(), uid, diss_type, data)
+        
+    return jsonify(result)
 
 # update all files for a product
 @json_access.route('/product/<uid>/file/<name>', methods=['GET','PUT'])
 def manage_file_for_product(uid, name):
     
-    result = { 
-               "status" : "KO",
-               messages : [] 
-             }
-    
     if request.method == 'GET':
-        pass
+        result = _get_file_in_product(g.dao.get_session(), uid, name)
     elif request.method == 'PUT':
-        pass
+        data = request.json
+        result = _update_file_in_product(g.dao.get_session(), uid, name, data)
+        
     return jsonify(result)
 
 @json_access.route('/products', methods=['GET','POST','PUT'])
@@ -397,7 +454,6 @@ def get_all_products():
             the_products["products"].append(product.jsonize())
            
         session.close()
-        
         return jsonify(the_products)
     #insert new products
     elif request.method == 'POST':
