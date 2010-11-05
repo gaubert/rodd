@@ -75,11 +75,17 @@ CREATE TABLE IF NOT EXISTS service_dirs (
 	chan_id VARCHAR(256) NOT NULL
 );
 
--- information regarding the distribution
-CREATE TABLE IF NOT EXISTS products_2_distribution (
+-- relation between products and file_info
+CREATE TABLE IF NOT EXISTS products_2_fileinfo (
     rodd_id INTEGER,
-    dis_id INTEGER
+    file_id INTEGER
 ); 
+
+-- relation between fileinfo and distributions
+CREATE TABLE IF NOT EXISTS fileinfo_2_distribution (
+    file_id INTEGER,
+    dis_id  INTEGER
+);
 
 -- information to create relation between products and fileinfos for products using EUMETCAST
 CREATE TABLE IF NOT EXISTS products_2_eumetcast (

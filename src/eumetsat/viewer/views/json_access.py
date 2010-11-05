@@ -7,7 +7,7 @@ from flask import Module, g, render_template, request, redirect, flash, url_for,
 
 import eumetsat.common.utils as utils
 
-from eumetsat.db.rodd_db import DAO, Channel, Product, ServiceDir, FileInfo
+from eumetsat.db.rodd_db import DAO, Channel, Product, ServiceDir, FileInfo, DistributionType
 
 json_access = Module(__name__)
 
@@ -105,13 +105,13 @@ def _add_jsonized_serv_dir(session, data):
     messages = []
     
     for serv_dir in data.get('service_dirs', []):
-       if not session.query(ServiceDir).filter_by(name=serv_dir['name']).first():
-           ch = session.query(Channel).filter_by(name=serv_dir['channel']).first()
-           the_service = ServiceDir(serv_dir['name'], ch)
-           session.add(the_service)
-           messages.append("Added ServiceDir %s." %(serv_dir['name']))
-       else:
-           messages.append("ServiceDir %s already exists." %(serv_dir['name'])) 
+        if not session.query(ServiceDir).filter_by(name=serv_dir['name']).first():
+            chan = session.query(Channel).filter_by(name=serv_dir['channel']).first()
+            the_service = ServiceDir(serv_dir['name'], chan)
+            session.add(the_service)
+            messages.append("Added ServiceDir %s." %(serv_dir['name']))
+        else:
+            messages.append("ServiceDir %s already exists." %(serv_dir['name'])) 
 
     return messages
 
@@ -178,7 +178,11 @@ def _add_jsonized_products(session, data):
                                 finfo.service_dirs.append(service_d)
                     
                      
-                    product.eumetcast_infos.append(finfo)
+                    #add eumetcast distribution type
+                    diss_type = session.query(DistributionType).filter_by(name='EUMETCAST').first() 
+                    finfo.dis_types.append(diss_type)
+                    
+                    product.file_infos.append(finfo)
                     
                     file_dict[finfo.name] = finfo
                      
@@ -194,8 +198,12 @@ def _add_jsonized_products(session, data):
                                                a_file.get("regexpr", ""), \
                                                a_file["size"], \
                                                a_file["type"])
+                            
+                    #add gts distribution type
+                    diss_type = session.query(DistributionType).filter_by(name='GTS').first() 
+                    finfo.dis_types.append(diss_type)
                     
-                    product.gts_infos.append(finfo)
+                    product.file_infos.append(finfo)
                 
                 for a_file in prod['data-centre-info']['files']:
                      
@@ -209,8 +217,12 @@ def _add_jsonized_products(session, data):
                                                a_file.get("regexpr", ""), \
                                                a_file["size"], \
                                                a_file["type"])
-                    
-                    product.data_centre_infos.append(finfo)
+                            
+                    #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+                    diss_type = session.query(DistributionType).filter_by(name='ARCHIVE').first() 
+                    finfo.dis_types.append(diss_type)
+                        
+                    product.file_infos.append(finfo)
                     
                 session.add(product) 
                 
@@ -229,7 +241,7 @@ def _add_jsonized_products(session, data):
         return { "status"        : "KO",
                  "messages"       : messages,
                  "error_messages" : the_exception,
-                 "traceback"     : utils.get_exception_traceback()
+                 "traceback"      : utils.get_exception_traceback()
                }
 
 @json_access.route('/products/<uid>', methods=['GET','DELETE'])
@@ -439,6 +451,11 @@ def manage_file_for_product(uid, name):
         
     return jsonify(result)
 
+def printDict(di, out, format="%-25s %s"):
+    """ pretty print a dictionary """
+    for (key, val) in di.items():
+        out.write(format % (str(key)+':', val))
+
 @json_access.route('/products', methods=['GET','POST','PUT'])
 def get_all_products():
     """ Restish return all products information """
@@ -458,7 +475,15 @@ def get_all_products():
     #insert new products
     elif request.method == 'POST':
         data = request.json
-        return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
+        session = g.dao.get_session()
+        res     = _add_jsonized_products(session, data)
+        
+        f = open("/tmp/debug.txt", "w")
+        
+        printDict(res, f)
+        f.close()
+        
+        return jsonify(result=res)
     #update existing products
     elif request.method == 'PUT':
         data = request.json

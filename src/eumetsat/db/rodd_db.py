@@ -21,10 +21,8 @@ class Product(object):
         self.description        = description
         self.is_disseminated    = disseminated
         self.status             = status
-        self.data_centre_infos  = []
-        self.gts_infos          = []
-        self.eumetcast_infos    = []
-        self.geonetcast_infos   = []
+        
+        self.file_infos         = []
         self._file_index        = None
   
     def __repr__(self):
@@ -47,18 +45,85 @@ class Product(object):
             
         if a_prod_dict.get('description', None):
             self.description = a_prod_dict['description']
-            
-        if a_prod_dict.get('gts-info', None):
-            self.gts_infos = a_prod_dict['gts-info']
         
-        if a_prod_dict.get('eumetcast-info', None):
-            self.eumetcast_infos = a_prod_dict['eumetcast-info']
-            
-        if a_prod_dict.get('data-centre-info', None):
-            self.data_centre_infos = a_prod_dict['data-centre-info']
+        file_dict = {}
         
-        if a_prod_dict.get('geonetcast-info', None):
-            self.geonetcast_infos = a_prod_dict['geonetcast-info']
+        for a_file in a_prod_dict.get('gts-info', []):        
+            #look for existing file-info
+            finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
+            if not finfo:    
+                finfo = file_dict.get(a_file['name'], None)
+                if not finfo:          
+                    #create file object
+                    finfo = FileInfo(  a_file["name"], \
+                                       a_file.get("regexpr", ""), \
+                                       a_file["size"], \
+                                       a_file["type"])
+                    
+            
+            #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+            diss_type = session.query(DistributionType).filter_by(name='GTS').first() 
+            finfo.dis_types.append(diss_type)
+                            
+                    
+            self.file_infos.append(finfo)
+        
+        for a_file in a_prod_dict.get('eumetcast-info', []):        
+            #look for existing file-info
+            finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
+            if not finfo:    
+                finfo = file_dict.get(a_file['name'], None)
+                if not finfo:          
+                    #create file object
+                    finfo = FileInfo(  a_file["name"], \
+                                       a_file.get("regexpr", ""), \
+                                       a_file["size"], \
+                                       a_file["type"])
+                    
+            
+            #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+            diss_type = session.query(DistributionType).filter_by(name='EUMETCAST').first() 
+            finfo.dis_types.append(diss_type)
+                            
+            self.file_infos.append(finfo)
+        
+        for a_file in a_prod_dict.get('datacentre-info', []):        
+            #look for existing file-info
+            finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
+            if not finfo:    
+                finfo = file_dict.get(a_file['name'], None)
+                if not finfo:          
+                    #create file object
+                    finfo = FileInfo(  a_file["name"], \
+                                       a_file.get("regexpr", ""), \
+                                       a_file["size"], \
+                                       a_file["type"])
+                    
+            
+            #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+            diss_type = session.query(DistributionType).filter_by(name='ARCHIVE').first() 
+            finfo.dis_types.append(diss_type)
+                            
+            self.file_infos.append(finfo)
+            
+        for a_file in a_prod_dict.get('geonetcast', []):        
+            #look for existing file-info
+            finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
+            if not finfo:    
+                finfo = file_dict.get(a_file['name'], None)
+                if not finfo:          
+                    #create file object
+                    finfo = FileInfo(  a_file["name"], \
+                                       a_file.get("regexpr", ""), \
+                                       a_file["size"], \
+                                       a_file["type"])
+                    
+            
+            #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+            diss_type = session.query(DistributionType).filter_by(name='GEONETCAST').first() 
+            finfo.dis_types.append(diss_type)
+                            
+            self.file_infos.append(finfo)
     
     def add_files(self):
         pass
@@ -116,39 +181,36 @@ class Product(object):
         result["distribution"] = []
         
         
-        result["eumetcast-info"] = { "files": [] }
-        for finfo in self.eumetcast_infos:
-            
-            if "eumetcast-info" not in result["distribution"]:
-                result["distribution"].append("eumetcast-info")
-            
-            result["eumetcast-info"]["files"].append(finfo.jsonize())
-            
-        
-        result["gts-info"] = { "files": [] }
-        for finfo in self.gts_infos:
-            
-            if "gts-info" not in result["distribution"]:
-                result["distribution"].append("gts-info")
-            
-            result["gts-info"]["files"].append(finfo.jsonize())
-        
+        result["eumetcast-info"]   = { "files": [] }
+        result["gts-info"]         = { "files": [] }
         result["data-centre-info"] = { "files": [] }
-        for finfo in self.data_centre_infos:
-            
-            if "data-centre-info" not in result["distribution"]:
-                result["distribution"].append("data-centre-info")
-            
-            result["data-centre-info"]["files"].append(finfo.jsonize())
-       
-        result["geonetcast-info"] = { "files": [] }
-        for finfo in self.geonetcast_infos:
-            
-            if "geonetcast-info" not in result["distribution"]:
-                result["distribution"].append("geonetcast-info")
-            
-            result["geonetcast-info"]["files"].append(finfo.jsonize())
-            
+        result["geonetcast-info"]  = { "files": [] }
+        
+        for finfo in self.file_infos:
+            for type in finfo.dis_types:
+                if type == DistributionType('EUMETCAST'):
+                    # add in result distribution for the first time if necessary
+                    if "eumetcast-info" not in result["distribution"]:
+                        result["distribution"].append("eumetcast-info")
+                
+                    result["eumetcast-info"]["files"].append(finfo.jsonize())
+                elif type == DistributionType('GTS'):
+                    # add in result distribution for the first time if necessary
+                    if "gts-info" not in result["distribution"]:
+                        result["distribution"].append("gts-info")
+                    
+                    result["gts-info"]["files"].append(finfo.jsonize())
+                elif type == DistributionType('ARCHIVE'):
+                    # add in result distribution for the first time if necessary
+                    if "data-centre-info" not in result["distribution"]:
+                        result["distribution"].append("data-centre-info")
+                    
+                    result["data-centre-info"]["files"].append(finfo.jsonize())
+                elif type == DistributionType('GEONETCAST'):
+                    if "geonetcast-info" not in result["distribution"]:
+                        result["distribution"].append("geonetcast-info")
+                        
+                    result["geonetcast-info"]["files"].append(finfo.jsonize())
             
         return result
         
@@ -176,10 +238,23 @@ class ServiceDir(object):
 class DistributionType(object):
     """ DistributionType object """
     def __init__(self, name):
+        self.dis_id   = None
         self.name     = name
     
     def __repr__(self):
         return "<DistributionType('%s')>" % (self.name)
+    
+    def __eq__(self, ext_obj):
+        """ equality operator """
+        return (ext_obj.name == self.name)
+    
+    def jsonize(self):
+        """ jsonize """
+        
+        result = { 'name' : self.name }
+        
+        return result
+        
     
 class Channel(object):
     """ Channel object """
@@ -217,12 +292,13 @@ class FileInfo(object):
     """ FileInfo object """
     def __init__(self, name, reg_expr, size, type):
          
-        self.file_id      = None
-        self.name         = name
-        self.reg_expr     = reg_expr
-        self.size         = size
-        self.type         = type
-        self.service_dirs = []
+        self.file_id       = None
+        self.name          = name
+        self.reg_expr      = reg_expr
+        self.size          = size
+        self.type          = type
+        self.service_dirs  = []
+        self.dis_types     = []
     
     def __repr__(self):
         return "<FileInfo(%s'%s','%s', '%s', '%s', '%s')>" % ((( "'file_id:%s', " % (self.file_id)) if self.file_id else ""), self.name, self.reg_expr, self.size, self.type, self.service_dirs)
@@ -294,15 +370,33 @@ class DAO(object):
         
         self.metadata = self.conn.get_metadata()
         
-        self.tbl_dict['products']      = sqlalchemy.Table('products', self.metadata, autoload = True)
+        products_table = sqlalchemy.Table('products', self.metadata, autoload = True)
+        
+        self.tbl_dict['products']      =  products_table
+        
+        products_2_files_table = sqlalchemy.Table('products_2_fileinfo', self.metadata, \
+                                                         sqlalchemy.ForeignKeyConstraint(['rodd_id'], ['products.rodd_id']), \
+                                                         sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
+                                                         autoload = True)
+        
+        fileinfo_2_distribution_table = sqlalchemy.Table('fileinfo_2_distribution', self.metadata, \
+                                                         sqlalchemy.ForeignKeyConstraint(['dis_id'], ['distribution_type.dis_id']), \
+                                                         sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
+                                                         autoload = True)
     
         # load service dirs table
         self.tbl_dict['service_dirs']  = sqlalchemy.Table('service_dirs', self.metadata, \
                                                           sqlalchemy.ForeignKeyConstraint(['chan_id'], ['channels.chan_id']), \
                                                           autoload= True)
         
+        file_info_table = sqlalchemy.Table('file_info', self.metadata, autoload= True)
+        
+        distribution_type_table = sqlalchemy.Table('distribution_type', self.metadata, autoload = True)
+        
+        self.tbl_dict['distribution_type'] = distribution_type_table
+        
         # load file_info table
-        self.tbl_dict['file_info']     = sqlalchemy.Table('file_info', self.metadata, autoload= True)
+        self.tbl_dict['file_info']     = file_info_table
         
         # load file_info table
         self.tbl_dict['channels']      = sqlalchemy.Table('channels', self.metadata, autoload= True)
@@ -355,11 +449,22 @@ class DAO(object):
                                                          single_parent=True, cascade="all, delete, delete-orphan"),
         'geonetcast_infos'   :  relationship(FileInfo  , secondary=products_2_geonetcast_table, \
                                                          single_parent=True, cascade="all, delete, delete-orphan"),
+        
+        'file_infos'         :  relationship(FileInfo  , secondary=products_2_files_table, \
+                                                         single_parent=True, cascade="all, delete, delete-orphan"),
+        
+        
+       
         })
         
+        # map distribution type table
+        mapper(DistributionType, distribution_type_table)
+            
         # map file_info table
         mapper(FileInfo, self.tbl_dict['file_info'], properties={
         'service_dirs'   : relationship(ServiceDir, secondary=file_2_servdirs_table),
+        'dis_types'      : relationship(DistributionType, secondary=fileinfo_2_distribution_table),
+        
         })
         
         # map channels table
