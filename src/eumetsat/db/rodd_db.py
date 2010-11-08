@@ -8,11 +8,16 @@ import decimal
 import simplejson as json
 
 from sqlalchemy.orm import mapper, relationship, backref
+
+import eumetsat.common.logging_utils as logging
 from eumetsat.db import connections
+from eumetsat.common.collections import OrderedDict
 
 
 class Product(object):
     """ Product Object """
+    
+    LOGGER = logging.LoggerFactory.get_logger("Product")
     
     def __init__(self, title, internal_id, description, disseminated, status):
         self.rodd_id            = None
@@ -23,22 +28,59 @@ class Product(object):
         self.status             = status
         
         self.file_infos         = []
+        self._dis_type_cache    = {}
         self._file_index        = None
   
     def __repr__(self):
+        
+        self._populate_type_cache()
+        
         return "<Product(%s'%s', '%s', '%s', '%s', '%s', files= [ eumetcast = ('%s'), gts = ('%s'), data_centre= ('%s'), geonetcast = ('%s') )>" \
                % ( (( "'rodd_id:%s', " % (self.rodd_id)) if self.rodd_id else ""), \
                      self.title, self.internal_id, \
                      self.description ,\
                      self.is_disseminated, \
                      self.status, \
-                     self.eumetcast_infos, \
-                     self.gts_infos, \
-                     self.data_centre_infos, \
-                     self.geonetcast_infos)
+                     self._dis_type_cache["eumetcast-info"], \
+                     self._dis_type_cache["gts-info"], \
+                     self._dis_type_cache["data-centre-info"], \
+                     self._dis_type_cache["geonetcast-info"])
+               
+    def _populate_type_cache(self):
+        """ separate files by distribution types """
+        
+        result = self._dis_type_cache     
+        for finfo in self.file_infos:
+            for type in finfo.dis_types:
+                if type == DistributionType('EUMETCAST'):
+                    # add in result distribution for the first time if necessary
+                    if "eumetcast-info" not in result["distribution"]:
+                        result["distribution"].append("eumetcast-info")
+                
+                    result["eumetcast-info"]["files"].append(finfo.jsonize())
+                elif type == DistributionType('GTS'):
+                    # add in result distribution for the first time if necessary
+                    if "gts-info" not in result["distribution"]:
+                        result["distribution"].append("gts-info")
+                    
+                    result["gts-info"]["files"].append(finfo.jsonize())
+                elif type == DistributionType('ARCHIVE'):
+                    # add in result distribution for the first time if necessary
+                    if "data-centre-info" not in result["distribution"]:
+                        result["distribution"].append("data-centre-info")
+                    
+                    result["data-centre-info"]["files"].append(finfo.jsonize())
+                elif type == DistributionType('GEONETCAST'):
+                    if "geonetcast-info" not in result["distribution"]:
+                        result["distribution"].append("geonetcast-info")
+                        
+                    result["geonetcast-info"]["files"].append(finfo.jsonize())
+        
+        return result         
     
-    def update(self, a_prod_dict):
+    def update(self, a_prod_dict, a_session):
         """ update attributes of the product. Policy is to replace all attributes with existing ones """
+        
         
         if a_prod_dict.get('name', None):
             self.title = a_prod_dict['name']
@@ -47,51 +89,38 @@ class Product(object):
             self.description = a_prod_dict['description']
         
         file_dict = {}
+        Product.LOGGER.info("HELLO")
         
-        for a_file in a_prod_dict.get('gts-info', []):        
-            #look for existing file-info
-            finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
-            if not finfo:    
-                finfo = file_dict.get(a_file['name'], None)
-                if not finfo:          
-                    #create file object
-                    finfo = FileInfo(  a_file["name"], \
-                                       a_file.get("regexpr", ""), \
-                                       a_file["size"], \
-                                       a_file["type"])
-                    
-            
-            #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
-            diss_type = session.query(DistributionType).filter_by(name='GTS').first() 
-            finfo.dis_types.append(diss_type)
-                            
-                    
-            self.file_infos.append(finfo)
+        new_file_infos = []
         
-        for a_file in a_prod_dict.get('eumetcast-info', []):        
+        for a_file in a_prod_dict.get('gts-info', { 'files' : [] }).get('files', []):
+    
             #look for existing file-info
-            finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
-            if not finfo:    
-                finfo = file_dict.get(a_file['name'], None)
-                if not finfo:          
-                    #create file object
-                    finfo = FileInfo(  a_file["name"], \
-                                       a_file.get("regexpr", ""), \
-                                       a_file["size"], \
-                                       a_file["type"])
-                    
+            Product.LOGGER.info("HELLO 1")
+            Product.LOGGER.info("a_file = %s" %(a_file))
             
-            #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
-            diss_type = session.query(DistributionType).filter_by(name='EUMETCAST').first() 
-            finfo.dis_types.append(diss_type)
-                            
-            self.file_infos.append(finfo)
+            finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()    
+            if not finfo:    
+                #create file object
+                finfo = FileInfo(  a_file["name"], \
+                                   a_file.get("regexpr", ""), \
+                                   a_file["size"], \
+                                   a_file["type"])
+                
         
-        for a_file in a_prod_dict.get('datacentre-info', []):        
+                #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+                diss_type = a_session.query(DistributionType).filter_by(name='GTS').first() 
+                finfo.dis_types.append(diss_type)
+                            
+            #add in new_file_infos   
+            new_file_infos.append(finfo)
+            file_dict[a_file['name']] = finfo
+        
+        for a_file in a_prod_dict.get('eumetcast-info', { 'files' : [] }).get('files', []):    
             #look for existing file-info
-            finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
+            finfo = file_dict.get(a_file['name'], None)
             if not finfo:    
-                finfo = file_dict.get(a_file['name'], None)
+                finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()   
                 if not finfo:          
                     #create file object
                     finfo = FileInfo(  a_file["name"], \
@@ -100,17 +129,18 @@ class Product(object):
                                        a_file["type"])
                     
             
-            #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
-            diss_type = session.query(DistributionType).filter_by(name='ARCHIVE').first() 
-            finfo.dis_types.append(diss_type)
+                    #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+                    diss_type = a_session.query(DistributionType).filter_by(name='EUMETCAST').first() 
+                    finfo.dis_types.append(diss_type)
                             
-            self.file_infos.append(finfo)
-            
-        for a_file in a_prod_dict.get('geonetcast', []):        
+            new_file_infos.append(finfo)
+            file_dict[a_file['name']] = finfo
+        
+        for a_file in a_prod_dict.get('datacentre-info', { 'files' : [] }).get('files', []): 
             #look for existing file-info
-            finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
+            finfo = file_dict.get(a_file['name'], None)
             if not finfo:    
-                finfo = file_dict.get(a_file['name'], None)
+                finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()   
                 if not finfo:          
                     #create file object
                     finfo = FileInfo(  a_file["name"], \
@@ -119,47 +149,52 @@ class Product(object):
                                        a_file["type"])
                     
             
-            #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
-            diss_type = session.query(DistributionType).filter_by(name='GEONETCAST').first() 
-            finfo.dis_types.append(diss_type)
+                    #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+                    diss_type = a_session.query(DistributionType).filter_by(name='ARCHIVE').first() 
+                    finfo.dis_types.append(diss_type)
                             
-            self.file_infos.append(finfo)
+            new_file_infos.append(finfo)
+            file_dict[a_file['name']] = finfo
+            
+        for a_file in a_prod_dict.get('geonetcast', { 'files' : [] }).get('files', []):    
+            #look for existing file-info
+            finfo = file_dict.get(a_file['name'], None)
+            if not finfo:    
+                finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()   
+                if not finfo:          
+                    #create file object
+                    finfo = FileInfo(  a_file["name"], \
+                                       a_file.get("regexpr", ""), \
+                                       a_file["size"], \
+                                       a_file["type"])
+                    
+            
+                    #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+                    diss_type = a_session.query(DistributionType).filter_by(name='GEONETCAST').first() 
+                    finfo.dis_types.append(diss_type)
+                            
+            new_file_infos.append(finfo)
+            file_dict[a_file['name']] = finfo
+        
+        # Replace the current file_info with new_file_info if not empty
+        self.file_infos = new_file_infos
     
     def add_files(self):
         pass
     
-    def get_index(self):
+    def get_index(self, a_force):
         
         try:
             return self._file_index
         except AttributeError:
             self._file_index = {}
             
-            for file in self.data_centre_infos:
-                if file.name in self._file_index:
-                    self._file_index[file.name][0].append('data-centre-info')
+            for fileinfo in self.file_infos:
+                if fileinfo.name in self._file_index:
+                    self._file_index[fileinfo.name][0] = fileinfo.dis_types
                 else:
-                    self._file_index[file.name] = (['data-centre-info'], file)
+                    self._file_index[fileinfo.name] = (fileinfo.dis_types, fileinfo)
             
-            for file in self.gts_infos:
-                if file.name in self._file_index:
-                    self._file_index[file.name][0].append('gts-info')
-                else:
-                    self._file_index[file.name] = (['gts-info'], file)
-            
-            for file in self.eumetcast_infos:
-                if file.name in self._file_index:
-                    self._file_index[file.name][0].append('eumetcast-info')
-                else:
-                    self._file_index[file.name] = (['eumetcast-info'], file)
-            
-            for file in self.geonetcast_infos:
-                if file.name in self._file_index:
-                    self._file_index[file.name][0].append('geonetcast-info')
-                else:
-                    self._file_index[file.name] = (['geonetcast-info'], file)
-            
-        
             return self._file_index
            
                 
@@ -173,7 +208,7 @@ class Product(object):
         
     def jsonize(self):
         
-        result = {}
+        result = OrderedDict()
         
         result["name"]         = self.title 
         result["uid"]          = self.internal_id
@@ -248,12 +283,26 @@ class DistributionType(object):
         """ equality operator """
         return (ext_obj.name == self.name)
     
+    @classmethod
+    def translate_name(self, a_type):
+        
+        if a_type == 'EUMETCAST':
+            return 'eumetcast-info'
+        elif a_type == 'GTS':
+            return 'gts-info'
+        elif a_type == 'GEONETCAST':
+            return 'geonetcast-info'
+        elif a_type == 'ARCHIVE':
+            return 'data-centre-info'
+        else:
+            return 'unknown-distribution'
+        
+        
     def jsonize(self):
         """ jsonize """
         
-        result = { 'name' : self.name }
-        
-        return result
+        #result = { 'name' : self.name }
+        return DistributionType.translate_name(self.name)
         
     
 class Channel(object):
@@ -290,6 +339,9 @@ class Channel(object):
 
 class FileInfo(object):
     """ FileInfo object """
+    
+    LOGGER = logging.LoggerFactory.get_logger("FileInfo")
+    
     def __init__(self, name, reg_expr, size, type):
          
         self.file_id       = None

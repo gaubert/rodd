@@ -7,16 +7,24 @@ from flask import Module, g, render_template, request, redirect, flash, url_for,
 
 import eumetsat.common.utils as utils
 
+import eumetsat.common.logging_utils as logging
+
 from eumetsat.db.rodd_db import DAO, Channel, Product, ServiceDir, FileInfo, DistributionType
 
 json_access = Module(__name__)
 
+#set json_access logger
+LOGGER = logging.LoggerFactory.get_logger("json_access")
+
 def _add_files_in_product(session, uid, dissemination_type, file_data):
     """ add files in a dissemination type category """
-    
+    messages = []
     product = session.query(Product).filter_by(internal_id=uid).first()
     if product:
-        product.update({ dissemination_type : { 'files' : file_data  } })
+        
+        product.update({ dissemination_type : { 'files' : file_data  } }, session)
+        
+        return product.jsonize()
     else:
         messages.append("No product %s in RODD." % (uid))
     
@@ -36,7 +44,7 @@ def _get_file_in_product(session, uid, file_name):
         if tuple:
             grp_list, file = tuple
             for group in grp_list:
-                result[group] = { "file" : [file.jsonize()] }
+                result[group.jsonize()] = { "file" : [file.jsonize()] }
             
             return result
         else:
@@ -57,6 +65,7 @@ def _update_file_in_product(session, uid, file_name, file_data):
     
     if product:
         tuple = product.contains_file(file_name)
+        
         if tuple:
             grp_list, file = tuple
             file.update(session, file_data)
@@ -477,11 +486,6 @@ def get_all_products():
         data = request.json
         session = g.dao.get_session()
         res     = _add_jsonized_products(session, data)
-        
-        f = open("/tmp/debug.txt", "w")
-        
-        printDict(res, f)
-        f.close()
         
         return jsonify(result=res)
     #update existing products
