@@ -32,6 +32,33 @@ def _add_files_in_product(session, uid, dissemination_type, file_data):
              "messages"       : messages
            }
 
+def _get_file_per_diss_type_in_product(session, uid, diss_type):
+    """ get all the files disseminated in diss_type """
+    
+    messages = []
+    product = session.query(Product).filter_by(internal_id=uid).first()
+    
+    if product:
+        result = {}
+        tuple = product.contains_file(file_name)
+        if tuple:
+            grp_list, file = tuple
+            for group in grp_list:
+                result[group.jsonize()] = { "file" : [file.jsonize()] }
+            
+            return result
+        else:
+            messages.append("No file %s in product %s." % (file_name, product.internal_id))
+    else:
+        messages.append("No product %s in RODD." % (uid))
+    
+    return { "status"         : "KO",
+             "messages"       : messages
+           }
+
+    
+    
+
 def _get_file_in_product(session, uid, file_name):
     """ get file in a product """
     messages = []
@@ -406,20 +433,24 @@ def manager_servicedir_with(name):
         return jsonify(result)
     
 # update all files for a product
-@json_access.route('/product/<uid>/files/<diss_type>', methods=['GET','PUT'])
+@json_access.route('/product/<uid>/files/<diss_type>', methods=['GET'])
 def manage_files_for_product(uid, diss_type):
-    
+    """ get files per diss_type """
     if request.method == 'GET':
-        result = _get_file_in_product(g.dao.get_session(), uid, name)
-    elif request.method == 'PUT':
-        data = request.json
-        result = _add_files_in_product(g.dao.get_session(), uid, diss_type, data)
+        result = _get_file_in_product(g.dao.get_session(), uid, diss_type)
         
     return jsonify(result)
 
-@json_access.route('/product/<uid>/file/<name>', methods=['GET','PUT'])
+@json_access.route('/product/<uid>/files', methods=['GET','PUT','POST'])
+def get_all_files_for_product(uid, diss_type):
+    """ manage files in a product. POST add a new file, PUT update an existing one """
+    pass
+
+
+
+@json_access.route('/product/<uid>/file/<name>', methods=['GET','PUT','DELETE'])
 def manage_file_for_product(uid, name):
-    
+    """ get, update, delete specific file """
     if request.method == 'GET':
         result = _get_file_in_product(g.dao.get_session(), uid, name)
     elif request.method == 'PUT':

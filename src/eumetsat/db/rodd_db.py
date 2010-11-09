@@ -128,6 +128,12 @@ class Product(object):
             Return the distribution type if yes otherwise None 
         """
         return self.get_index().get(name,None)
+    
+    def get_files_from(self, diss_type):
+        """ get all the files for a particular diss_type """
+        self._populate_type_cache()
+        
+        return self._dis_type_cache.get(diss_type, [])
         
         
     def jsonize(self):
@@ -257,7 +263,7 @@ class FileInfo(object):
 
     def jsonize(self):
         
-        result = {"service_dir" : []}
+        result = {"service_dir" : [], "dis_type" : []}
         
         result["name"]        = self.name
         result["regexpr"]     = self.reg_expr
@@ -266,6 +272,9 @@ class FileInfo(object):
         
         for service_dir in self.service_dirs:
             result["service_dir"].append(service_dir.name)
+        
+        for dis_type in self.dis_types:
+            result["dis_type"].append(dis_type.name)
             
         return result
     
