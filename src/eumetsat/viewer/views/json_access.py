@@ -133,14 +133,16 @@ def _update_jsonized_products(session, data):
         retrieved_product = session.query(Product).filter_by(internal_id=prod['uid']).first()
         if retrieved_product:
             #update all the attributes of the product except uid
-            retrieved_product.update(prod)
+            retrieved_product.update(prod, session)
             
-            message.append("Update Product %s" % (prod['uid']))
+            messages.append("Update Product %s" % (prod['uid']))
             
         else:
             messages.append("Product %s cannot be updated because it doesn't exist in RODD" % (prod['uid']))
     
     session.commit()
+    
+    return messages
             
 
 def _add_jsonized_products(session, data):
@@ -158,86 +160,53 @@ def _add_jsonized_products(session, data):
         messages.extend(_add_jsonized_serv_dir(session, data))
         # commit service dirs add-ons
         session.commit()
-                
         
         for prod in data.get('products', []):
             if not session.query(Product).filter_by(internal_id=prod['uid']).first():
                 product = Product(prod['name'], prod['uid'], prod['description'], True if prod['distribution'] else False, "Operational")
     
                 file_dict = {}
-    
-                for a_file in prod['eumetcast-info']['files']:
-                    
-                    #look for existing file-info
-                    finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
-                    if not finfo:   
-                        finfo = file_dict.get(a_file['name'], None) 
-                        if not finfo:
-                            #create file object
-                            finfo = FileInfo(  a_file["name"], \
-                                               a_file.get("regexpr", ""), \
-                                               a_file["size"], \
-                                               a_file["type"])
-                      
-                            #add serviceDirs if there are any
-                            serv_dir_names = a_file.get("service_dir", None)
-                             
-                            for serv_dir_name in serv_dir_names:
-                                service_d = session.query(ServiceDir).filter_by(name=serv_dir_name).first()    
-                                finfo.service_dirs.append(service_d)
-                    
-                     
-                    #add eumetcast distribution type
-                    diss_type = session.query(DistributionType).filter_by(name='EUMETCAST').first() 
-                    finfo.dis_types.append(diss_type)
-                    
-                    product.file_infos.append(finfo)
-                    
-                    file_dict[finfo.name] = finfo
-                     
-                for a_file in prod['gts-info']['files']:
-                     
-                    #look for existing file-info
-                    finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
-                    if not finfo:    
-                        finfo = file_dict.get(a_file['name'], None)
-                        if not finfo:             
-                            #create file object
-                            finfo = FileInfo(a_file["name"], \
-                                               a_file.get("regexpr", ""), \
-                                               a_file["size"], \
-                                               a_file["type"])
-                            
-                    #add gts distribution type
-                    diss_type = session.query(DistributionType).filter_by(name='GTS').first() 
-                    finfo.dis_types.append(diss_type)
-                    
-                    product.file_infos.append(finfo)
                 
-                for a_file in prod['data-centre-info']['files']:
-                     
-                    #look for existing file-info
-                    finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
-                    if not finfo:    
-                        finfo = file_dict.get(a_file['name'], None)
-                        if not finfo:          
-                            #create file object
-                            finfo = FileInfo(  a_file["name"], \
-                                               a_file.get("regexpr", ""), \
-                                               a_file["size"], \
-                                               a_file["type"])
-                            
-                    #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
-                    diss_type = session.query(DistributionType).filter_by(name='ARCHIVE').first() 
-                    finfo.dis_types.append(diss_type)
+                # iterate over the list of distribution types:
+                for the_type in DistributionType.TYPES:
+                    for a_file in prod.get(the_type,{ 'files' : []})['files']:
                         
-                    product.file_infos.append(finfo)
+                        #look for existing file-info
+                        finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
+                        if not finfo:   
+                            finfo = file_dict.get(a_file['name'], None) 
+                            if not finfo:
+                                #create file object
+                                finfo = FileInfo(  a_file["name"], \
+                                                   a_file.get("regexpr", ""), \
+                                                   a_file["size"], \
+                                                   a_file["type"])
+                          
+                                
+                                #add serviceDirs if there are any and if it is a eumetcast-info distribution type
+                                if the_type == DistributionType.EUMETCAST:
+                                    serv_dir_names = a_file.get("service_dir", None)
+                                     
+                                    for serv_dir_name in serv_dir_names:
+                                        service_d = session.query(ServiceDir).filter_by(name=serv_dir_name).first()    
+                                        finfo.service_dirs.append(service_d)
+                        
+                         
+                        #add eumetcast distribution type
+                        diss_type = session.query(DistributionType).filter_by(name=the_type).first() 
+                        finfo.dis_types.append(diss_type)
+                        
+                        product.file_infos.append(finfo)
+                        
+                        file_dict[finfo.name] = finfo
                     
                 session.add(product) 
                 
                 messages.append("Added Product %s." %(prod['uid']))
+                LOGGER.info("Added Product %s." %(prod['uid']))
             else:
                 messages.append("Product %s already exists." %(prod['uid']))
+                LOGGER.info("Product %s already exists." %(prod['uid']))
                 
         # commit session whatever has happened
         session.commit()
@@ -448,7 +417,6 @@ def manage_files_for_product(uid, diss_type):
         
     return jsonify(result)
 
-# update all files for a product
 @json_access.route('/product/<uid>/file/<name>', methods=['GET','PUT'])
 def manage_file_for_product(uid, name):
     
@@ -486,6 +454,8 @@ def get_all_products():
         data = request.json
         session = g.dao.get_session()
         res     = _add_jsonized_products(session, data)
+        
+        LOGGER.info("products = %s" %(res))
         
         return jsonify(result=res)
     #update existing products

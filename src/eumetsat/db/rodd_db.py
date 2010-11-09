@@ -41,45 +41,27 @@ class Product(object):
                      self.description ,\
                      self.is_disseminated, \
                      self.status, \
-                     self._dis_type_cache["eumetcast-info"], \
-                     self._dis_type_cache["gts-info"], \
-                     self._dis_type_cache["data-centre-info"], \
-                     self._dis_type_cache["geonetcast-info"])
+                     self._dis_type_cache[DistributionType.EUMETCAST], \
+                     self._dis_type_cache[DistributionType.GTS], \
+                     self._dis_type_cache[DistributionType.DATACENTRE], \
+                     self._dis_type_cache[DistributionType.GEONETCAST])
                
     def _populate_type_cache(self):
         """ separate files by distribution types """
         
-        result = self._dis_type_cache     
+        result = {}     
         for finfo in self.file_infos:
-            for type in finfo.dis_types:
-                if type == DistributionType('EUMETCAST'):
-                    # add in result distribution for the first time if necessary
-                    if "eumetcast-info" not in result["distribution"]:
-                        result["distribution"].append("eumetcast-info")
+            for the_type in finfo.dis_types:
+                if the_type not in result["distribution"]:
+                        result["distribution"].append(type)
                 
-                    result["eumetcast-info"]["files"].append(finfo.jsonize())
-                elif type == DistributionType('GTS'):
-                    # add in result distribution for the first time if necessary
-                    if "gts-info" not in result["distribution"]:
-                        result["distribution"].append("gts-info")
-                    
-                    result["gts-info"]["files"].append(finfo.jsonize())
-                elif type == DistributionType('ARCHIVE'):
-                    # add in result distribution for the first time if necessary
-                    if "data-centre-info" not in result["distribution"]:
-                        result["distribution"].append("data-centre-info")
-                    
-                    result["data-centre-info"]["files"].append(finfo.jsonize())
-                elif type == DistributionType('GEONETCAST'):
-                    if "geonetcast-info" not in result["distribution"]:
-                        result["distribution"].append("geonetcast-info")
-                        
-                    result["geonetcast-info"]["files"].append(finfo.jsonize())
+                result[type]["files"].append(finfo.jsonize())
         
-        return result         
+        self._dis_type_cache = result
+        return self._dis_type_cache
     
     def update(self, a_prod_dict, a_session):
-        """ update attributes of the product. Policy is to replace all attributes with existing ones """
+        """ update attributes of the product. Policy is to replace all attributes with existing ones and supress non present ones """
         
         
         if a_prod_dict.get('name', None):
@@ -89,95 +71,37 @@ class Product(object):
             self.description = a_prod_dict['description']
         
         file_dict = {}
-        Product.LOGGER.info("HELLO")
         
         new_file_infos = []
         
-        for a_file in a_prod_dict.get('gts-info', { 'files' : [] }).get('files', []):
-    
-            #look for existing file-info
-            Product.LOGGER.info("HELLO 1")
-            Product.LOGGER.info("a_file = %s" %(a_file))
+        for the_type in DistributionType.TYPES:
             
-            finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()    
-            if not finfo:    
-                #create file object
-                finfo = FileInfo(  a_file["name"], \
-                                   a_file.get("regexpr", ""), \
-                                   a_file["size"], \
-                                   a_file["type"])
+            for a_file in a_prod_dict.get(the_type, { 'files' : [] }).get('files', []):
+        
+                finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()    
+                if not finfo:    
+                    #create file object
+                    finfo = FileInfo(  a_file["name"], \
+                                       a_file.get("regexpr", ""), \
+                                       a_file["size"], \
+                                       a_file["type"])
+                    
+            
+                    #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
+                    diss_type = a_session.query(DistributionType).filter_by(name=the_type).first() 
+                    finfo.dis_types.append(diss_type)
+                                
+                #add in new_file_infos   
+                new_file_infos.append(finfo)
+                file_dict[a_file['name']] = finfo
                 
-        
-                #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
-                diss_type = a_session.query(DistributionType).filter_by(name='GTS').first() 
-                finfo.dis_types.append(diss_type)
-                            
-            #add in new_file_infos   
-            new_file_infos.append(finfo)
-            file_dict[a_file['name']] = finfo
-        
-        for a_file in a_prod_dict.get('eumetcast-info', { 'files' : [] }).get('files', []):    
-            #look for existing file-info
-            finfo = file_dict.get(a_file['name'], None)
-            if not finfo:    
-                finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()   
-                if not finfo:          
-                    #create file object
-                    finfo = FileInfo(  a_file["name"], \
-                                       a_file.get("regexpr", ""), \
-                                       a_file["size"], \
-                                       a_file["type"])
-                    
-            
-                    #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
-                    diss_type = a_session.query(DistributionType).filter_by(name='EUMETCAST').first() 
-                    finfo.dis_types.append(diss_type)
-                            
-            new_file_infos.append(finfo)
-            file_dict[a_file['name']] = finfo
-        
-        for a_file in a_prod_dict.get('datacentre-info', { 'files' : [] }).get('files', []): 
-            #look for existing file-info
-            finfo = file_dict.get(a_file['name'], None)
-            if not finfo:    
-                finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()   
-                if not finfo:          
-                    #create file object
-                    finfo = FileInfo(  a_file["name"], \
-                                       a_file.get("regexpr", ""), \
-                                       a_file["size"], \
-                                       a_file["type"])
-                    
-            
-                    #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
-                    diss_type = a_session.query(DistributionType).filter_by(name='ARCHIVE').first() 
-                    finfo.dis_types.append(diss_type)
-                            
-            new_file_infos.append(finfo)
-            file_dict[a_file['name']] = finfo
-            
-        for a_file in a_prod_dict.get('geonetcast', { 'files' : [] }).get('files', []):    
-            #look for existing file-info
-            finfo = file_dict.get(a_file['name'], None)
-            if not finfo:    
-                finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()   
-                if not finfo:          
-                    #create file object
-                    finfo = FileInfo(  a_file["name"], \
-                                       a_file.get("regexpr", ""), \
-                                       a_file["size"], \
-                                       a_file["type"])
-                    
-            
-                    #finfo.dis_types.append(ARCHIVE_DIS_TYPE)
-                    diss_type = a_session.query(DistributionType).filter_by(name='GEONETCAST').first() 
-                    finfo.dis_types.append(diss_type)
-                            
-            new_file_infos.append(finfo)
-            file_dict[a_file['name']] = finfo
-        
         # Replace the current file_info with new_file_info if not empty
         self.file_infos = new_file_infos
+    
+    def update_files(self,a_prod_dict, a_session):
+        """ update existing files """
+        pass
+        
     
     def add_files(self):
         pass
@@ -216,36 +140,17 @@ class Product(object):
         result["distribution"] = []
         
         
-        result["eumetcast-info"]   = { "files": [] }
-        result["gts-info"]         = { "files": [] }
-        result["data-centre-info"] = { "files": [] }
-        result["geonetcast-info"]  = { "files": [] }
+        result[DistributionType.EUMETCAST]   = { "files": [] }
+        result[DistributionType.GTS]         = { "files": [] }
+        result[DistributionType.DATACENTRE]  = { "files": [] }
+        result[DistributionType.GEONETCAST]  = { "files": [] }
         
         for finfo in self.file_infos:
-            for type in finfo.dis_types:
-                if type == DistributionType('EUMETCAST'):
-                    # add in result distribution for the first time if necessary
-                    if "eumetcast-info" not in result["distribution"]:
-                        result["distribution"].append("eumetcast-info")
+            for the_type in finfo.dis_types:
+                if the_type.name not in result["distribution"]:
+                    result["distribution"].append(the_type.name)
                 
-                    result["eumetcast-info"]["files"].append(finfo.jsonize())
-                elif type == DistributionType('GTS'):
-                    # add in result distribution for the first time if necessary
-                    if "gts-info" not in result["distribution"]:
-                        result["distribution"].append("gts-info")
-                    
-                    result["gts-info"]["files"].append(finfo.jsonize())
-                elif type == DistributionType('ARCHIVE'):
-                    # add in result distribution for the first time if necessary
-                    if "data-centre-info" not in result["distribution"]:
-                        result["distribution"].append("data-centre-info")
-                    
-                    result["data-centre-info"]["files"].append(finfo.jsonize())
-                elif type == DistributionType('GEONETCAST'):
-                    if "geonetcast-info" not in result["distribution"]:
-                        result["distribution"].append("geonetcast-info")
-                        
-                    result["geonetcast-info"]["files"].append(finfo.jsonize())
+                result[the_type.name]["files"].append(finfo.jsonize())
             
         return result
         
@@ -271,6 +176,16 @@ class ServiceDir(object):
         return result
     
 class DistributionType(object):
+    
+    EUMETCAST   = 'eumetcast-info'
+    GTS         = 'gts-info'
+    GEONETCAST  = 'geonetcast-info'
+    DATACENTRE  = 'data-centre-info'
+    DIRECT      = 'direct-info'
+    
+    TYPES = [EUMETCAST, GTS, GEONETCAST, DATACENTRE, DIRECT]
+    
+    
     """ DistributionType object """
     def __init__(self, name):
         self.dis_id   = None
@@ -282,27 +197,12 @@ class DistributionType(object):
     def __eq__(self, ext_obj):
         """ equality operator """
         return (ext_obj.name == self.name)
-    
-    @classmethod
-    def translate_name(self, a_type):
-        
-        if a_type == 'EUMETCAST':
-            return 'eumetcast-info'
-        elif a_type == 'GTS':
-            return 'gts-info'
-        elif a_type == 'GEONETCAST':
-            return 'geonetcast-info'
-        elif a_type == 'ARCHIVE':
-            return 'data-centre-info'
-        else:
-            return 'unknown-distribution'
-        
         
     def jsonize(self):
         """ jsonize """
         
         #result = { 'name' : self.name }
-        return DistributionType.translate_name(self.name)
+        return self.name
         
     
 class Channel(object):

@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS distribution_type (
     name VARCHAR(255) NOT NULL
   );
   
-INSERT into distribution_type (name) values("EUMETCAST"),("GTS"),("DIRECT"),("GEONETCAST"),("ARCHIVE");
+INSERT into distribution_type (name) values("eumetcast-info"),("gts-info"),("direct-info"),("geonetcast-info"),("data-centre-info");
 
 -- information regarding the file_info
 CREATE TABLE IF NOT EXISTS file_info (
