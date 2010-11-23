@@ -310,8 +310,8 @@ class DAO(object):
     def __init__(self):
         
         if not DAO._created:
-            self.conn     = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
-            #self.conn = connections.DatabaseConnector('sqlite:////homespace/gaubert/mydb')
+            #self.conn     = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
+            self.conn = connections.DatabaseConnector('sqlite:////homespace/gaubert/mydb')
             self.metadata = None
             self.tbl_dict = {}
             # load dao info

@@ -120,6 +120,9 @@ def _add_jsonized_channels(session, data):
     """ Add a jsonized channels """
     #add channels if there are any
     messages = []
+    
+    channel_table = g.dao.get_table("channels")
+
     for chan in data.get('channels', []):
         #if it doesn't exist create it
         if not session.query(Channel).filter_by(name=chan['name']).first():
@@ -351,8 +354,11 @@ def get_all_channels():
         channel_table = g.dao.get_table("channels")
         
         the_channels = { "channels" : [] }
+        
         for channel in session.query(Channel).order_by(channel_table.c.chan_id):
-            the_channels["channels"].append(channel.jsonize())
+            LOGGER.info("channel = %s" %(channel))
+            if channel :
+                the_channels["channels"].append(channel.jsonize()) 
           
         session.close()
         

@@ -4,13 +4,19 @@ DROP TABLE if EXISTS products;
 DROP TABLE if EXISTS products_formats;
 DROP TABLE if EXISTS format_type;
 DROP TABLE if EXISTS file_info;
+DROP TABLE if EXISTS channels;
+DROP TABLE if EXISTS service_dirs;
+DROP TABLE if EXISTS servdirs_2_families;
+DROP TABLE if EXISTS file_2_servdirs;
+DROP TABLE if EXISTS products_2_fileinfo;
+
 
 
 -- Create the tables
 
 -- users
 CREATE TABLE IF NOT EXISTS users (
-    user_id    INTEGER AUTO_INCREMENT PRIMARY KEY,
+    user_id    INTEGER PRIMARY KEY AUTOINCREMENT,
     login    VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     email    VARCHAR(255) NOT NULL
@@ -18,7 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- information regarding products
 CREATE TABLE IF NOT EXISTS products (
-    rodd_id         INTEGER AUTO_INCREMENT PRIMARY KEY,
+    rodd_id         INTEGER PRIMARY KEY AUTOINCREMENT ,
 	internal_id     VARCHAR(256) UNIQUE,
     title           VARCHAR(255) NOT NULL,
     description     VARCHAR(2048) NOT NULL,
@@ -28,7 +34,7 @@ CREATE TABLE IF NOT EXISTS products (
 
 -- information regarding the distributionTypes
 CREATE TABLE IF NOT EXISTS distribution_type (
-    dis_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    dis_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(255) NOT NULL
   );
   
@@ -40,7 +46,7 @@ INSERT into distribution_type (name) values("data-centre-info");
 
 -- information regarding the file_info
 CREATE TABLE IF NOT EXISTS file_info (
-    file_id    INTEGER AUTO_INCREMENT PRIMARY KEY,
+    file_id    INTEGER PRIMARY KEY AUTOINCREMENT ,
     name       VARCHAR(255) UNIQUE NOT NULL,
     reg_expr   VARCHAR(255),
 	size       VARCHAR(255),
@@ -49,11 +55,11 @@ CREATE TABLE IF NOT EXISTS file_info (
 
 -- information regarding the channels
 CREATE TABLE IF NOT EXISTS channels (
-    chan_id             INTEGER AUTO_INCREMENT PRIMARY KEY,
+    chan_id             INTEGER PRIMARY KEY AUTOINCREMENT,
     name                VARCHAR(512) UNIQUE NOT NULL,
     multicast_address   VARCHAR(512),
-    min_rate            DOUBLE,
-    max_rate            DOUBLE,
+    min_rate            INTEGER,
+    max_rate            INTEGER,
     channel_function    VARCHAR(512),
     pid_EB9             INTEGER,
     pid_AB3             INTEGER,
@@ -62,7 +68,7 @@ CREATE TABLE IF NOT EXISTS channels (
 
 -- information regarding the service directories
 CREATE TABLE IF NOT EXISTS service_dirs (
-    serv_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    serv_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name VARCHAR(255) UNIQUE NOT NULL,
 	chan_id VARCHAR(256) NOT NULL
 );
@@ -111,7 +117,7 @@ CREATE TABLE IF NOT EXISTS file_2_servdirs (
   
 -- information regarding the families
 CREATE TABLE IF NOT EXISTS families (
-    fam_id              INTEGER AUTO_INCREMENT PRIMARY KEY,
+    fam_id              INTEGER PRIMARY KEY AUTOINCREMENT,
     name               VARCHAR(512),
     description        VARCHAR(2048)
   ); 
@@ -121,8 +127,8 @@ CREATE TABLE IF NOT EXISTS servdirs_2_families (
     serv_id            INTEGER,
     fam_id             INTEGER
   );
-CREATE INDEX serv2fam_servid_index ON servdirs_2_families (serv_id);
-CREATE INDEX serv2fam_famid_index ON servdirs_2_families (fam_id);
+CREATE INDEX IF NOT EXISTS serv2fam_servid_index ON servdirs_2_families (serv_id);
+CREATE INDEX IF NOT EXISTS serv2fam_famid_index ON servdirs_2_families (fam_id);
  
  
 -- products formats to link the formats and the products
@@ -133,7 +139,7 @@ CREATE TABLE IF NOT EXISTS products_formats (
 
 -- format type
 CREATE TABLE IF NOT EXISTS format_type (
-   format_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+   format_id INTEGER PRIMARY KEY AUTOINCREMENT,
    name VARCHAR(256),
    description VARCHAR(1024)
 );
@@ -165,7 +171,7 @@ INSERT into format_type (name,description) values("LRIT-WMO","WMO GTS in LRIT");
 
 -- orbit type
 CREATE TABLE IF NOT EXISTS orbit_type (
-   orbit_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+   orbit_id INTEGER PRIMARY KEY AUTOINCREMENT,
    name VARCHAR(256)
 );
 

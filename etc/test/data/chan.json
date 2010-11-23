@@ -2,7 +2,7 @@
  "channels": [
   {
    "channel_function": "AIDA-16", 
-   "max_rate": "", 
+   "max_rate": "1", 
    "min_rate": "400000", 
    "multicast_address": "224.223.222.223:4711", 
    "name": "AIDA-16"
@@ -10,7 +10,7 @@
   ,
   {
    "channel_function": "AIDA-17", 
-   "max_rate": "", 
+   "max_rate": "3", 
    "min_rate": "400000", 
    "multicast_address": "224.223.222.223:4711", 
    "name": "AIDA-17"
