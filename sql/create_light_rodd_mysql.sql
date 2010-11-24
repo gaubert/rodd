@@ -21,6 +21,7 @@ DROP TABLE if EXISTS service_dirs;
 DROP TABLE if EXISTS servdirs_2_families;
 DROP TABLE if EXISTS file_2_servdirs;
 DROP TABLE if EXISTS products_2_fileinfo;
+DROP TABLE if EXISTS fileinfo_2_distribution;
 
 
 
