@@ -103,8 +103,26 @@ class Product(object):
         pass
         
     
-    def add_files(self):
-        pass
+    def add_files(self, a_session, a_file_data):
+        """ add one or multiple files """
+        for a_file in a_file_data.get('files', []):
+            finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()
+            if not finfo:
+                # add new file
+                finfo = FileInfo(    a_file["name"], \
+                                     a_file.get("regexpr", ""), \
+                                     a_file["size"], \
+                                     a_file["type"])
+                
+                finfo.add_missing_dis_types(a_file['dis_type'])
+                
+                self.file_infos.append(finfo)
+                
+            else:
+                # update file
+                finfo.update(a_session, a_file)
+                    
+                
     
     def get_index(self, a_force):
         
@@ -191,6 +209,13 @@ class DistributionType(object):
     
     TYPES = [EUMETCAST, GTS, GEONETCAST, DATACENTRE, DIRECT]
     
+    @classmethod
+    def create_distribution_type(self, dis_type_name):
+        """ factory method controlling that the distribution type exists """
+        if dis_type_name not in DistributionType.TYPES:
+            raise Exception("%s is not a valid distribution type. Supported distribution types are %s\n" % (dis_type_name, DistributionType.TYPES) )
+        
+        return DistributionType(dis_type_name)
     
     """ DistributionType object """
     def __init__(self, name):
@@ -202,7 +227,13 @@ class DistributionType(object):
     
     def __eq__(self, ext_obj):
         """ equality operator """
-        return (ext_obj.name == self.name)
+        
+        #if string try to compare the value with the name
+        #this isn't nice but practical
+        if type(ext_obj) == type(""):
+            return (ext_obj == self.name)
+        else:    
+            return (ext_obj.name == self.name)
         
     def jsonize(self):
         """ jsonize """
@@ -259,8 +290,13 @@ class FileInfo(object):
         self.dis_types     = []
     
     def __repr__(self):
-        return "<FileInfo(%s'%s','%s', '%s', '%s', '%s')>" % ((( "'file_id:%s', " % (self.file_id)) if self.file_id else ""), self.name, self.reg_expr, self.size, self.type, self.service_dirs)
-
+        return "<FileInfo(%s'%s','%s', '%s', '%s', '%s')>" % ((( "'file_id:%s', " % (self.file_id)) if self.file_id else "") ,\
+                                                               self.name, \
+                                                               self.reg_expr, \
+                                                               self.size, \
+                                                               self.type, \
+                                                               self.service_dirs)
+        
     def jsonize(self):
         
         result = {"service_dir" : [], "dis_type" : []}
@@ -278,6 +314,12 @@ class FileInfo(object):
             
         return result
     
+    def add_missing_dis_types(self, dis_types):
+        """ add a missing dis type """
+        for dis_t in dis_types:
+            if dis_t not in self.dis_types:
+                self.dis_types.append(DistributionType.create_distribution_type(dis_t))
+    
     def update(self, session, file_dict):
         """ update FileInfo """
         if file_dict.get('name', None):
@@ -294,12 +336,17 @@ class FileInfo(object):
         
         if file_dict.get('service_dir', None):
             new_service_dir = []
-            for service_dir_name in file_dict.get('service_dir',[]):
+            for service_dir_name in file_dict.get('service_dir', []):
                 service_d = session.query(ServiceDir).filter_by(name=service_dir_name).first()    
                 new_service_dir.append(service_d)
             
             self.service_dirs = new_service_dir
         
+        if file_dict.get('dis_type', None):
+            # empty dis_type list
+            del self.dis_types[:]
+            for dis_t in file_dict.get('dis_type'):
+                self.dis_types.append(DistributionType.create_distribution_type(dis_t))
 
 class DAO(object):
     """ This is singleton """

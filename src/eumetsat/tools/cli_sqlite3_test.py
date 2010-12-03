@@ -30,7 +30,6 @@ class RODDTestCase(unittest.TestCase):
         OK_DEL_CHAN  = {'status': 'OK', 'messages': ['channel AIDA-16 deleted']} 
         OK_NO_CHAN   = {'channels': [{'min_rate': '400000', 'multicast_address': '224.223.222.223:4711', 'max_rate': '3', 'channel_function': 'AIDA-17', 'name': 'AIDA-17'}]} 
        
-        
         print("\n")
        
         self._clean_db()
@@ -183,7 +182,7 @@ class RODDTestCase(unittest.TestCase):
         data = flask.json.loads(returned_val.data)
         self.assertDictEqual(data, OK_NO_PROD, "Fail when getting product. \n%s \nis different from \n%s" % (data, OK_ADD_PROD))
 
-    def test_update_product(self):
+    def test_update_file_product(self):
         """********** Update file products **************"""
         
         OK_ADD_PROD     = {'result': {'status': 'OK', 'messages': ['Added Channel EPS-3.', 'Added ServiceDir EPS-METOP-ASCA-L1.', 'Added Product EO:EUM:DAT:METOP:ASCSZR1B.']}}
