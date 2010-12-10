@@ -53,7 +53,7 @@ def download_file(server, dir, in_file, out_filename):
 
     
 
-def generate_template_from_src(a_working_dir, a_input, a_output):
+def generate_template_from_src(a_working_dir, a_input, a_output, a_nc_ver):
     """ generate cdl for original nc file and modify the lat lon type to be in the new type """
     
     create_cdl_script = "/homespace/gaubert/ecli-workspace/rodd/etc/compression/create_cdl.sh"
@@ -88,7 +88,7 @@ def generate_template_from_src(a_working_dir, a_input, a_output):
     print("== Generate new nc file %s/%s\n" % (a_working_dir,a_output) )
     #now create the nc file
     create_nc_script = "/homespace/gaubert/ecli-workspace/rodd/etc/compression/generate_nc_file.sh"
-    res = subprocess.call([create_nc_script, cdl_file, "%s/%s" % (a_working_dir,a_output) ])
+    res = subprocess.call([create_nc_script, cdl_file, "%s/%s" % (a_working_dir,a_output), str(a_nc_ver) ])
     
     if res != 0:
         print("Error: Problem while creating nc %s file from %s" % (create_nc_script))
@@ -220,7 +220,7 @@ def compress_files(original_filename, new_data_set, digits):
             '%d d sz compression time' % (digits): round(time_szip,2)
            }
 
-def run_unitary_test(filename, temp_root_dir, to_clean):
+def run_unitary_test(filename, temp_root_dir, to_clean, version):
     """ run 2 digits and 3 digits precisons test for each files """
 
     bunzip2_script = "/homespace/gaubert/ecli-workspace/rodd/etc/compression/bunzip2.sh"
@@ -237,11 +237,11 @@ def run_unitary_test(filename, temp_root_dir, to_clean):
             raise Exception("Error while uncompressing %s\n" % (output_download_file) )
         else:
             output_download_file = output_download_file[:-4]
-            
+    
     #test with 2 digits
     digits = 2
     
-    output_file = generate_template_from_src(tempdir, output_download_file,'new-file.nc')
+    output_file = generate_template_from_src(tempdir, output_download_file,'new-file.nc', version)
 
     transform_osi_saf_netcdf(output_download_file, output_file, digits)
     
@@ -253,14 +253,20 @@ def run_unitary_test(filename, temp_root_dir, to_clean):
     
     d2 = compress_files(output_download_file, output_file, digits)
     
+    digits = 4
+    
+    transform_osi_saf_netcdf(output_download_file, output_file, digits)
+    
+    d3 = compress_files(output_download_file, output_file, digits)
+    
     
     # clean temp dir
     if to_clean:
         eumetsat.common.utils.delete_all_under(tempdir, True)
     
-    return dict(d1.items() + d2.items())
+    return dict(d1.items() + d2.items() + d3.items())
 
-def run_full_tests():
+def run_full_tests(version=3, result_file_name = '/tmp/result-nc3.csv'):
     """ run the complete tests """
     TO_CLEAN      = True
     #ROOT_TEMP_DIR = "/homespace/gaubert/tempo"
@@ -276,9 +282,13 @@ def run_full_tests():
     fieldnames = ['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits)]
     
     digits = 3
+    fieldnames.extend(['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits)])
+   
+    digits = 4
     fieldnames.extend(['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits), 'name', 'size'  ])
    
-    result_file = open('/tmp/result.csv', 'wb')
+   
+    result_file = open(result_file_name, 'wb')
     writer = csv.DictWriter(result_file, fieldnames=fieldnames)
     headers = dict( (n,n) for n in fieldnames )
     writer.writerow(headers)
@@ -292,12 +302,12 @@ def run_full_tests():
     for (i,the_file) in enumerate(list_of_files):
         
         print("####################### Run %d #######################\n" % (i))
-        result_row = run_unitary_test(the_file, ROOT_TEMP_DIR, TO_CLEAN)
+        result_row = run_unitary_test(the_file, ROOT_TEMP_DIR, TO_CLEAN, version)
         print("result_row = %s\n" %(result_row))
         writer.writerow(result_row)
         result_file.flush()
         icpt+=1
-        if icpt == 100:
+        if icpt == 500:
             break
 
 def transform_file(filename, outputdir):
@@ -319,6 +329,10 @@ def transform_file(filename, outputdir):
     digits = 3
     fieldnames.extend(['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits), 'name', 'size'  ])
    
+    digits = 4
+    fieldnames.extend(['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits), 'name', 'size'  ])
+   
+   
     #test with 2 digits
     digits = 2
     
@@ -336,10 +350,19 @@ def transform_file(filename, outputdir):
     
     d2 = compress_files(filename, output_file, digits)
     
-    return dict(d1.items() + d2.items())
+    digits = 4
+    
+    output_file = generate_template_from_src(tempdir, filename,'4d-new-file.nc')
+    
+    transform_osi_saf_netcdf(filename, output_file, digits)
+    
+    d3 = compress_files(filename, output_file, digits)
+    
+    
+    return dict(d1.items() + d2.items() + d3.items())
    
     #print("%s\n" % (fieldnames))
-    print(dict(d1.items() + d2.items()))
+    print(dict(d1.items() + d2.items() + d3.items()))
     
     
   
@@ -347,5 +370,12 @@ def transform_file(filename, outputdir):
 
 if __name__ == '__main__':
     
-    transform_file("/homespace/gaubert/20101206-EUR-L2P_GHRSST-SSTsubskin-AVHRR_METOP_A-eumetsat_sstmgr_metop02_20101206_023103-v01.7-fv01.0.nc","/tmp/results")
+    #transform_file("/homespace/gaubert/20101206-EUR-L2P_GHRSST-SSTsubskin-AVHRR_METOP_A-eumetsat_sstmgr_metop02_20101206_023103-v01.7-fv01.0.nc","/tmp/results")
+    #transform_file("/homespace/gaubert/sstmgr/n4_file.nc","/tmp/results")
+    version = 3
+    result_file_name = '/tmp/result-nc3.csv'
+    run_full_tests(version)
+    version = 4
+    result_file_name = '/tmp/result-nc4.csv'
+    run_full_tests(version)
     
