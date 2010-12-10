@@ -97,13 +97,13 @@ def generate_template_from_src(a_working_dir, a_input, a_output):
        
 
 
-def transform_osi_saf_netcdf(new_data_set, digits, debug = False):
+def transform_osi_saf_netcdf(input_file, new_data_set, digits, debug = False):
     """ Transform osi saf int netcdf """
     
     print("================== Start transforming netCDF coordinates (precision %s) ==================" % (digits) )
     
     
-    old_dataset = Dataset('/homespace/gaubert/sstmgr/file.nc')
+    old_dataset = Dataset(input_file)
     
     new_dataset = Dataset(new_data_set,'a')
 
@@ -113,12 +113,17 @@ def transform_osi_saf_netcdf(new_data_set, digits, debug = False):
     o_lat_data = o_lat[:]
     o_lon_data = o_lon[:]
   
+    # get dimensions from the old dataset
+    nj_max = len(old_dataset.dimensions['nj'])
+    ni_max = len(old_dataset.dimensions['ni'])
+  
+  
     #need to create a numpy array with the right dimensions and fill it with the scale lat values
     # and then the lon values
-    n_data = numpy.zeros((1080,2048), dtype=int)
     
-    nj_max = 1080
-    ni_max = 2048
+    n_data = numpy.zeros((nj_max, ni_max), dtype=int)
+    
+   
     
     nj = 0
     ni = 0
@@ -139,7 +144,7 @@ def transform_osi_saf_netcdf(new_data_set, digits, debug = False):
     new_dataset.sync()
     
     print("== Start lon transformation \n")
-    n_data = numpy.zeros((1080, 2048), dtype=int)
+    n_data = numpy.zeros((nj_max, ni_max), dtype=int)
     
     #reset ni nj
     ni = 0
@@ -160,7 +165,6 @@ def transform_osi_saf_netcdf(new_data_set, digits, debug = False):
     new_dataset.variables['lon'][:]  = n_data
     new_dataset.sync()
     
-
     new_dataset.close()
     
     old_dataset.close()
@@ -207,6 +211,7 @@ def compress_files(original_filename, new_data_set, digits):
     
     return {
             'name'  : os.path.basename(original_filename),
+            'size'  : size,
             '%d d bz2 size' % (digits) : size_bzip2, 
             '%d d bz2 ratio' % (digits) : round(float(size)/float(size_bzip2), 2), 
             '%d d bz2 compression time' % (digits) : round(time_bzip2,2),
@@ -215,7 +220,7 @@ def compress_files(original_filename, new_data_set, digits):
             '%d d sz compression time' % (digits): round(time_szip,2)
            }
 
-def run_tests(filename, temp_root_dir, to_clean):
+def run_unitary_test(filename, temp_root_dir, to_clean):
     """ run 2 digits and 3 digits precisons test for each files """
 
     bunzip2_script = "/homespace/gaubert/ecli-workspace/rodd/etc/compression/bunzip2.sh"
@@ -238,13 +243,13 @@ def run_tests(filename, temp_root_dir, to_clean):
     
     output_file = generate_template_from_src(tempdir, output_download_file,'new-file.nc')
 
-    transform_osi_saf_netcdf(output_file, digits)
+    transform_osi_saf_netcdf(output_download_file, output_file, digits)
     
     d1 = compress_files(output_download_file, output_file, digits)
     
     digits = 3
     
-    transform_osi_saf_netcdf(output_file, digits)
+    transform_osi_saf_netcdf(output_download_file, output_file, digits)
     
     d2 = compress_files(output_download_file, output_file, digits)
     
@@ -255,10 +260,8 @@ def run_tests(filename, temp_root_dir, to_clean):
     
     return dict(d1.items() + d2.items())
 
-
-
-if __name__ == '__main__':
-    
+def run_full_tests():
+    """ run the complete tests """
     TO_CLEAN      = True
     #ROOT_TEMP_DIR = "/homespace/gaubert/tempo"
     ROOT_TEMP_DIR = "/tmp/comp-tempo"
@@ -273,7 +276,7 @@ if __name__ == '__main__':
     fieldnames = ['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits)]
     
     digits = 3
-    fieldnames.extend(['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits), 'name'  ])
+    fieldnames.extend(['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits), 'name', 'size'  ])
    
     result_file = open('/tmp/result.csv', 'wb')
     writer = csv.DictWriter(result_file, fieldnames=fieldnames)
@@ -289,12 +292,60 @@ if __name__ == '__main__':
     for (i,the_file) in enumerate(list_of_files):
         
         print("####################### Run %d #######################\n" % (i))
-        result_row = run_tests(the_file, ROOT_TEMP_DIR, TO_CLEAN)
+        result_row = run_unitary_test(the_file, ROOT_TEMP_DIR, TO_CLEAN)
         print("result_row = %s\n" %(result_row))
         writer.writerow(result_row)
         result_file.flush()
         icpt+=1
         if icpt == 100:
             break
+
+def transform_file(filename, outputdir):
+    """ transform one filename """
     
-    #transform_osi_saf_short_netcdf(output_file)
+    TO_CLEAN      = False
+    #ROOT_TEMP_DIR = "/homespace/gaubert/tempo"
+    tempdir = outputdir
+    
+    if TO_CLEAN:
+        #clean root dir
+        eumetsat.common.utils.delete_all_under(tempdir)
+    
+    #create csv file
+    digits = 2
+    
+    fieldnames = ['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits)]
+    
+    digits = 3
+    fieldnames.extend(['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits), 'name', 'size'  ])
+   
+    #test with 2 digits
+    digits = 2
+    
+    output_file = generate_template_from_src(tempdir, filename,'2d-new-file.nc')
+
+    transform_osi_saf_netcdf(filename, output_file, digits)
+    
+    d1 = compress_files(filename, output_file, digits)
+    
+    digits = 3
+    
+    output_file = generate_template_from_src(tempdir, filename,'3d-new-file.nc')
+    
+    transform_osi_saf_netcdf(filename, output_file, digits)
+    
+    d2 = compress_files(filename, output_file, digits)
+    
+    return dict(d1.items() + d2.items())
+   
+    #print("%s\n" % (fieldnames))
+    print(dict(d1.items() + d2.items()))
+    
+    
+  
+
+
+if __name__ == '__main__':
+    
+    transform_file("/homespace/gaubert/20101206-EUR-L2P_GHRSST-SSTsubskin-AVHRR_METOP_A-eumetsat_sstmgr_metop02_20101206_023103-v01.7-fv01.0.nc","/tmp/results")
+    
