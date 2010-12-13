@@ -171,6 +171,57 @@ def transform_osi_saf_netcdf(input_file, new_data_set, digits, debug = False):
     
     print("================== End of transforming netCDF coordinates ==================")
 
+def compress_original_files(original_filename):
+    """ compress the output file and gets its compressed size """
+    
+    print("== Compress original file %s \n" %(original_filename))
+    
+    new_data_set = original_filename
+    
+    # get data_set uncompressed size
+    size = os.path.getsize(new_data_set)
+    
+    bzip2_script = "/homespace/gaubert/ecli-workspace/rodd/etc/compression/bzip2_compression.sh"
+    
+    func = subprocess.call
+    
+    res = []
+            
+    time_bzip2 = ftimer(func,[[bzip2_script, new_data_set, "%s.bz2" % (new_data_set) ] ], {}, res, number=1)
+
+    print("\nTime: %s secs \n bzip2 file %s\n"%(time_bzip2 , new_data_set))
+
+    if res[0] != 0:
+        print("Error. Cannot bzip2 file %s" % (new_data_set))
+       
+    szip_script = "/homespace/gaubert/ecli-workspace/rodd/etc/compression/szip_compression.sh"
+    
+    time_szip = ftimer(func,[ [ szip_script, new_data_set, "%s.sz" % (new_data_set)  ] ], {}, res,number=1)
+
+    print("\nTime: %s secs \n szip file %s\n" % (time_szip , new_data_set))
+
+    if res[0] != 0:
+        print("Error. Cannot bzip2 file %s" % (new_data_set))
+       
+    size_bzip2 = os.path.getsize("%s.bz2" %(new_data_set))
+    
+    size_szip  = os.path.getsize("%s.sz" %(new_data_set))
+    
+    print("bzip2 size %d. szip size %d" % (size_bzip2, size_szip))
+    
+    #return [( round(float(size)/float(size_bzip2), 2), size_bzip2, time_bzip2 ),( round(float(size)/float(size_szip), 2), size_szip, time_szip )]
+    
+    return {
+            'name'  : os.path.basename(original_filename),
+            'size'  : size,
+            'orig bz2 size' : size_bzip2, 
+            'orig bz2 ratio': round(float(size)/float(size_bzip2), 2), 
+            'orig bz2 compression time' : round(time_bzip2,2),
+            'orig sz size' : size_szip, 
+            'orig sz ratio' : round(float(size)/float(size_szip), 2),
+            'orig sz compression time' : round(time_szip,2)
+           }
+
 def compress_files(original_filename, new_data_set, digits):
     """ compress the output file and gets its compressed size """
     
@@ -220,7 +271,7 @@ def compress_files(original_filename, new_data_set, digits):
             '%d d sz compression time' % (digits): round(time_szip,2)
            }
 
-def run_unitary_test(filename, temp_root_dir, to_clean, version):
+def run_unitary_test(filename, temp_root_dir, to_clean, version, transform = True):
     """ run 2 digits and 3 digits precisons test for each files """
 
     bunzip2_script = "/homespace/gaubert/ecli-workspace/rodd/etc/compression/bunzip2.sh"
@@ -238,35 +289,43 @@ def run_unitary_test(filename, temp_root_dir, to_clean, version):
         else:
             output_download_file = output_download_file[:-4]
     
-    #test with 2 digits
-    digits = 2
+    d1 = {}
+    d2 = {}
+    d3 = {}
+    d4 = {}
     
-    output_file = generate_template_from_src(tempdir, output_download_file,'new-file.nc', version)
-
-    transform_osi_saf_netcdf(output_download_file, output_file, digits)
+    if transform:
+        #test with 2 digits
+        digits = 2
+        
+        output_file = generate_template_from_src(tempdir, output_download_file,'new-file.nc', version)
     
-    d1 = compress_files(output_download_file, output_file, digits)
+        transform_osi_saf_netcdf(output_download_file, output_file, digits)
+        
+        d1 = compress_files(output_download_file, output_file, digits)
+        
+        digits = 3
+        
+        transform_osi_saf_netcdf(output_download_file, output_file, digits)
+        
+        d2 = compress_files(output_download_file, output_file, digits)
+        
+        digits = 4
+        
+        transform_osi_saf_netcdf(output_download_file, output_file, digits)
+        
+        d3 = compress_files(output_download_file, output_file, digits)
     
-    digits = 3
-    
-    transform_osi_saf_netcdf(output_download_file, output_file, digits)
-    
-    d2 = compress_files(output_download_file, output_file, digits)
-    
-    digits = 4
-    
-    transform_osi_saf_netcdf(output_download_file, output_file, digits)
-    
-    d3 = compress_files(output_download_file, output_file, digits)
+    d4 = compress_original_files(output_download_file)
     
     
     # clean temp dir
     if to_clean:
         eumetsat.common.utils.delete_all_under(tempdir, True)
     
-    return dict(d1.items() + d2.items() + d3.items())
+    return dict(d1.items() + d2.items() + d3.items() + d4.items())
 
-def run_full_tests(version=3, result_file_name = '/tmp/result-nc3.csv'):
+def run_full_tests(version = 3, result_file_name = '/tmp/result-nc3.csv', nb_runs = 50, transform = True):
     """ run the complete tests """
     TO_CLEAN      = True
     #ROOT_TEMP_DIR = "/homespace/gaubert/tempo"
@@ -287,6 +346,9 @@ def run_full_tests(version=3, result_file_name = '/tmp/result-nc3.csv'):
     digits = 4
     fieldnames.extend(['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits), 'name', 'size'  ])
    
+    # add filednames for original filenames
+    fieldnames.extend(['orig bz2 size', 'orig bz2 ratio', 'orig bz2 compression time', 'orig sz size', 'orig sz ratio', 'orig sz compression time'])
+   
    
     result_file = open(result_file_name, 'wb')
     writer = csv.DictWriter(result_file, fieldnames=fieldnames)
@@ -302,12 +364,12 @@ def run_full_tests(version=3, result_file_name = '/tmp/result-nc3.csv'):
     for (i,the_file) in enumerate(list_of_files):
         
         print("####################### Run %d #######################\n" % (i))
-        result_row = run_unitary_test(the_file, ROOT_TEMP_DIR, TO_CLEAN, version)
+        result_row = run_unitary_test(the_file, ROOT_TEMP_DIR, TO_CLEAN, version, transform)
         print("result_row = %s\n" %(result_row))
         writer.writerow(result_row)
         result_file.flush()
         icpt+=1
-        if icpt == 500:
+        if icpt == nb_runs:
             break
 
 def transform_file(filename, outputdir):
@@ -332,6 +394,8 @@ def transform_file(filename, outputdir):
     digits = 4
     fieldnames.extend(['%d d bz2 size'  % (digits) , '%d d bz2 ratio'  % (digits) , '%d d bz2 compression time'  % (digits) , '%d d sz size'  % (digits) , '%d d sz ratio'  % (digits) , '%d d sz compression time'  % (digits), 'name', 'size'  ])
    
+    # add filednames for original filenames
+    fieldnames.extend(['orig bz2 size', 'orig bz2 ratio', 'orig bz2 compression time', 'orig sz size', 'orig sz ratio', 'orig sz compression time'])
    
     #test with 2 digits
     digits = 2
@@ -374,8 +438,11 @@ if __name__ == '__main__':
     #transform_file("/homespace/gaubert/sstmgr/n4_file.nc","/tmp/results")
     version = 3
     result_file_name = '/tmp/result-nc3.csv'
-    run_full_tests(version)
-    version = 4
-    result_file_name = '/tmp/result-nc4.csv'
-    run_full_tests(version)
+    nb_runs = 480
+    transform = False
+    run_full_tests(version, result_file_name, nb_runs, transform)
+    #version = 4
+    #result_file_name = '/tmp/result-nc4.csv'
+    #nb_runs = 50
+    #run_full_tests(version, result_file_name, nb_runs)
     

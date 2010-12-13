@@ -9,8 +9,8 @@ def worker_routine(zmrl, context, i):
     
     socket = context.socket(zmq.XREQ)
 
-    time.sleep(3)
-    socket.setsockopt(zmq.IDENTITY,"w%d" % (i))
+    
+    socket.setsockopt(zmq.IDENTITY,"w%d" % (i)) #set worker identity
     socket.connect(zmrl)
     
     print("=W%d= Connected to %s socket.\n" %(i, zmrl))
