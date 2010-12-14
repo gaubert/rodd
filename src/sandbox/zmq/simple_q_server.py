@@ -20,27 +20,28 @@ def worker_routine(zmrl, context, i):
     
     socket.connect(zmrl)
     
-    print("=w%d= Connected to %s socket.\n" %(i, zmrl))
+    print("=%s= Connected to %s socket.\n" %(identity, zmrl))
 
     # Tell the borker we are ready for work
     socket.send("READY")
     
     while True:
         
-        # read id, empty frame and work to do
-        id = socket.recv()
+        cl_id = socket.recv()
         
-        empty = socket.recv()
-        
-        assert empty == ""
+        print("=%s= cl_id = %s\n" %(identity, cl_id))
         
         work_to_do = socket.recv()
         
-        print("w%d. Work to do %s\n" %(work_to_do))
+        print("=%s=. Work to do %s\n" % (identity, work_to_do) )
         
-        socket.send(identity)
-        socket.send("")
+        socket.send(cl_id, zmq.SNDMORE)
+        socket.send("", zmq.SNDMORE)
         socket.send("OK")
+        break
+    
+    print("=%s= Saying BYE." % (identity))
+    return
         
 def client_routine(zmrl, context, i):
     """ client thread routine """
@@ -55,32 +56,21 @@ def client_routine(zmrl, context, i):
     
     socket.connect(zmrl)
     
-    print("c%d. Connected to %s socket.\n" %(i, zmrl))
+    print("#%s#. Connected to %s socket.\n" %(identity, zmrl))
 
-    # Tell the borker we are ready for work
+
+    #socket.send(identity, zmq.SNDMORE)
+    #socket.send("", zmq.SNDMORE)
     socket.send("HELLO")
     
     reply = socket.recv()
     
-    print("c%d. %s\n" % (reply))
+    print("#%s#. %s\n" % (identity, reply))
     
     return
 
 
 class ZMQueue(object):
-    """
-    ZMQ Queue server that distribute work to workers
-    Features to implement:
-    - configurable priority with a score
-    - priority policy module
-    - message: Json metadata handler + blob
-    - possibility to dynamically change the priority
-    - change metadata and reorder queue
-    - possibility to dequeue job and reorder it 
-    - reorder by changing the priority
-    - possibility to pause a job and maintain it in the queue
-
-    """
 
     def __init__(self, context, q_name, in_bind_addr="tcp://127.0.0.1:6000", out_bind_addr="tcp://127.0.0.1:6001", client_nbr=10):
         """
@@ -120,7 +110,7 @@ class ZMQueue(object):
             print("*S* Now wait clients or workers messages.\n")
             socks = dict(poller.poll())
             
-            print("*S* Got a notification")
+            print("*S* Got a notification\n")
             
             if available_workers > 0:
                 #poll for workers
@@ -130,20 +120,27 @@ class ZMQueue(object):
                     client_addr = front_end.recv()
                     
                     empty = front_end.recv()
-                    
+                    #print("empty = %s\n" %(empty))
                     assert empty == ""
                     
                     request = front_end.recv()
+                    if (request == "c0"):
+                        print("*S* recv again")
+                        request = front_end.recv()
                     
                     available_workers -= 1
                     worker_id = workers_list.pop()
                     
-                    front_end.send(worker_id)
-                    front_end.send("")
-                    front_end.send(client_addr)
-                    front_end.send(request)
+                    print("*S* Received (%s) from %s. Send it to %s\n" % (request, client_addr, worker_id))
+                    
+                    #back_end.send_multipart([worker_id, "", client_addr, request])
+                    
+                    back_end.send(worker_id, zmq.SNDMORE)
+                    back_end.send("", zmq.SNDMORE)
+                    back_end.send(client_addr, zmq.SNDMORE)
+                    back_end.send(request)
             else:
-                print("No workers available. Sleep and wait for one to be back")
+                print("*S* No workers available.")
                     
             if (back_end in socks and socks[back_end] == zmq.POLLIN):
                 
@@ -156,9 +153,15 @@ class ZMQueue(object):
                 available_workers += 1
                 workers_list.append(worker_addr)
                 
+                print("*S* worker available %s\n" %(worker_addr))
+                
+                
                 #second frame is empty
                 empty = back_end.recv()
-                assert empty == ""
+                #print("empty = %s\n" %(empty))
+                if empty != "":
+                    print("Error empty is %s\n" % (empty))
+                    assert empty == ""
                 
                 # Third frame is READY or else a client reply address
                 client_addr = back_end.recv()
@@ -172,14 +175,20 @@ class ZMQueue(object):
                     
                     reply = back_end.recv()
                     
-                    front_end.send(client_addr)
-                    front_end.send("")
+                    print("*S* Received %s from %s\n" %(reply, worker_addr))
+                    
+                    front_end.send(client_addr, zmq.SNDMORE)
+                    front_end.send("", zmq.SNDMORE)
                     front_end.send(reply)
                     
                     self._client_nbr -= 1
                     
+                    print("client_nbr=%d\n" % (self._client_nbr) )
+                    
                     if self._client_nbr == 0:
                         break #Exit after N messages
+                else:
+                    print("*S* Received READY from %s\n" % (worker_addr))
     
         #out of infinite loop: do some housekeeping
         time.sleep (1)
@@ -196,9 +205,9 @@ def main():
     
     context = zmq.Context(1)
     
-    nb_workers = 1
+    nb_workers = 10
     
-    nb_clients = 1
+    nb_clients = 10
     
     
     for i in range(nb_workers):
