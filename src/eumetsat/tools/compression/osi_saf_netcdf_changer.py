@@ -439,7 +439,7 @@ if __name__ == '__main__':
     version = 3
     result_file_name = '/tmp/result-nc3.csv'
     nb_runs = 480
-    transform = False
+    transform = True
     run_full_tests(version, result_file_name, nb_runs, transform)
     #version = 4
     #result_file_name = '/tmp/result-nc4.csv'

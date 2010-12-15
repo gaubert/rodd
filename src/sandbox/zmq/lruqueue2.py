@@ -35,14 +35,14 @@ def worker_thread(worker_url, context, i):
             
             print("%s: %s\n" %(identity, request))
                
-            socket.send_multipart([address,"","OK"])
+            socket.send_multipart([address, "", "OK"])
             
-    except zmq.ZMQError, ze:
+    except zmq.ZMQError, zerr:
         # context terminated so quit silently
-        if ze.strerror == 'Context was terminated':
+        if zerr.strerror == 'Context was terminated':
             return
         else:
-            raise ze
+            raise zerr
     
         
 def client_thread(client_url, context, i):
@@ -123,7 +123,6 @@ def main():
             assert available_workers < NBR_WORKERS
             
             worker_addr = message[0]
-            
             
             # add worker back to the list of workers
             available_workers += 1

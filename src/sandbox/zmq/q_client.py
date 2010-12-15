@@ -12,7 +12,7 @@ class MongoZMQClient(object):
 Client that connects with MongoZMQ server to add/fetch docs
 """
 
-    def __init__(self, i, connect_addr='tcp://127.0.0.1:6000'):
+    def __init__(self, i, connect_addr='tcp://127.0.0.1:5559'):
         self._context = zmq.Context()
         self._socket = self._context.socket(zmq.XREQ)
         self._socket.setsockopt(zmq.IDENTITY,"c%d" % (i))

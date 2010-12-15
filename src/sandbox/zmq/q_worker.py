@@ -14,7 +14,8 @@ import time
 
 def main():
     
-    zmrl = 'tcp://127.0.0.1:6005'
+    #zmrl = 'tcp://127.0.0.1:6005'
+    zmrl = "tcp://*:5560"
     i = 0
     context = zmq.Context()
     
