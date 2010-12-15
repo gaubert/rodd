@@ -41,12 +41,12 @@ def worker_thread(worker_url, context, i):
             socket.send("", zmq.SNDMORE)
             socket.send("OK")
             
-    except zmq.ZMQError, ze:
+    except zmq.ZMQError, zerr:
         # context terminated so quit silently
-        if ze.strerror == 'Context was terminated':
+        if zerr.strerror == 'Context was terminated':
             return
         else:
-            raise ze
+            raise zerr
     
         
 def client_thread(client_url, context, i):
