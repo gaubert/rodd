@@ -15,7 +15,9 @@ def _view_table(a_table_name):
        Return the content of the sql table provided its name
     """
     try:
-        conn = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
+        #conn = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
+        conn = connections.DatabaseConnector('sqlite:////homespace/gaubert/mydb')
+        
     
         conn.connect()
         
@@ -38,7 +40,8 @@ def _view_request_results(a_request_name, a_sql_req):
        Return the content of the sql request provided its name
     """
     try:
-        conn = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
+        #conn = connections.DatabaseConnector("mysql://rodd:ddor@tclxs30/RODD")
+        conn = connections.DatabaseConnector('sqlite:////homespace/gaubert/mydb')
     
         conn.connect()
         

@@ -7,19 +7,19 @@ import sqlalchemy
 import decimal
 import simplejson as json
 
-from sqlalchemy.orm import mapper, relationship, backref
+from sqlalchemy.orm import mapper, relationship
 
 import eumetsat.common.logging_utils as logging
 from eumetsat.db import connections
 from eumetsat.common.collections import OrderedDict
 
 
-class Product(object):
+class Product(object): #pylint:disable-msg=R0903,R0902
     """ Product Object """
     
     LOGGER = logging.LoggerFactory.get_logger("Product")
     
-    def __init__(self, title, internal_id, description, disseminated, status):
+    def __init__(self, title, internal_id, description, disseminated, status): #pylint:disable-msg=R0913
         self.rodd_id            = None
         self.title              = title
         self.internal_id        = internal_id
@@ -191,7 +191,7 @@ class Product(object):
             
         return result
         
-class ServiceDir(object):
+class ServiceDir(object): #pylint:disable-msg=R0903
     """ServiceDir object """
     def __init__(self, name, channel):
         self.serv_id     = None
@@ -255,10 +255,10 @@ class DistributionType(object):
         return self.name
         
     
-class Channel(object):
+class Channel(object): #pylint:disable-msg=R0903
     """ Channel object """
     
-    def __init__(self, name, address, min_rate, max_rate, channel_function):
+    def __init__(self, name, address, min_rate, max_rate, channel_function): #pylint:disable-msg=R0913
         """ constructor """
         self.chan_id           = None
         self.name              = name
@@ -279,8 +279,11 @@ class Channel(object):
         result['multicast_address'] = self.multicast_address
         
         # given as decimal by sqlalchemy to ROUND_UP to get only integer values 
-        result['min_rate']            = str(decimal.Decimal(self.min_rate).quantize(decimal.Decimal('1')))
-        result['max_rate']            = str(decimal.Decimal(self.max_rate).quantize(decimal.Decimal('1')))
+        #result['min_rate']            = str(decimal.Decimal(self.min_rate).quantize(decimal.Decimal('1')))
+        #result['max_rate']            = str(decimal.Decimal(self.max_rate).quantize(decimal.Decimal('1')))
+        result['min_rate']            = str(self.min_rate)
+        result['max_rate']            = str(self.max_rate)
+        
         
         result['channel_function']    = self.channel_function
         
@@ -387,7 +390,7 @@ class DAO(object):
         return cls._instance
  
     def _load(self):
-        """ load the RODDDAO info """
+        """ load the RODD DAO info """
         self.conn.connect()
         
         self.metadata = self.conn.get_metadata()

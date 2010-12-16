@@ -11,15 +11,15 @@ import eumetsat.common.logging_utils as logging
 
 from eumetsat.db.rodd_db import Channel, Product, ServiceDir, FileInfo, DistributionType
 
-json_access = Module(__name__)
+json_access = Module(__name__) #pylint:disable-msg=C0103
 
 #set json_access logger
 LOGGER = logging.LoggerFactory.get_logger("json_access")
 
-def print_dict(di, out, format="%-25s %s"):
+def print_dict(a_dict, a_out, a_format="%-25s %s"):
     """ pretty print a dictionary """
-    for (key, val) in di.items():
-        out.write(format % (str(key)+':', val))
+    for (key, val) in a_dict.items():
+        a_out.write(a_format % (str(key)+':', val))
 
 
 def _add_new_file_product(session, uid, file_data):
