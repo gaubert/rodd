@@ -106,7 +106,7 @@ class Product(object):
         for a_file in a_file_data.get('files', []):
             finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()
             if finfo:
-                Product.LOGGER.info("In there ORRORORORORORORORR")
+
                 # update file
                 finfo.update(a_session, a_file)
             else:
@@ -133,8 +133,7 @@ class Product(object):
             else:
                 # update file
                 finfo.update(a_session, a_file)
-                    
-                
+    
     
     def get_index(self):
         """

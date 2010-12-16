@@ -413,8 +413,45 @@ def get_all_files_for_product(uid):
         res  = _update_files_in_product(g.dao.get_session(), uid, data)
         
         return jsonify(result=res)
-    
 
+@json_access.route('/product/<uid>/files/<name>', methods=['DELETE'])
+def delete_files_for_product(uid, name):
+    """ delete files for a specific product """
+    
+    session = g.dao.get_session()
+         
+    product = session.query(Product).filter_by(internal_id=uid).first()
+    
+    messages = []
+    
+    if product:
+        # be sure that the file is within the product
+        if product.contains_file(name):
+            finfo = session.query(FileInfo).filter_by(name=name).first()
+            
+            if finfo:
+                
+                session.delete(finfo)
+                session.commit()
+            
+                return  jsonify({ "status" : "OK",
+                          "messages" : "FileInfo %s removed from the database" % (name)
+                        })
+            else:
+                messages.append("FileInfo %s doesn't exist" % (name))
+             
+        else:
+            messages.append("Product %s doesn't contain the file info %s" % (uid, name))
+        
+    else:
+        messages.append("Product %s doesn't exist" %(uid))
+    
+    
+    
+    return jsonify({ "status" : "KO",
+                 "messages"       : messages
+           })
+    
 @json_access.route('/products', methods=['GET','POST','PUT'])
 def get_all_products():
     """ Restish return all products information """
