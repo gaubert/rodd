@@ -53,7 +53,7 @@ class Product(object):
         for finfo in self.file_infos:
             for the_type in finfo.dis_types:
                 if the_type not in result["distribution"]:
-                        result["distribution"].append(type)
+                    result["distribution"].append(type)
                 
                 result[type]["files"].append(finfo.jsonize())
         
@@ -61,7 +61,9 @@ class Product(object):
         return self._dis_type_cache
     
     def update(self, a_prod_dict, a_session):
-        """ update attributes of the product. Policy is to replace all attributes with existing ones and supress non present ones """
+        """ Update attributes of the product. 
+            Policy is to replace all attributes with existing ones and supress non present ones, 
+        """
         
         
         if a_prod_dict.get('name', None):
@@ -98,13 +100,23 @@ class Product(object):
         # Replace the current file_info with new_file_info if not empty
         self.file_infos = new_file_infos
     
-    def update_files(self,a_prod_dict, a_session):
+    def update_files(self, a_session, a_file_data):
         """ update existing files """
-        pass
+        
+        for a_file in a_file_data.get('files', []):
+            finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()
+            if finfo:
+                Product.LOGGER.info("In there ORRORORORORORORORR")
+                # update file
+                finfo.update(a_session, a_file)
+            else:
+                Product.LOGGER.info("file %s not present in %s" % (a_file['name'], self.rodd_id))
         
     
     def add_files(self, a_session, a_file_data):
-        """ add one or multiple files """
+        """ add one or multiple files. 
+            If the file already exists, replace its content with the new content
+        """
         for a_file in a_file_data.get('files', []):
             finfo = a_session.query(FileInfo).filter_by(name=a_file['name']).first()
             if not finfo:
@@ -124,8 +136,10 @@ class Product(object):
                     
                 
     
-    def get_index(self, a_force):
-        
+    def get_index(self):
+        """
+           return the file index
+        """
         try:
             return self._file_index
         except AttributeError:
@@ -145,7 +159,7 @@ class Product(object):
         """ check if the product contains the file.
             Return the distribution type if yes otherwise None 
         """
-        return self.get_index().get(name,None)
+        return self.get_index().get(name)
     
     def get_files_from(self, diss_type):
         """ get all the files for a particular diss_type """
@@ -155,7 +169,7 @@ class Product(object):
         
         
     def jsonize(self):
-        
+        """ jsonize Product """
         result = OrderedDict()
         
         result["name"]         = self.title 
@@ -186,7 +200,7 @@ class ServiceDir(object):
         self.channel     = channel
     
     def __repr__(self):
-        return "<ServiceDir(%s'%s', '%s')>" % ( (("'serv_id:%s', " % (self.serv_id)) if self.serv_id else ""),\
+        return "<ServiceDir(%s'%s', '%s')>" % ( (("'serv_id:%s', " % (self.serv_id)) if self.serv_id else ""), \
                                                 self.name, \
                                                 self.channel)
     
@@ -200,6 +214,7 @@ class ServiceDir(object):
         return result
     
 class DistributionType(object):
+    """ DistributionType object """
     
     EUMETCAST   = 'eumetcast-info'
     GTS         = 'gts-info'
@@ -210,14 +225,13 @@ class DistributionType(object):
     TYPES = [EUMETCAST, GTS, GEONETCAST, DATACENTRE, DIRECT]
     
     @classmethod
-    def create_distribution_type(self, dis_type_name):
+    def create_distribution_type(cls, dis_type_name):
         """ factory method controlling that the distribution type exists """
         if dis_type_name not in DistributionType.TYPES:
             raise Exception("%s is not a valid distribution type. Supported distribution types are %s\n" % (dis_type_name, DistributionType.TYPES) )
         
         return DistributionType(dis_type_name)
     
-    """ DistributionType object """
     def __init__(self, name):
         self.dis_id   = None
         self.name     = name
@@ -255,7 +269,7 @@ class Channel(object):
         self.channel_function  = channel_function
         
     def __repr__(self):
-        return "<Channel(%s'%s', '%s', '%s', '%s', '%s')>" % ( (( "'chan_id:%s', " % (self.chan_id)) if self.chan_id else ""),\
+        return "<Channel(%s'%s', '%s', '%s', '%s', '%s')>" % ( (( "'chan_id:%s', " % (self.chan_id)) if self.chan_id else ""), \
                                                               self.name, self.multicast_address, self.min_rate, self.max_rate, self.channel_function)
     
     def jsonize(self):
@@ -279,18 +293,18 @@ class FileInfo(object):
     
     LOGGER = logging.LoggerFactory.get_logger("FileInfo")
     
-    def __init__(self, name, reg_expr, size, type):
+    def __init__(self, name, reg_expr, size, a_type):
          
         self.file_id       = None
         self.name          = name
         self.reg_expr      = reg_expr
         self.size          = size
-        self.type          = type
+        self.type          = a_type
         self.service_dirs  = []
         self.dis_types     = []
     
     def __repr__(self):
-        return "<FileInfo(%s'%s','%s', '%s', '%s', '%s')>" % ((( "'file_id:%s', " % (self.file_id)) if self.file_id else "") ,\
+        return "<FileInfo(%s'%s','%s', '%s', '%s', '%s')>" % ((( "'file_id:%s', " % (self.file_id)) if self.file_id else ""), \
                                                                self.name, \
                                                                self.reg_expr, \
                                                                self.size, \
@@ -298,7 +312,7 @@ class FileInfo(object):
                                                                self.service_dirs)
         
     def jsonize(self):
-        
+        """ jsonize """
         result = {"service_dir" : [], "dis_type" : []}
         
         result["name"]        = self.name

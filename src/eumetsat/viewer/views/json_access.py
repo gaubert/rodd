@@ -9,17 +9,18 @@ import eumetsat.common.utils as utils
 
 import eumetsat.common.logging_utils as logging
 
-from eumetsat.db.rodd_db import DAO, Channel, Product, ServiceDir, FileInfo, DistributionType
+from eumetsat.db.rodd_db import Channel, Product, ServiceDir, FileInfo, DistributionType
 
 json_access = Module(__name__)
 
 #set json_access logger
 LOGGER = logging.LoggerFactory.get_logger("json_access")
 
-def printDict(di, out, format="%-25s %s"):
+def print_dict(di, out, format="%-25s %s"):
     """ pretty print a dictionary """
     for (key, val) in di.items():
         out.write(format % (str(key)+':', val))
+
 
 def _add_new_file_product(session, uid, file_data):
     """ add new file product. Keep all existing ones and add the new one """
@@ -39,45 +40,30 @@ def _add_new_file_product(session, uid, file_data):
              "messages"       : messages
            }
 
-def _update_file_in_product(session, uid, file_name, file_data):
+def _update_files_in_product(session, uid, file_data):
     """ associate a given file with a product """
-    
     messages = []
-    
     product = session.query(Product).filter_by(internal_id=uid).first()
-    
     if product:
-        tuple = product.contains_file(file_name)
+        product.update_files(session, file_data)
         
-        if tuple:
-            grp_list, file = tuple
-            file.update(session, file_data)
-            
-            #update File independently of the product
-            session.add(product)
-            session.commit()
-            
-            messages.append("Updated file '%s' for product %s" % (file_name, uid))
-            
-            return { "status"         : "OK",
-                     "messages"       : messages
-                   }
-        else:
-            messages.append("No file %s in product %s." % (file_name, product.internal_id))
+        session.add(product)
+        session.commit()
+        
+        return product.jsonize()
     else:
         messages.append("No product %s in RODD." % (uid))
-        
+    
     return { "status"         : "KO",
              "messages"       : messages
            }
+   
     
 
 def _add_jsonized_channels(session, data):
     """ Add a jsonized channels """
     #add channels if there are any
     messages = []
-    
-    channel_table = g.dao.get_table("channels")
 
     for chan in data.get('channels', []):
         #if it doesn't exist create it
@@ -155,7 +141,7 @@ def _add_jsonized_products(session, data):
                 
                 # iterate over the list of distribution types:
                 for the_type in DistributionType.TYPES:
-                    for a_file in prod.get(the_type,{ 'files' : []})['files']:
+                    for a_file in prod.get(the_type, { 'files' : []})['files']:
                         
                         #look for existing file-info
                         finfo = session.query(FileInfo).filter_by(name=a_file['name']).first()    
@@ -201,7 +187,7 @@ def _add_jsonized_products(session, data):
                  "messages"       : messages
                }
     
-    except Exception, the_exception:
+    except Exception, the_exception:  #pylint:disable-msg=W0703
         return { "status"         : "KO",
                  "messages"       : messages,
                  "error_messages" : the_exception,
@@ -233,7 +219,7 @@ def manage_product_with(uid):
         else:
             product = session.query(Product).filter_by(internal_id = uid).first()
             if product:
-               the_products["products"].append(product.jsonize())
+                the_products["products"].append(product.jsonize())
         
         return jsonify(the_products)
     
@@ -245,7 +231,7 @@ def manage_product_with(uid):
             session.delete(product)
             session.commit()
             result = { "status" : "OK",
-                        "messages"       : ["product %s deleted" %(uid)]
+                        "messages"       : ["product %s deleted" % (uid)]
                       }
         else:
             result = { "status" : "KO",
@@ -384,7 +370,7 @@ def manager_servicedir_with(name):
             session.delete(servdir)
             session.commit()
             result = { "status" : "OK",
-                        "messages"       : "service_dir %s deleted" %(name)
+                        "messages"       : "service_dir %s deleted" % (name)
                       }
         else:
             result = { "status" : "KO",
@@ -417,13 +403,16 @@ def get_all_files_for_product(uid):
     elif request.method == 'POST':
         data = request.json
         session = g.dao.get_session()
-        res     = _add_new_file_product(session, uid, data)
+        res     = _add_new_file_product(g.dao.get_session(), uid, data)
         
         return jsonify(result=res)
     #update existing products
     elif request.method == 'PUT':
         data = request.json
-        return jsonify(result=_update_jsonized_products(g.dao.get_session(), data))
+        
+        res  = _update_files_in_product(g.dao.get_session(), uid, data)
+        
+        return jsonify(result=res)
     
 
 @json_access.route('/products', methods=['GET','POST','PUT'])
