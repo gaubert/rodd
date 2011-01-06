@@ -90,7 +90,8 @@ def login():
 @app.route('/')
 @app.route('/index.html')
 def index():
-    return redirect(url_for('access.view_products_details'))
+    #return redirect(url_for('access.view_channels'))
+    return redirect(url_for('static', filename='index.html'))
 
 @app.route('/add', methods=['POST'])
 def add():

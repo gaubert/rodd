@@ -7,8 +7,6 @@
 """
 import zmq
 
-
-
 def main():
     """ main method """
     
