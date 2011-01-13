@@ -13,64 +13,16 @@
 		<script type="text/javascript" language="javascript" src="/static/js/jquery.js"></script> 
 		<script type="text/javascript" language="javascript" src="/static/js/jquery.dataTables.min.js"></script>
 		<script type="text/javascript" language="javascript" src="/static/js/FixedHeader.min.js"></script>
+		<script type="text/javascript" language="javascript" src="/static/js/rodd.js"></script>
 		<script type="text/javascript" charset="utf-8">
-		
-		    var format_channels_data = function format_channels_data(data) {
-		    };
 		
 			$(document).ready(function() {
 			    $.getJSON("/channels",
 					  {},
-					  function(data) 
-					  {
-					    //alert("Got the data");
-					    // format the data to feed data tables
-					    if (data.channels.length <= 0 )
-					    {
-					      alert("No Channels returned")
-					    } 
-					    else
-					    {
-					    
-					      var channels = data.channels;
-					      var aaData = []
-					    
-					      for(var i=0, len = data.channels.length; i < len; i++)
-					      {
-							//console.log("Name:" + channels[i].name);
-							aaData.push([ channels[i].name, channels[i].multicast_address, channels[i].channel_function, channels[i].min_rate, channels[i].max_rate ])
-						  }
-						  
-						  var aoColumns = [
-								{ "sTitle": "Name" },
-								{ "sTitle": "Multicast_Address" },
-								{ "sTitle": "Function" },
-								{ "sTitle": "Min Rate"},
-								{ "sTitle" : "Max Rate"}
-                            ]
-                         
-                         //Change table title
-                         $('#tblname').text('Channels Table');
-                         
-                         var oTable = $('#example').dataTable( {
-	                                       // enable the JQueryUI Theme Roller
-							               "bJQueryUI": true,
-							               // change pagination in full_number mode
-							               "sPaginationType": "full_numbers",
-							               // save users preferences
-							               "bStateSave": true,
-							               // change defaults for pagination value
-							               "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
-										   "aaData"    : aaData,
-										   "aoColumns" : aoColumns
-	  					              });
-	  					              
-	  					 new FixedHeader( oTable );
-	  					 
-	  					 
-              
-					    }
-			     });
+					  function(data) {
+					     rodd.render_data("Channel Table",rodd.format_channel_data(data))
+					  }
+				)
 			});
 		</script>
 	</head>
