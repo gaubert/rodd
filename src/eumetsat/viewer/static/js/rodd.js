@@ -10,8 +10,57 @@
 			alert("hello");
 		},	
 		
+		
+		/**
+		 * Format data genericly
+		 * @param data. The data to format
+		 * @param cols. The colums to display
+		 */
+		format_channel_data_generic:function(data, cols){
+			// format the data to feed data tables
+		    if (data.channels.length <= 0 )
+		    {
+		        alert("No Channels returned");
+		    } 
+		    else
+		    {
+		        var channels = data.channels;
+		        var aaData = [];
+		        // prepare data
+		        var dummy_list;
+		        for(var i=0, len = data.channels.length; i < len; i++)
+		        {
+		           dummy_list = [];
+		           for (var j=0, len_j = cols.length; j<len_j; j++)
+		           {
+				     dummy_list.push(channels[i][cols[j]]);
+				   }
+				   aaData.push(dummy_list);
+			    }
+			    
+			    /*var aoColumns = [];
+			    for (var k=0,len_k=cols.length;k<len_k; k++)
+			    {
+                    aoColumns.push({ "sTitle" : cols[k] });
+			    }*/
+			    var aoColumns = [
+                    { "sTitle": "Name" },
+                    { "sTitle": "Multicast_Address" },
+                    { "sTitle": "Function" },
+                    { "sTitle": "Min Rate"},
+                    { "sTitle" : "Max Rate"}
+                ];
+			    
+			    return { "cols" : aoColumns,
+			             "rows" : aaData
+			           };
+			             
+		    }
+			
+		},    
+		
 		format_channel_data:function(data){
-			//alert("Got the data");
+			
 		    // format the data to feed data tables
 		    if (data.channels.length <= 0 )
 		    {

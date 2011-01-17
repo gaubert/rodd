@@ -20,7 +20,9 @@
 			    $.getJSON("/channels",
 					  {},
 					  function(data) {
-					     rodd.render_data("Channel Table",rodd.format_channel_data(data));
+					     var col_names = [ "name", "multicast_address", "channel_function", "min_rate", "max_rate" ];
+					     var tempo_data = rodd.format_channel_data_generic(data, col_names);
+					     rodd.render_data("Channel Table", tempo_data);
 					  }
 				)
 				//rodd.hello();
