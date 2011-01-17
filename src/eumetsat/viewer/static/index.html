@@ -20,9 +20,10 @@
 			    $.getJSON("/channels",
 					  {},
 					  function(data) {
-					     rodd.render_data("Channel Table",rodd.format_channel_data(data))
+					     rodd.render_data("Channel Table",rodd.format_channel_data(data));
 					  }
 				)
+				//rodd.hello();
 			});
 		</script>
 	</head>
