@@ -3,13 +3,16 @@ Created on Sep 30, 2010
 
 @author: guillaume.aubert@eumetsat.int
 '''
-from flask import Module, g, render_template, request, redirect, flash, url_for, jsonify
+import time
+from sqlalchemy.orm import joinedload
+from flask import Module, g, render_template, request, redirect, flash, url_for, jsonify, current_app
+
 
 import eumetsat.common.utils as utils
 
 import eumetsat.common.logging_utils as logging
 
-from eumetsat.db.rodd_db import Channel, Product, ServiceDir, FileInfo, DistributionType
+from eumetsat.db.rodd_db import DAO, Channel, Product, ServiceDir, FileInfo, DistributionType
 
 json_access = Module(__name__) #pylint:disable-msg=C0103
 
@@ -20,6 +23,10 @@ def print_dict(a_dict, a_out, a_format="%-25s %s"):
     """ pretty print a dictionary """
     for (key, val) in a_dict.items():
         a_out.write(a_format % (str(key)+':', val))
+        
+def debug():
+    assert current_app.debug == False, "Don't panic! You're here by request of debug()"
+
 
 
 def _add_new_file_product(session, uid, file_data):
@@ -198,16 +205,18 @@ def _add_jsonized_products(session, data):
 def manage_product_with(uid):
     """ Restish get_product per uid """
     
+    dao = DAO()
     if request.method == 'GET':
         # show the user profile for that user
-        session = g.dao.get_session()
+        
+        session = dao.get_session()
         
         the_products = { "products" : [] }
         
         #look for stars in uid and replace them with % for a like sql operation
         if uid.find('*'):
             if len(uid) == 1:
-                product_table = g.dao.get_table("products")
+                product_table = dao.get_table("products")
                 #get everything because user asked for *
                 for product in session.query(Product).order_by(product_table.c.rodd_id):
                     the_products["products"].append(product.jsonize())  
@@ -224,7 +233,7 @@ def manage_product_with(uid):
         return jsonify(the_products)
     
     elif request.method == 'DELETE':
-        session = g.dao.get_session()
+        session = dao.get_session()
         product = session.query(Product).filter_by(internal_id = uid).first()
         
         if product:
@@ -244,16 +253,18 @@ def manage_product_with(uid):
 def manage_channel_with(name):
     """ Restish get_channels per name """
     
+    dao = DAO()
     if request.method == 'GET':
         # show the user profile for that user
-        session = g.dao.get_session()
+        
+        session = dao.get_session()
         
         the_result = { "channels" : [] }
         
         #look for stars in uid and replace them with % for a like sql operation
         if name.find('*'):
             if len(name) == 1:
-                channel_table = g.dao.get_table("channels")
+                channel_table = dao.get_table("channels")
                 #get everything because user asked for *
                 for channel in session.query(Channel).order_by(channel_table.c.rodd_id):
                     the_result ["channels"].append(channel.jsonize())  
@@ -270,7 +281,7 @@ def manage_channel_with(name):
         return jsonify(the_result)
     
     elif request.method == 'DELETE':
-        session = g.dao.get_session()
+        session = dao.get_session()
         channel = session.query(Channel).filter_by(name = name).first()
         
         if channel:
@@ -290,10 +301,12 @@ def manage_channel_with(name):
 def get_all_channels():
     """ Restish return all channels information """
     
+    dao = DAO()
     if request.method == 'GET':
-        session = g.dao.get_session()
         
-        channel_table = g.dao.get_table("channels")
+        session = dao.get_session()
+        
+        channel_table = dao.get_table("channels")
         
         the_channels = { "channels" : [] }
         
@@ -308,39 +321,48 @@ def get_all_channels():
     
     elif request.method == 'POST':
         data = request.json
-        return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
+        return jsonify(result=_add_jsonized_products(dao.get_session(), data))
+
 
 @json_access.route('/servicedirs', methods=['GET','POST'])
 def get_all_servicedirs():
     """ Restish return all servicedirs information """
-    
+
+    dao = DAO()
     if request.method == 'GET':
-        session = g.dao.get_session()
         
-        servicedirs_table = g.dao.get_table("service_dirs")
+        session = dao.get_session()
+        
+        servicedirs_table = dao.get_table("service_dirs")
         
         the_result = { "service_dirs" : [] }
-        
-        for servdir in session.query(ServiceDir).order_by(servicedirs_table.c.serv_id):
+         
+        probe_t1 = time.time()
+        for servdir in session.query(ServiceDir).order_by(servicedirs_table.c.serv_id).options(joinedload('channel')):
             the_result["service_dirs"].append(servdir.jsonize())
+        probe_t2 = time.time()
+       
+        LOGGER.info("sql request and jsonizing time %f\n" %(probe_t2-probe_t1))
         
         session.close()
         
         return jsonify(the_result)
+       
     
     elif request.method == 'POST':
         data = request.json
-        return jsonify(result=_add_jsonized_products(g.dao.get_session(), data))
+        return jsonify(result=_add_jsonized_products(dao.get_session(), data))
 
 @json_access.route('/servicedirs/<name>', methods=['GET','DELETE'])
 def manager_servicedir_with(name):
     """ Restish get_channels per name """
     
+    dao = DAO()
     if request.method == 'GET':
         # show the user profile for that user
-        session = g.dao.get_session()
+        session = dao.get_session()
         
-        servicedirs_table = g.dao.get_table("service_dirs")
+        servicedirs_table = dao.get_table("service_dirs")
         
         the_result = { "service_dirs" : [] }
         
@@ -363,7 +385,7 @@ def manager_servicedir_with(name):
         return jsonify(the_result)
     
     elif request.method == 'DELETE':
-        session = g.dao.get_session()
+        session = dao.get_session()
         servdir = session.query(ServiceDir).filter_by(name = name).first()
         
         if servdir:
@@ -383,11 +405,12 @@ def manager_servicedir_with(name):
 def get_all_files_for_product(uid):
     """ manage files in a product. POST add a new file, PUT update an existing one, GET get a file """
     
+    dao = DAO()
     #get products
     if request.method == 'GET':
         result = { "files" : [] }
         
-        session = g.dao.get_session()
+        session = dao.get_session()
          
         product = session.query(Product).filter_by(internal_id=uid).first()
     
@@ -402,23 +425,23 @@ def get_all_files_for_product(uid):
     #insert new products
     elif request.method == 'POST':
         data = request.json
-        session = g.dao.get_session()
-        res     = _add_new_file_product(g.dao.get_session(), uid, data)
+        session = dao.get_session()
+        res     = _add_new_file_product(dao.get_session(), uid, data)
         
         return jsonify(result=res)
     #update existing products
     elif request.method == 'PUT':
         data = request.json
         
-        res  = _update_files_in_product(g.dao.get_session(), uid, data)
+        res  = _update_files_in_product(dao.get_session(), uid, data)
         
         return jsonify(result=res)
 
 @json_access.route('/product/<uid>/files/<name>', methods=['DELETE'])
 def delete_files_for_product(uid, name):
     """ delete files for a specific product """
-    
-    session = g.dao.get_session()
+    dao = DAO()
+    session = dao.get_session()
          
     product = session.query(Product).filter_by(internal_id=uid).first()
     
@@ -457,10 +480,11 @@ def get_all_products():
     """ Restish return all products information """
     
     #get products
+    dao = DAO()
     if request.method == 'GET':
-        session = g.dao.get_session()
+        session = dao.get_session()
         
-        product_table = g.dao.get_table("products")
+        product_table = dao.get_table("products")
         
         the_products = { "products" : [] }
         for product in session.query(Product).order_by(product_table.c.rodd_id):
@@ -471,7 +495,7 @@ def get_all_products():
     #insert new products
     elif request.method == 'POST':
         data = request.json
-        session = g.dao.get_session()
+        session = dao.get_session()
         res     = _add_jsonized_products(session, data)
         
         LOGGER.info("products = %s" %(res))
@@ -480,4 +504,4 @@ def get_all_products():
     #update existing products: the policy is delete current object and add the new one
     elif request.method == 'PUT':
         data = request.json
-        return jsonify(result=_update_jsonized_products(g.dao.get_session(), data))
+        return jsonify(result=_update_jsonized_products(dao.get_session(), data))

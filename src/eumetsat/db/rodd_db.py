@@ -205,12 +205,10 @@ class ServiceDir(object): #pylint:disable-msg=R0903
     
     def jsonize(self):
         """ jsonize """
-        result = {}
         
-        result['name']    = self.name
-        result['channel'] = self.channel.name if self.channel else "" 
-        
-        return result
+        return { 'name' : self.name,
+                 'channel' : self.channel.name if self.channel else ""
+               }
     
 class DistributionType(object):
     """ DistributionType object """

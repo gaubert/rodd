@@ -81,6 +81,10 @@ class CSV2JSONRoddExtractor(object):
                                        })
         
         return result
+    
+    def extract_products(self):
+        """ extract the products """
+        
             
         
 if __name__ == '__main__':
@@ -89,16 +93,18 @@ if __name__ == '__main__':
     
     extractor = CSV2JSONRoddExtractor(root_dir)
     
-    json = extractor.extract_service_dirs()
+    #json = extractor.extract_service_dirs()
     
     #print("json %s\n" %(json))
     
-    json2 = extractor.extract_channels()
+    #json2 = extractor.extract_channels()
     
     #print("json2 %s\n" %(json2))
     
     #merge dicts
-    z = dict(json, **json2)
+    #z = dict(json, **json2)
+    
+    json3 = extractor.extract_products()
     
     #print("z = %s\n" % (z))
     

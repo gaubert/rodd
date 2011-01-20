@@ -20,11 +20,6 @@ app = Flask(__name__)
 app.register_module(access)
 app.register_module(json_access)
 
-@app.before_request
-def before_request():
-    """ before request method """
-    g.dao = DAO()
-
 
 class RegistrationForm(Form):
     username = TextField('Username', [validators.Length(min=4, max=25)])
