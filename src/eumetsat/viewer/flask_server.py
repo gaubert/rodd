@@ -36,18 +36,6 @@ class RegistrationForm(Form):
     confirm = PasswordField('Repeat Password')
 
 
-@app.route('/count_numbers')
-def _add_numbers():
-    app.logger.info("Hello numbers")
-    a = request.args.get('a', 0, type=int)
-    b = request.args.get('b', 0, type=int)
-    return jsonify(result=a + b)
-
-
-@app.route('/add_numbers')
-def add_numbers():
-    return render_template('numbers.tpl')
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm(request.form)

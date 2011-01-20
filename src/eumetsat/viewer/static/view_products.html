@@ -18,11 +18,12 @@
 		<script type="text/javascript" charset="utf-8">
 		
 			$(document).ready(function() {
-			    $.getJSON("/channels",
+			    $.getJSON("/products",
 					  {},
 					  function(data) {
-					     var col_names = [ "name", "multicast_address", "channel_function", "min_rate", "max_rate" ];
-					     rodd.render_table("Channel Info", rodd.format_data(data.channels, col_names));
+					     var col_names = [ "name", "uid", "distribution"];
+					     var formatted_data = rodd.format_product_data(data.products, col_names);
+					     rodd.render_table("Product Info", formatted_data);
 					  }
 				)
 			});
@@ -38,13 +39,12 @@
 	          <tr>
 		         <td class="dt_section">
 		            <div class="full_width big"> Your Tables: </div>
-		               <span class="flickspan"><a href="/products_details">Products Details</a></span>
-			           <span class="flickspan"><a href="/static/view_products.html">Products Tbl</a></span>
-			           <span class="flickspan"><a href="/static/view_service_dirs.html">ServiceDirs</a></span>
-			           <span class="flickspan"><a href="/static/view_channels.html">Channels</a></span>
-			           <span class="flickspan"><a href="/families">Families</a></span>
-			           <span class="flickspan"><a href="/products_2_servdirs">Products2ServiceDirs</a></span>
-			           <span class="flickspan"><a href="/servdirs_2_families">ServiceDirs2Families</a></span>
+			        <span class="flickspan"><a href="/static/view_products.html">Products</a></span>
+			        <span class="flickspan"><a href="/static/view_service_dirs.html">ServiceDirs</a></span>
+			        <span class="flickspan"><a href="/static/view_channels.html">Channels</a></span>
+			        <span class="flickspan"><a href="/families">Families</a></span>
+			        <span class="flickspan"><a href="/products_2_servdirs">Products2ServiceDirs</a></span>
+			        <span class="flickspan"><a href="/servdirs_2_families">ServiceDirs2Families</a></span>
 		        </td>
 		      </tr>
 		    </table>

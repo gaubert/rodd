@@ -1,8 +1,10 @@
 
 /**
  * First version of the rodd library (not plugable for the moment)
+ * @param jquery 
+ * @param underscore
  */
-(function($){
+(function($,_){
 	
 	var rodd = {
 		
@@ -10,46 +12,93 @@
 			alert("hello");
 		},	
 		
+		/**
+         * Format product data
+         * @param data. The product data to format
+         * @param cols. The colums to display
+         * @return map { "cols" : cols_val, rows : rows_val }
+         */
+        format_product_data:function(data, cols){
+        	
+        	// format the data to feed data tables
+            if (data.length <= 0 )
+            {
+                alert("No data lines returned");
+            }
+            else
+            {
+                var aaData = [];
+                // prepare data
+                var dummy_list;
+                
+                // process eachline
+                _.each(data, function(elem) { dummy_list = []; 
+	                                          // add all columns within an array for each line
+	                                          _.each(cols, function(col) { 
+	                                          	                           if (col == "distribution")
+	                                          	                           {
+	                                          	                           	  // add booleans for distribution info                                  	                           	  
+	                                          	                           	  dummy_list.push( (_.include(elem[col],"eumetcast-info"))?"Y":"N");
+	                                          	                           	  dummy_list.push( (_.include(elem[col],"gts-info"))?"Y":"N");
+	                                          	                           	  dummy_list.push( (_.include(elem[col],"datacentre-info"))?"Y":"N");
+	                                          	                           } 
+	                                          	                           else
+	                                          	                           {
+	                                          	                              dummy_list.push(elem[col]);
+	                                          	                           }
+	                                          	                         });
+	                                          aaData.push(dummy_list); 
+                                      });
+                
+                var aoColumns = [];
+                _.each(cols, function(col) { 
+                	                          // exception for distribution
+                	                          if (col == "distribution")
+                	                          {
+                	                          	 // add distribution columns
+                	                          	 aoColumns = aoColumns.concat([ { "sTitle" : "Eumetcast"}, { "sTitle":"Gts"}, { "sTitle": "Data Centre"}]);
+                	                          }
+                	                          else
+                	                          {
+                	                             aoColumns.push( { "sTitle" : col } );
+                	                          } 
+                	                       });
+                
+                return { "cols" : aoColumns,
+                         "rows" : aaData
+                       };
+                         
+            }
+        },
+		
 		
 		/**
 		 * Format data genericly
 		 * @param data. The data to format
 		 * @param cols. The colums to display
+		 * @return map { "cols" : cols_val, rows : rows_val }
 		 */
-		format_channel_data_generic:function(data, cols){
+		format_data:function(data, cols){
 			// format the data to feed data tables
-		    if (data.channels.length <= 0 )
+		    if (data.length <= 0 )
 		    {
-		        alert("No Channels returned");
+		        alert("No data lines returned");
 		    } 
 		    else
 		    {
-		        var channels = data.channels;
 		        var aaData = [];
 		        // prepare data
 		        var dummy_list;
-		        for(var i=0, len = data.channels.length; i < len; i++)
-		        {
-		           dummy_list = [];
-		           for (var j=0, len_j = cols.length; j<len_j; j++)
-		           {
-				     dummy_list.push(channels[i][cols[j]]);
-				   }
-				   aaData.push(dummy_list);
-			    }
+		        
+		        // process eachline
+		        _.each(data, function(elem) { dummy_list = []; 
+	                                          // add all columns within an array for each line
+	                                          _.each(cols, function(col) { dummy_list.push(elem[col]); });
+	                                          aaData.push(dummy_list); 
+		                              });
 			    
-			    /*var aoColumns = [];
-			    for (var k=0,len_k=cols.length;k<len_k; k++)
-			    {
-                    aoColumns.push({ "sTitle" : cols[k] });
-			    }*/
-			    var aoColumns = [
-                    { "sTitle": "Name" },
-                    { "sTitle": "Multicast_Address" },
-                    { "sTitle": "Function" },
-                    { "sTitle": "Min Rate"},
-                    { "sTitle" : "Max Rate"}
-                ];
+			    var aoColumns = [];
+			    _.each(cols, function(col) { aoColumns.push( { "sTitle": col } ); });
 			    
 			    return { "cols" : aoColumns,
 			             "rows" : aaData
@@ -59,47 +108,13 @@
 			
 		},    
 		
-		format_channel_data:function(data){
-			
-		    // format the data to feed data tables
-		    if (data.channels.length <= 0 )
-		    {
-		      alert("No Channels returned");
-		    } 
-		    else
-		    {
-		    
-		      var channels = data.channels;
-		      var aaData = [];
-		    
-		      for(var i=0, len = data.channels.length; i < len; i++)
-		      {
-				//console.log("Name:" + channels[i].name);
-				aaData.push([ channels[i].name, channels[i].multicast_address, channels[i].channel_function, channels[i].min_rate, channels[i].max_rate ]);
-			  }
-			  
-			  var aoColumns = [
-					{ "sTitle": "Name" },
-					{ "sTitle": "Multicast_Address" },
-					{ "sTitle": "Function" },
-					{ "sTitle": "Min Rate"},
-					{ "sTitle" : "Max Rate"}
-                ];
-             
-                
-                return { "cols" : aoColumns, 
-                         "rows" : aaData
-                       };
-                
-		    }
-		},
-		
 		/**
-         * Render the passed data map(cols,rows)
+         * create a table from the passed data using dataTable jquery plugin
          *
-         * @return void
+         *  @param  data a Map with cols and rows values
+         *  @return void
          */ 
-		render_data:function(table_name, data){
+		render_table:function(table_name, data){
 			
 			// check that the data is a map 
 			
@@ -108,8 +123,9 @@
 			
 			//Change table title in tablename
             $('#tblname').text(table_name);
+            $('#titlename').text(table_name);
                      
-            var oTable = $('#example').dataTable( {
+            var oTable = $('#rodd_table').dataTable( {
                    // enable the JQueryUI Theme Roller
 	               "bJQueryUI": true,
 	               // change pagination in full_number mode
@@ -119,10 +135,10 @@
 	               // change defaults for pagination value
 	               "aLengthMenu": [[25, 50, 100, -1], [25, 50, 100, "All"]],
 				   "aaData"    : rows,
-				   "aoColumns" : cols
+				   "aoColumns" : cols,
              });
 
-             var fixheader = new FixedHeader( oTable );	
+             var fixheader = new FixedHeader( oTable );
 		}
 	};
 	
@@ -130,4 +146,4 @@
 	if(!window.rodd){window.rodd=rodd;}//We create a shortcut for our framework, we can call the methods by $$.method();
 	
 	
-})(jQuery);
+})(jQuery,_);

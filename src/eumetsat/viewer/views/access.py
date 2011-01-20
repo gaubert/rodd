@@ -34,6 +34,17 @@ def _view_table(a_table_name):
     except Exception, the_exc:
         return the_exc
 
+def _view_table_js(a_data_url, a_page_name):
+    """
+       Return the content of the sql table provided its name
+    """
+    try:
+        output = render_template('generic_table_js.tpl', data_url = a_data_url , page_name = a_page_name)
+        
+        return output
+    except Exception, the_exc:
+        return the_exc
+
 def _view_request_results(a_request_name, a_sql_req):
     
     """
@@ -77,7 +88,7 @@ def view_channels():
     """ 
        Viewer for channels 
     """
-    return _view_table("channels")
+    return _view_table_js("/channels", "Channels Info")
 
 @access.route('/view_families')
 def view_families():
