@@ -25,7 +25,9 @@ def print_dict(a_dict, a_out, a_format="%-25s %s"):
         a_out.write(a_format % (str(key)+':', val))
         
 def debug():
-    assert current_app.debug == False, "Don't panic! You're here by request of debug()"
+    import pdb; pdb.set_trace()
+
+    #assert current_app.debug == False, "Don't panic! You're here by request of debug()"
 
 
 
@@ -336,7 +338,7 @@ def get_all_servicedirs():
         servicedirs_table = dao.get_table("service_dirs")
         
         the_result = { "service_dirs" : [] }
-         
+        
         probe_t1 = time.time()
         for servdir in session.query(ServiceDir).order_by(servicedirs_table.c.serv_id).options(joinedload('channel')):
             the_result["service_dirs"].append(servdir.jsonize())
