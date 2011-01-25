@@ -6,6 +6,8 @@ Created on 20 Jan 2011
 
 from lxml import etree
 import StringIO
+import os
+import eumetsat.common.utils as utils
 
 
 UNDEFINED = "UNDEFINED"
@@ -19,6 +21,13 @@ class RoddExtractor(object):
     
     """ Generic Importer
     """
+    DISCARD = ['FTP', 'EUMETSATWebsite', 'CMACast', 
+               'SAF Archive & FTP', 'Internet', 'AVISO',
+                'NOAA CLASS Archive', 'SAF' ]
+                
+    KEEP    = ['Direct', 'EUMETSAT Data Centre', 'GTS',
+               'GEONETCast-Americas', 'EUMETCast' , 'EUMETCast-Africa',
+               'EUMETCast-Europe', 'EUMETCast-Americas']
     
     def __init__(self, a_xml_directory):
         """ constructor """
@@ -30,9 +39,15 @@ class RoddExtractor(object):
         """ Read the table product and 
         
         """
+    
+    def process_dir(self, dir):
+        """ process all the files in a dir """
+        for the_file in utils.dirwalk(dir):
+            print("Parsing %s\n" %(os.path.basename(the_file)))
+            self.read_xml(the_file)
         
         
-    def read_xml(self):
+    def read_xml(self, a_file_path):
         """ read_xml file.
             
             return the default if it is not found and if fail_if_missing is False, otherwise return NoOptionError
@@ -49,9 +64,9 @@ class RoddExtractor(object):
             
         """
         
-        dir  = "/homespace/gaubert/mdexport-run-3123635774208809095282646930287344/download-5709376852774485935282647175391973"
+        #dir  = "/homespace/gaubert/mdexport-run-3123635774208809095282646930287344/download-5709376852774485935282647175391973"
         
-        file_path = "/homespace/gaubert/mdexport-run-3123635774208809095282646930287344/download-5709376852774485935282647175391973/metadata_146.xml"
+        #file_path = "/homespace/gaubert/mdexport-run-3123635774208809095282646930287344/download-5709376852774485935282647175391973/metadata_146.xml"
         
         ns = {          'gmd':'http://www.isotc211.org/2005/gmd',
                         'gco':'http://www.isotc211.org/2005/gco',
@@ -62,7 +77,7 @@ class RoddExtractor(object):
         
     
         extracts = { 'distribution' : [] }
-        doc = etree.parse(open(file_path,'r'))
+        doc = etree.parse(open(a_file_path,'r'))
        
         # get name
         res = doc.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString", namespaces= ns)
@@ -94,24 +109,42 @@ class RoddExtractor(object):
                 # look for internal element
                 elem.find('{%s}availability'%(ns['eum']))
                 
-                print("Elem ========\n")
+                #print("Elem ========\n")
                 #tag=etree.Element
                 for child in elem.iter("{%s}availability"% (ns['eum']) ):
                     val = child.find("{%s}CharacterString" % (ns['gco']))
                     if val is not None:
-                        print("%s - %s" % (val.tag, val.text))
-                        extracts['distribution'] = val.text
-                        
+                        #print("%s - %s" % (val.tag, val.text))
+                        # discard it when it is EUMETSATWebsite
+                        distribution = val.text
+                        if distribution.strip() in RoddExtractor.DISCARD:
+                            print("xx DISCARD %s for %s\n" %( distribution, os.path.basename(a_file_path)))
+                        else:
+                            if 'EUMETCast' in distribution:
+                                list_of_dist = distribution.split(',')
+                                if 'EUMETCast' in list_of_dist:
+                                    list_of_dist.remove('EUMETCast')
+                                extracts['distribution'].extend(list_of_dist)
+                            else:
+                                if distribution in RoddExtractor.KEEP:
+                                    extracts['distribution'].append(distribution)
+                                else:
+                                    print("******** %s not in KEEP for %s\n" %(distribution, os.path.basename(a_file_path)))
+                                    
         else:
-            raise Exception("Error")
+            print("WARN: No distribution info for %s. Probably an external product\n" %(os.path.basename(a_file_path)))
+            return
         
         out = StringIO.StringIO()
         pprint_dict(extracts, out)
-        print("Extracts = \n%s\n" %(out.getvalue()))
+        print("== File %s = \n%s\n" %(os.path.basename(a_file_path), out.getvalue()))
         
         
             
 if __name__ == "__main__":
     
+    dir = "/homespace/gaubert/mdexport-run-3123635774208809095282646930287344/download-5709376852774485935282647175391973"
+    
     extractor = RoddExtractor("MyExtrractorDir")
-    extractor.read_xml()    
+    extractor.process_dir(dir)
+    #extractor.read_xml("%s/%s" %(dir, 'metadata_89.xml'))

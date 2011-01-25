@@ -192,7 +192,7 @@ def dirwalk(dir):
      This implementation returns only the files in all the subdirectories.
      Beware, this is a generator.
     """
-    for f in os.listdir(dir):
+    for f in sorted(os.listdir(dir)):
         fullpath = os.path.join(dir,f)
         if os.path.isdir(fullpath) and not os.path.islink(fullpath):
             for x in dirwalk(fullpath):  # recurse into subdir
