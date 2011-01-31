@@ -6,12 +6,15 @@ Created on Sep 29, 2010
 import sqlalchemy
 import decimal
 import simplejson as json
+import time
 
 from sqlalchemy.orm import mapper, relationship
 
 import eumetsat.common.logging_utils as logging
 from eumetsat.db import connections
 from eumetsat.common.collections import OrderedDict
+
+
 
 
 class Product(object): #pylint:disable-msg=R0903,R0902
@@ -181,13 +184,18 @@ class Product(object): #pylint:disable-msg=R0903,R0902
         result[DistributionType.GTS]         = { "files": [] }
         result[DistributionType.DATACENTRE]  = { "files": [] }
         result[DistributionType.GEONETCAST]  = { "files": [] }
+        result[DistributionType.DIRECT]      = { "files": [] }
         
         for finfo in self.file_infos:
             for the_type in finfo.dis_types:
                 if the_type.name not in result["distribution"]:
                     result["distribution"].append(the_type.name)
                 
+                probe_t1 = time.time()
                 result[the_type.name]["files"].append(finfo.jsonize())
+                probe_t2 = time.time()
+       
+                Product.LOGGER.info("#### jsonize finfo %f\n" %(probe_t2-probe_t1))
             
         return result
         
@@ -221,20 +229,25 @@ class DistributionType(object):
     
     TYPES = [EUMETCAST, GTS, GEONETCAST, DATACENTRE, DIRECT]
     
+    WORLD = 'world'
+    
+    GEO   = [WORLD, 'europe', 'africa', 'america']
+    
     @classmethod
     def create_distribution_type(cls, dis_type_name):
         """ factory method controlling that the distribution type exists """
         if dis_type_name not in DistributionType.TYPES:
             raise Exception("%s is not a valid distribution type. Supported distribution types are %s\n" % (dis_type_name, DistributionType.TYPES) )
         
-        return DistributionType(dis_type_name)
+        return DistributionType(dis_type_name, DistributionType.WORLD)
     
-    def __init__(self, name):
+    def __init__(self, name, geo):
         self.dis_id   = None
         self.name     = name
+        self.geo      = geo
     
     def __repr__(self):
-        return "<DistributionType('%s')>" % (self.name)
+        return "<DistributionType('%s','%s')>" % (self.name, self.geo)
     
     def __eq__(self, ext_obj):
         """ equality operator """
@@ -244,7 +257,8 @@ class DistributionType(object):
         if type(ext_obj) == type(""):
             return (ext_obj == self.name)
         else:    
-            return (ext_obj.name == self.name)
+            #return ( (ext_obj.name == self.name) and (ext_obj.geo_reg == self.geo_reg) )
+            return ( (ext_obj.name == self.name) )
         
     def jsonize(self):
         """ jsonize """
@@ -446,8 +460,8 @@ class DAO(object):
             
         # map file_info table
         mapper(FileInfo, self.tbl_dict['file_info'], properties={
-        'service_dirs'   : relationship(ServiceDir, secondary=file_2_servdirs_table),
-        'dis_types'      : relationship(DistributionType, secondary=fileinfo_2_distribution_table),
+        'service_dirs'   : relationship(ServiceDir, secondary=file_2_servdirs_table, lazy='joined'),
+        'dis_types'      : relationship(DistributionType, secondary=fileinfo_2_distribution_table, lazy='joined'),
         
         })
         

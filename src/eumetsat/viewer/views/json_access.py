@@ -160,17 +160,18 @@ def _add_jsonized_products(session, data):
                                 #create file object
                                 finfo = FileInfo(  a_file["name"], \
                                                    a_file.get("regexpr", ""), \
-                                                   a_file["size"], \
-                                                   a_file["type"])
+                                                   a_file.get("size",0), \
+                                                   a_file.get("type",None)
+                                                )
                           
                                 
                                 #add serviceDirs if there are any and if it is a eumetcast-info distribution type
                                 if the_type == DistributionType.EUMETCAST:
                                     serv_dir_names = a_file.get("service_dir", None)
-                                     
-                                    for serv_dir_name in serv_dir_names:
-                                        service_d = session.query(ServiceDir).filter_by(name=serv_dir_name).first()    
-                                        finfo.service_dirs.append(service_d)
+                                    if serv_dir_names: 
+                                        for serv_dir_name in serv_dir_names:
+                                            service_d = session.query(ServiceDir).filter_by(name=serv_dir_name).first()    
+                                            finfo.service_dirs.append(service_d)
                         
                          
                         #add eumetcast distribution type
@@ -489,11 +490,29 @@ def get_all_products():
         product_table = dao.get_table("products")
         
         the_products = { "products" : [] }
-        for product in session.query(Product).order_by(product_table.c.rodd_id):
+       
+        probe_t1 = time.time()
+        res = session.query(Product).order_by(product_table.c.rodd_id).options(joinedload('file_infos'))
+        probe_t2 = time.time()
+       
+        LOGGER.info("#### sql request %f\n" %(probe_t2-probe_t1))
+        
+        probe_t1 = time.time()
+        for product in res:
             the_products["products"].append(product.jsonize())
+        
+        probe_t2 = time.time()
+       
+        LOGGER.info("#### creating products %f\n" %(probe_t2-probe_t1))
            
         session.close()
-        return jsonify(the_products)
+        probe_t1 = time.time()
+        json_res = jsonify(the_products)
+        probe_t2 = time.time()
+       
+        LOGGER.info("#### jsonify %f\n" %(probe_t2-probe_t1))
+        
+        return json_res
     #insert new products
     elif request.method == 'POST':
         data = request.json

@@ -35,14 +35,15 @@ CREATE TABLE IF NOT EXISTS products (
 -- information regarding the distributionTypes
 CREATE TABLE IF NOT EXISTS distribution_type (
     dis_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    geo  VARCHAR(255) NOT NULL
   );
   
-INSERT into distribution_type (name) values("eumetcast-info");
-INSERT into distribution_type (name) values("gts-info");
-INSERT into distribution_type (name) values("direct-info");
-INSERT into distribution_type (name) values("geonetcast-info");
-INSERT into distribution_type (name) values("data-centre-info");
+INSERT into distribution_type (name, geo) values("eumetcast-info","world");
+INSERT into distribution_type (name, geo) values("gts-info", "world");
+INSERT into distribution_type (name, geo) values("direct-info", "world");
+INSERT into distribution_type (name, geo) values("geonetcast-info", "world");
+INSERT into distribution_type (name, geo) values("data-centre-info", "world");
 
 -- information regarding the file_info
 CREATE TABLE IF NOT EXISTS file_info (
@@ -83,30 +84,6 @@ CREATE TABLE IF NOT EXISTS products_2_fileinfo (
 CREATE TABLE IF NOT EXISTS fileinfo_2_distribution (
     file_id INTEGER,
     dis_id  INTEGER
-);
-
--- information to create relation between products and fileinfos for products using EUMETCAST
-CREATE TABLE IF NOT EXISTS products_2_eumetcast (
-    rodd_id INTEGER,
-    file_id INTEGER
-);
-
--- information to create relation between products and fileinfos for products using GTS
-CREATE TABLE IF NOT EXISTS products_2_gts (
-    rodd_id INTEGER,
-    file_id INTEGER
-);
-
--- information to create relation between products and fileinfos for products using GEONETCAST
-CREATE TABLE IF NOT EXISTS products_2_geonetcast (
-    rodd_id INTEGER,
-    file_id INTEGER
-);
-
--- information to create relation between products and fileinfos for products using DATA CENTRE
-CREATE TABLE IF NOT EXISTS products_2_data_centre (
-    rodd_id INTEGER,
-    file_id INTEGER
 );
   
 -- information regarding file2servdirs

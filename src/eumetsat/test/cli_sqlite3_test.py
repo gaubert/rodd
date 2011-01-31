@@ -22,7 +22,7 @@ class RODDTestCase(unittest.TestCase):
         self.assertEqual(res,0,"Could not clean properly the database when running %s" % (script))
         print("=== Db reseted. Start the tests")
         
-    def ztest_get_add_delete_channel(self):
+    def test_get_add_delete_channel(self):
         """**********  add a add, get it and delete it **************"""
         
         OK_ADD_CHAN  = {'result': {'status': 'OK', 'messages': ['Added Channel AIDA-16.', 'Added Channel AIDA-17.', 'Added ServiceDir aida-2-test.', 'Added ServiceDir aida-3-test.', 'Added ServiceDir aida-4-test.']}} 
@@ -72,7 +72,7 @@ class RODDTestCase(unittest.TestCase):
         data = flask.json.loads(returned_val.data)
         self.assertDictEqual(data, OK_NO_CHAN, "Fail when getting channel. \n%s \nis different from \n%s" % (data, OK_NO_CHAN))
 
-    def ztest_get_add_delete_servdirs(self):
+    def test_get_add_delete_servdirs(self):
         """**********  add a servicedir, get it and delete it **************"""
         
         OK_ADD_SERV  = {'result': {'status': 'OK', 'messages': ['Added Channel EPS-3.', 'Added ServiceDir EPS-METOP-ASCA-L21.']}} 
@@ -132,7 +132,7 @@ class RODDTestCase(unittest.TestCase):
         self.assertDictEqual(data, OK_NO_CHAN, "Fail when getting channel. \n%s \nis different from \n%s" % (data, OK_NO_CHAN))
 
     
-    def ztest_get_add_delete_product(self):
+    def test_get_add_delete_product(self):
         """**********  add a product, get it and delete it **************"""
         
         OK_ADD_PROD  = {'result': {'status': 'OK', 'messages': ['Added Channel EPS-3.', 'Added ServiceDir EPS-METOP-ASCA-L1.', 'Added Product EO:EUM:DAT:METOP:ASCSZR1B.']}}
@@ -182,7 +182,7 @@ class RODDTestCase(unittest.TestCase):
         data = flask.json.loads(returned_val.data)
         self.assertDictEqual(data, OK_NO_PROD, "Fail when getting product. \n%s \nis different from \n%s" % (data, OK_ADD_PROD))
 
-    def ztest_update_product(self):
+    def test_update_product(self):
         """********** Update products **************"""
         
         OK_ADD_PROD     = {'result': {'status': 'OK', 'messages': ['Added Channel EPS-3.', 'Added ServiceDir EPS-METOP-ASCA-L1.', 'Added Product EO:EUM:DAT:METOP:ASCSZR1B.']}}
