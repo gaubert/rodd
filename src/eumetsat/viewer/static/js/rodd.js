@@ -139,6 +139,28 @@
              });
 
              var fixheader = new FixedHeader( oTable );
+             
+             $('#rodd_table tbody tr td:eq(2)').each( function() {
+			        var sTitle;
+			        //var nTds = $('td', this);
+			        //var sEum = $(nTds[2]).text();
+			        var sEum = this.textContent;
+			        
+			        if ( sEum == "Y" )
+			            sTitle =  'On Eumetcast';
+			        else 
+			            sTitle =  'Not On Eumetcast';
+			        
+			        this.setAttribute( 'title', sTitle );
+            } );
+    
+            /* Apply the tooltips */
+            $('#rodd_table tbody td[title]').tooltip( {
+                "delay": 0,
+                "track": true,
+                "fade": 250
+            } );
+             
 		}
 	};
 	

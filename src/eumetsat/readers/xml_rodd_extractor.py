@@ -80,25 +80,27 @@ class RoddExtractor(object):
         doc = etree.parse(open(a_file_path,'r'))
        
         # get name
-        res = doc.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString", namespaces= ns)
+        res = doc.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString", \
+                        namespaces= ns)
         if len(res) > 0:
-           extracts['name'] = res[0].text
+            extracts['name'] = res[0].text
         else:
-           extracts['name'] = UNDEFINED
+            extracts['name'] = UNDEFINED
         
         #get unique id
-        res = doc.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString", namespaces= ns)
+        res = doc.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString", \
+                         namespaces = ns)
         if len(res) > 0:
-           extracts['uid'] = res[0].text
+            extracts['uid'] = res[0].text
         else:
-           extracts['uid'] = UNDEFINED
+            extracts['uid'] = UNDEFINED
         
         #get description
         res = doc.xpath("//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:abstract/gco:CharacterString", namespaces = ns)
         if len(res) > 0:
-           extracts['description'] = res[0].text
+            extracts['description'] = res[0].text
         else:
-           extracts['description'] = UNDEFINED
+            extracts['description'] = UNDEFINED
         
         #get distribution info
         
@@ -106,11 +108,8 @@ class RoddExtractor(object):
         res = doc.xpath("//eum:MD_EUMDigitalTransferOptions", namespaces = ns)
         if len(res) > 0:
             for elem in res:
-                # look for internal element
-                elem.find('{%s}availability'%(ns['eum']))
-                
-                #print("Elem ========\n")
-                #tag=etree.Element
+    
+                # get the availablity elements
                 for child in elem.iter("{%s}availability"% (ns['eum']) ):
                     val = child.find("{%s}CharacterString" % (ns['gco']))
                     if val is not None:
@@ -130,6 +129,9 @@ class RoddExtractor(object):
                                     extracts['distribution'].append(distribution)
                                 else:
                                     print("******** %s not in KEEP for %s\n" %(distribution, os.path.basename(a_file_path)))
+                                    
+                #get the formats elements
+                # create the file part for each part
                                     
         else:
             print("WARN: No distribution info for %s. Probably an external product\n" %(os.path.basename(a_file_path)))

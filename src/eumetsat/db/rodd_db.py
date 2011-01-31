@@ -424,37 +424,6 @@ class DAO(object):
         # load file_info table
         self.tbl_dict['channels']      = sqlalchemy.Table('channels', self.metadata, autoload= True)
         
-        
-        #create many to many relation table
-        # beware add foreign key constraints manually as they do not exist in MYSQL
-        products_2_eumetcast_table      = sqlalchemy.Table('products_2_eumetcast', self.metadata, \
-                                                     sqlalchemy.ForeignKeyConstraint(['rodd_id'], ['products.rodd_id']), \
-                                                     sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
-                                                     autoload = True)
-        
-        self.tbl_dict['products_2_eumetcast'] = products_2_eumetcast_table
-        
-        products_2_geonetcast_table     = sqlalchemy.Table('products_2_geonetcast', self.metadata, \
-                                                     sqlalchemy.ForeignKeyConstraint(['rodd_id'], ['products.rodd_id']), \
-                                                     sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
-                                                     autoload = True)
-        
-        self.tbl_dict['products_2_geonetcast'] = products_2_geonetcast_table
-        
-        products_2_gts_table            = sqlalchemy.Table('products_2_gts', self.metadata, \
-                                                     sqlalchemy.ForeignKeyConstraint(['rodd_id'], ['products.rodd_id']), \
-                                                     sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
-                                                     autoload = True)
-        
-        self.tbl_dict['products_2_gts'] = products_2_gts_table
-        
-        products_2_data_centre_table    = sqlalchemy.Table('products_2_data_centre', self.metadata, \
-                                                     sqlalchemy.ForeignKeyConstraint(['rodd_id'], ['products.rodd_id']), \
-                                                     sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
-                                                     autoload = True)
-        
-        self.tbl_dict['products_2_data_centre'] = products_2_data_centre_table
-        
         file_2_servdirs_table           = sqlalchemy.Table('file_2_servdirs', self.metadata, \
                                                      sqlalchemy.ForeignKeyConstraint(['file_id'], ['file_info.file_id']), \
                                                      sqlalchemy.ForeignKeyConstraint(['serv_id'], ['service_dirs.serv_id']), \
@@ -464,14 +433,6 @@ class DAO(object):
     
         # create many to many relation ship between service_dirs and products with products_2_servdirs assoc table
         mapper(Product, self.tbl_dict['products'], properties={
-        'data_centre_infos'  :  relationship(FileInfo,   secondary=products_2_data_centre_table, \
-                                                         single_parent=True, cascade="all, delete, delete-orphan"),
-        'gts_infos'          :  relationship(FileInfo,   secondary=products_2_gts_table, \
-                                                         single_parent=True, cascade="all, delete, delete-orphan"),
-        'eumetcast_infos'    :  relationship(FileInfo  , secondary=products_2_eumetcast_table, \
-                                                         single_parent=True, cascade="all, delete, delete-orphan"),
-        'geonetcast_infos'   :  relationship(FileInfo  , secondary=products_2_geonetcast_table, \
-                                                         single_parent=True, cascade="all, delete, delete-orphan"),
         
         'file_infos'         :  relationship(FileInfo  , secondary=products_2_files_table, \
                                                          single_parent=True, cascade="all, delete, delete-orphan"),
