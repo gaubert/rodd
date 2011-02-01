@@ -1,0 +1,9 @@
+delete from products;
+delete from file_info;
+delete from families;
+delete from channels;
+delete from service_dirs;
+delete from servdirs_2_families;
+delete from file_2_servdirs;
+delete from products_2_fileinfo;
+delete from fileinfo_2_distribution;
