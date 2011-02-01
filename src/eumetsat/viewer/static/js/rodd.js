@@ -124,6 +124,10 @@
 			//Change table title in tablename
             $('#tblname').text(table_name);
             $('#titlename').text(table_name);
+            
+            // remove wainting images
+            $('#waitimg').empty();
+            $('#bigwaitimg').empty();
                      
             var oTable = $('#rodd_table').dataTable( {
                    // enable the JQueryUI Theme Roller
@@ -160,9 +164,6 @@
                 "track": true,
                 "fade": 250,
             } );*/
-            
-            //
-            $('#waitimg').empty();
              
 		}
 	};

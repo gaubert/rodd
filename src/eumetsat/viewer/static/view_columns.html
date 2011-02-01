@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Columnview Demo</title>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+<script type="text/javascript" language="javascript" src="/static/js/underscore-min.js"></script>
+<script type="text/javascript" src="/static/js/rodd_column_view.js"></script>
+<script type="text/javascript" src="/static/js/columnview.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+
+    rcv.load('rcv');
+
+    //$('#columnview').columnview();
+});
+</script>
+<style type="text/css">
+.column:after, #columnview:after {  
+    content: "";  
+    visibility: hidden;  
+    display: block;  
+    clear: both;  
+}
+
+#columnview {
+    height: 300px;
+    overflow:hidden;
+    border: 1px solid #999;
+    background-color: #eee;
+}
+
+.column {
+    height:270px; /*adjust for the padding*/
+    padding: 1.5em;
+    overflow-y: scroll;
+}
+</style>
+</head>
+<body>
+<h1>Some Thoughts</h1>
+
+<div id="rcv"/>
+
+<div id="columnview">
+<ul>
+    <li><a href="search.html">Search</a></li>
+    <li><a href="books.html">Books</a></li>
+</ul>
+</div>
+<body>
+</html>
