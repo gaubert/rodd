@@ -404,6 +404,7 @@ def manager_servicedir_with(name):
             
         return jsonify(result)
 
+
 @json_access.route('/product/<uid>/files', methods=['GET','PUT','POST'])
 def get_all_files_for_product(uid):
     """ manage files in a product. POST add a new file, PUT update an existing one, GET get a file """

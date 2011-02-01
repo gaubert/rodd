@@ -154,12 +154,15 @@
 			        this.setAttribute( 'title', sTitle );
             } );
     
-            /* Apply the tooltips */
-            $('#rodd_table tbody td[title]').tooltip( {
+            /* Apply the tooltips not working at the moment */
+            /*$('#rodd_table tbody td[title]').tooltip( {
                 "delay": 0,
                 "track": true,
-                "fade": 250
-            } );
+                "fade": 250,
+            } );*/
+            
+            //
+            $('#waitimg').empty();
              
 		}
 	};
