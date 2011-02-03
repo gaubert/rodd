@@ -9,19 +9,43 @@
 $(document).ready(function() {
 
     var data = {
-                 "prod1" : { "file1" : {"service-dir1": {}, "service-dir2":{} },
+                 "prod1" : { "file1" : {"service-dir1": { "s2_d" : {} , "s3_d" : {} }, "service-dir2":{} },
                              "file2" : { "f2-dir1":{}, "f2-dir2":{} }
                            },
-                 "prod2" : { "p2_f1" : { "p2-f1-dir1":{}, "p2-f1-dir2":{} } }
+                 "prod2" : { "p2_f1" : { "p2-f1-dir1":{}, "p2-f1-dir2":{} } },
+                 "prod3" : { "p3_f1": {} }, 
+                 "prod4" : { "p3_f1": {} },
+                 "prod5" : { "p3_f1": {} },
+                 "prod6" : { "p3_f1" : {} },
+                 "prod7" : { "p3_f1" : {} },
+                 "prod8" : { "p3_f1" : {} },
+                 "prod9" : { "p3_f1" : {} },
+                 "prod10" : { "p3_f1" : {} },
+                 "prod11" : { "p3_f1" : {} },
+                 "prod12" : { "p3_f1" : {} },
+                 "prod13" : { "p3_f1" : {} },
+                 "prod14" : { "p3_f1" : {} },
+                 "prod15" : { "p3_f1" : {} },
+                 "prod16" : { "p3_f1" : {} },
+                 "prod17" : { "p3_f1" : {} },
+                 "prod18" : { "p3_f1" : {} },
+                 "prod19" : { "p3_f1" : {} },
+                 "prod20" : { "p3_f1" : {} },
+                 "prod21" : { "p3_f1" : {} },
+                 "prod22" : { "p3_f1" : {} },
                };
 
-    //rcv.begin_load('#rcv', data);
     $('#columnview').columnview(data);
     
     
 });
 </script>
 <style type="text/css">
+.list {
+    list-style-type: none;
+    list-style-position: inside;
+}
+
 .column:after, #columnview:after {  
     content: "";  
     visibility: hidden;  
@@ -30,31 +54,23 @@ $(document).ready(function() {
 }
 
 #columnview {
-    height: 300px;
+    height: 310px;
     overflow:hidden;
     border: 1px solid #999;
-    background-color: #eee;
+    /*background-color: #eee;*/
 }
 
 .column {
-    height:270px; /*adjust for the padding*/
-    padding: 1.5em;
-    overflow-y: scroll;
+    height:300px; 
+    /*padding: 0.3em;*/
+    /*overflow-y: scroll;*/
 }
 </style>
 </head>
 <body>
-<h1>Some Thoughts</h1>
+<h1>Tests</h1>
 
-<!--<div id="columnview">
-<ul>
-    <li><a href="search.html">Search</a></li>
-    <li><a href="books.html">Books</a></li>
-</ul>
-</div>-->
-
-<div id="columnview">
-</div>
+<div id="columnview"/>
 
 <body>
 </html>

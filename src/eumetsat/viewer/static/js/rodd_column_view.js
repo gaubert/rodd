@@ -22,52 +22,83 @@
             node.data('num', methods.get_num(node)-1);
             return methods.get_num(node);
         },
-        get_data_to_display:function(key_list) {
+        get_data_to_display:function(path) {
             var columnview = methods.columnview;
             var data_to_display = columnview.data('data');
             
             var val = data_to_display;
         
-            if  (key_list.length > 0)
+            if  (path.length > 0)
             {
-              _.each(key_list, function(key) { val = val[key] }); //iterate over each key to go to the right values
+              _.each(path, function(key) { val = val[key]; }); //iterate over each key to go to the right values
             }
          
             return val;
         },
-        reduce_key_list:function(n) {
+        // reduce the path to the current position
+        reduce_path:function(pos) {
+            var columnview = methods.columnview;
+            
+            var path       = columnview.data('path');
+            
+            if (pos == 1)
+            {
+                path = [];
+            }
+            else
+            {
+               path = _.first(path, pos-1);
+            }
+            
+            
+            columnview.data('path', path); //update key_list
+            
+            return path;
+        },
+        /*reduce_key_list:function(value) {
             var columnview = methods.columnview;
             
             var key_list   = columnview.data('key_list');
             
-            key_list = _.first(key_list,n);
+            var index = _.indexOf(key_list, value);
+            
+            key_list = _.first(key_list, index);
+            
             
             columnview.data('key_list',key_list); //update key_list
             
             return key_list;
-        },
-        expand: function(key_list, col) {
+        },*/
+        
+        expand: function(path, new_position) {
             var columnview = methods.columnview;
             var seek = null;
             
             //Clean the different columns
             columnview.find('.column').each(function() {
                 var colnum = methods.get_num($(this));
-                if(colnum == col) 
+                if(colnum == new_position) 
                 {
-                    seek = $(this);
-                    seek.empty();
-                    methods.reduce_key_list(col);
+                    // current column to be changed is the current one and is already displayed. clean it
+                    // seek = $(this);
+                    //seek.empty();
+                    $(this).remove();
+                    methods.dec_num(columnview);
+                    
+                    
                 } 
-                else if(colnum > col) 
+                else if(colnum > new_position) 
                 {
+                    // current column is deeper than the one to display. supress it
                     $(this).remove(); //kill leaves that no longer apply to new child
                     methods.dec_num(columnview);
-                    key_list = methods.reduce_key_list(col);
                 }
             });
-            if(!seek) {
-                seek = methods.create_column(key_list);
+            
+            // did not find the column to display so create a new one
+            if(!seek) 
+            {
+                seek = methods.create_column(path);
                 if (seek)
                 {
                    seek.appendTo(columnview);
@@ -82,16 +113,19 @@
             }
             
         },
-        create_column: function(key_list) {
+        create_column: function(path) {
             var columnview      = methods.columnview;
-            var data_to_display = methods.get_data_to_display(key_list);
+            
+            var data_to_display = methods.get_data_to_display(path);
+            
             // if there is some data to display
             var div = null;
             if (_.size(data_to_display) > 0)
             {
                 var num = methods.inc_num(columnview); //next leaf in columns
                 
-                div = $('<div class="column" style="float:left;"><ul></ul></div>');
+                //div = $('<span class="column" style="float:left;"><ul class="list"></ul></span>');
+                div = $('<span class="column" style="float:left;"><select multiple="multiple"></select></span>');
                 
                 if(methods.options && methods.options.columns)
                 {
@@ -100,30 +134,35 @@
                  
                 div.data('num', num);
                 columnview.data('num', num);
-                
-                console.log("data_to_display" + data_to_display);
-                
+               
                 // for each data line add a <li> tag
-                
                 _.each(data_to_display, function(val, key) { 
-                                    div.find('ul').append('<li><a href="search.html">' + key + '</a></li>'); 
+                                    //div.find('ul').append('<li><a href="error.html">' + key + '</a></li>');
+                            div.find('select').append('<option>'+key+'</option>');
                 });
             }
 
             return div;
         },
         setup_links: function(column) {
-            column.find('a:not(.ignore-link)').each(function() {
+            //column.find('a:not(.ignore-link)').each(function() {
+            column.find('option').each(function() {
                 $(this).click(function(evt) {
                     
-                    var key = $(this).text();
-                    key_list = methods.columnview.data('key_list');
-                    key_list.push(key);
+                    var key = $(this).text();   // the key clicked on
+                    var position = methods.get_num(column); //the current position
+                    
+                    methods.reduce_path(position);
+                    
+                    var path = methods.columnview.data('path');
+                    
+                    // add selected element in path
+                    path.push(key);
                     
                     column.find('a.selected').removeClass('selected').trigger('columnview-deselected');
-                    var num = methods.get_num(column);
+                   
                     var url = $(this).attr('href');
-                    methods.expand(key_list, num+1); //expand into the next column
+                    methods.expand(path, position+1); //expand into the next column
                     $(this).addClass('selected').trigger('columnview-selected');
                     evt.preventDefault();
                     return false;
@@ -132,13 +171,11 @@
         },
         init: function(data, options) {
             methods.options = options;
-            console.log(data);
             var columnview = methods.columnview;
             columnview.data('num', 0); //init column counter
             columnview.data('data', data);//add the data in the dom
-            columnview.data('key_list', []);// list of keys where we are in the data
-            div = methods.create_column(columnview.data('key_list'));
-            //div.html(columnview.contents().detach()).appendTo(columnview); //replace contents into new column
+            columnview.data('path', []);// list of keys where we are in the data
+            div = methods.create_column(columnview.data('path'));
             columnview.append(div);
             methods.setup_links(div);
         }
