@@ -5,13 +5,20 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
 <script type="text/javascript" language="javascript" src="/static/js/underscore-min.js"></script>
 <script type="text/javascript" src="/static/js/rodd_column_view.js"></script>
-<script type="text/javascript" src="/static/js/columnview.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
 
-    rcv.load('rcv');
+    var data = {
+                 "prod1" : { "file1" : {"service-dir1": {}, "service-dir2":{} },
+                             "file2" : { "f2-dir1":{}, "f2-dir2":{} }
+                           },
+                 "prod2" : { "p2_f1" : { "p2-f1-dir1":{}, "p2-f1-dir2":{} } }
+               };
 
-    //$('#columnview').columnview();
+    //rcv.begin_load('#rcv', data);
+    $('#columnview').columnview(data);
+    
+    
 });
 </script>
 <style type="text/css">
@@ -39,13 +46,15 @@ $(document).ready(function() {
 <body>
 <h1>Some Thoughts</h1>
 
-<div id="rcv"/>
-
-<div id="columnview">
+<!--<div id="columnview">
 <ul>
     <li><a href="search.html">Search</a></li>
     <li><a href="books.html">Books</a></li>
 </ul>
+</div>-->
+
+<div id="columnview">
 </div>
+
 <body>
 </html>
