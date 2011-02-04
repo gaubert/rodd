@@ -55,21 +55,7 @@
             
             return path;
         },
-        /*reduce_key_list:function(value) {
-            var columnview = methods.columnview;
-            
-            var key_list   = columnview.data('key_list');
-            
-            var index = _.indexOf(key_list, value);
-            
-            key_list = _.first(key_list, index);
-            
-            
-            columnview.data('key_list',key_list); //update key_list
-            
-            return key_list;
-        },*/
-        
+       
         expand: function(path, new_position) {
             var columnview = methods.columnview;
             var seek = null;
@@ -125,7 +111,8 @@
                 var num = methods.inc_num(columnview); //next leaf in columns
                 
                 //div = $('<span class="column" style="float:left;"><ul class="list"></ul></span>');
-                div = $('<span class="column" style="float:left;"><select multiple="multiple"></select></span>');
+                div = $('<span class="column"><select class="selector" multiple="multiple"></select></span>');
+                //div = $('<select class="column" multiple="multiple"/>');
                 
                 if(methods.options && methods.options.columns)
                 {
@@ -135,15 +122,30 @@
                 div.data('num', num);
                 columnview.data('num', num);
                
+                var cpt = 0;
                 // for each data line add a <li> tag
-                _.each(data_to_display, function(val, key) { 
-                                    //div.find('ul').append('<li><a href="error.html">' + key + '</a></li>');
-                            div.find('select').append('<option>'+key+'</option>');
+                _.each(data_to_display, function(val, key) 
+                { 
+                   (cpt == 0) ? div.find('select').append('<option selected>'+key+'</option>') : div.find('select').append('<option>'+key+'</option>');
+                   cpt = cpt + 1;
                 });
             }
 
             return div;
         },
+        smart_columns: function() { //Create a function that calculates the smart columns
+
+            //Reset column size to a 100% once view port has been adjusted
+		    $("#column").css({ 'width' : "100%"});
+		
+		    var colWrap = $("ul.column").width(); //Get the width of row
+		    var colNum = Math.floor(colWrap / 200); //Find how many columns of 200px can fit per row / then round it down to a whole number
+		    var colFixed = Math.floor(colWrap / colNum); //Get the width of the row and divide it by the number of columns it can fit / then round it down to a whole number. This value will be the exact width of the re-adjusted column
+		
+		    $("ul.column").css({ 'width' : colWrap}); //Set exact width of row in pixels instead of using % - Prevents cross-browser bugs that appear in certain view port resolutions.
+		    $("ul.column li").css({ 'width' : colFixed}); //Set exact width of the re-adjusted column   
+
+        },   
         setup_links: function(column) {
             //column.find('a:not(.ignore-link)').each(function() {
             column.find('option').each(function() {
