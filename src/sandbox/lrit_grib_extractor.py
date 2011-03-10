@@ -24,11 +24,11 @@ def dirwalk(dir):
 def read_MDD_dir():
     """ read MDD dir """
     
-    output_dir = "/homespace/gaubert/faulty-grib"
+    output_dir = "/homespace/gaubert/MDD5/gribs"
     prefix="pref_%s"
     cpt = 0
     
-    for file in dirwalk("/homespace/gaubert/faulty-grib"):
+    for file in dirwalk("/homespace/gaubert/MDD5"):
         
         read_lrit_file(file, prefix % (cpt), output_dir)
         cpt += 1
