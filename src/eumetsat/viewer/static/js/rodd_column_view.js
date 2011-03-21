@@ -99,6 +99,13 @@
             }
             
         },
+        
+        create_3level_columns: function(path) {
+        	
+        	// call 3 times create column and return the top element every time.
+        	
+        },
+        
         create_column: function(path) {
             var columnview      = methods.columnview;
             
