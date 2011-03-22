@@ -22,18 +22,50 @@
             node.data('num', methods.get_num(node)-1);
             return methods.get_num(node);
         },
+        
         get_data_to_display:function(path) {
             var columnview = methods.columnview;
             var data_to_display = columnview.data('data');
             
             var val = data_to_display;
         
-            if  (path.length > 0)
+            if (path.length > 0)
             {
               _.each(path, function(key) { val = val[key]; }); //iterate over each key to go to the right values
             }
          
             return val;
+        },
+        // transform a path array in a string
+        path_to_string:function(path){
+            var str_path = '';
+            
+            _.each(path, function(key, index) { 
+                      if (index === 0)
+                      {
+                          str_path += key;                     
+                      }
+                      else
+                      {
+                          str_path += ',' + key;
+                      }
+            });
+            return str_path;
+        },
+        // transform a stringified path into an array
+        string_to_path:function(str)
+        {
+            var path = [];
+            _.each(str.split(','), function (elem) { path.push(elem); } );
+            return path;
+        },
+        
+        // get first element of associative array dara
+        get_first_element:function(data) {
+            for (var prop in data)
+            {
+              return prop;
+            }
         },
         // reduce the path to the current position
         reduce_path:function(pos) {
@@ -49,8 +81,7 @@
             {
                path = _.first(path, pos-1);
             }
-            
-            
+                  
             columnview.data('path', path); //update key_list
             
             return path;
@@ -99,12 +130,76 @@
             }
             
         },
-        
-        create_3level_columns: function(path) {
-        	
-        	// call 3 times create column and return the top element every time.
-        	
+        // expand from where we are
+        expand_columns: function(path, position) {
+            
+            var last_level = 3 ; // constant that should be moved somewhere else
+            var curr_pos   = position;
+            
+            // get the column view that needs to be populated
+            var columnview      = methods.columnview;
+            
+            var data_to_display = methods.get_data_to_display(path);
+            
+            while (curr_pos != last_level)
+            {
+               var div = methods.create_column(path);
+               columnview.append(div);
+               methods.setup_links(div);
+               
+               // update the path
+               methods.get_data_to_display(path);
+               
+               path.push(methods.get_first_element(data_to_display));
+               
+               curr_pos += 1;
+               
+            }
         },
+        create_3level_columns: function(orig_path) {
+            // get the column view that needs to be populated
+            var columnview      = methods.columnview;
+	
+            var path = []; // the path that is constructed dynamically
+            
+            var data_to_display = methods.get_data_to_display(orig_path);
+            
+            var div1 = methods.create_column(orig_path);
+            
+            path.push(methods.get_first_element(data_to_display));
+            
+            var div2 = methods.create_column(path);
+            
+            path.push(methods.get_first_element(methods.get_data_to_display(path)));
+            
+            var div3 = methods.create_column(path);
+            
+            path.push(methods.get_first_element(methods.get_data_to_display(path)));
+            
+            columnview.append(div1);
+            methods.setup_links(div1);
+            columnview.append(div2);
+            methods.setup_links(div2);
+            columnview.append(div3);
+            methods.setup_links(div3);	
+        },
+        
+        // remove all columns going further than where we are (position)
+        clean_columns: function(position) {
+            var columnview      = methods.columnview;
+
+            //Clean the different columns
+            columnview.find('.column').each(function() {
+                var colnum = methods.get_num($(this));
+                if(colnum > position) 
+                {
+                    // clean columns
+                    $(this).remove();
+                    methods.dec_num(columnview);      
+                } 
+            });
+        },
+        
         
         create_column: function(path) {
             var columnview      = methods.columnview;
@@ -124,19 +219,26 @@
                 // always apply the same width for all columns
                 div.css('width', 200);
                 
-                if(methods.options && methods.options.columns)
-                {
-                    div.css('width', methods.options.columns[num]); //apply a width if we have one
-                }
-                 
                 div.data('num', num);
                 columnview.data('num', num);
                
                 var cpt = 0;
                 // for each data line add a <li> tag
+                
                 _.each(data_to_display, function(val, key) 
                 { 
-                   (cpt == 0) ? div.find('select').append('<option selected>'+key+'</option>') : div.find('select').append('<option>'+key+'</option>');
+                   // clone path and the key at the end
+                   var n_path = _.clone(path);
+                   n_path.push(key);
+                  
+                   if (cpt === 0)
+                   {
+                      div.find('select').append('<option path="'+ methods.path_to_string(n_path) + '" selected="">'+key+'</option>'); 
+                   }
+                   else
+                   {
+                      div.find('select').append('<option path="'+ methods.path_to_string(n_path) + '" >'+key+'</option>');
+                   }
                    cpt = cpt + 1;
                 });
             }
@@ -162,19 +264,23 @@
                 $(this).click(function(evt) {
                     
                     var key = $(this).text();   // the key clicked on
-                    var position = methods.get_num(column); //the current position
+                    var position = methods.get_num(column); // the current position
                     
-                    methods.reduce_path(position);
+                    //methods.reduce_path(position);
                     
-                    var path = methods.columnview.data('path');
+                    var path = methods.string_to_path($(this).attr("path"));
                     
                     // add selected element in path
-                    path.push(key);
+                    //path.push(key);
                     
                     column.find('a.selected').removeClass('selected').trigger('columnview-deselected');
                    
-                    var url = $(this).attr('href');
-                    methods.expand(path, position+1); //expand into the next column
+                    //var url = $(this).attr('href'); // not necessary
+                    
+                    methods.clean_columns(position);
+                    methods.expand_columns(path, position);
+                    
+                    //methods.expand(path, position+1); //expand into the next column
                     $(this).addClass('selected').trigger('columnview-selected');
                     evt.preventDefault();
                     return false;
@@ -187,12 +293,19 @@
             columnview.data('num', 0); //init column counter
             columnview.data('data', data);//add the data in the dom
             columnview.data('path', []);// list of keys where we are in the data
-            div = methods.create_column(columnview.data('path'));
-            columnview.append(div);
-            methods.setup_links(div);
+            methods.create_3level_columns(columnview.data('path'));          
         }
     };
         
+    // Add trim in String
+    if(typeof(String.prototype.trim) === "undefined")
+    {
+       String.prototype.trim = function() 
+       {
+        return String(this).replace(/^\s+|\s+$/g, '');
+       };
+    }
+    
     $.fn.columnview = function(method) {
         methods.columnview = this;
 
