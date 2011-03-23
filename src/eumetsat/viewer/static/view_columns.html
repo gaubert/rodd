@@ -9,7 +9,7 @@
 $(document).ready(function() {
 
     
-    var data = {
+    /*var data = {
                  "prod1" : { "file_p1.1" : {"service-dir1": {}, 
                                             "service-dir2": {} },
                              "file_p1.2" : { "f2-dir1":{}, 
@@ -34,13 +34,13 @@ $(document).ready(function() {
                  },
                  "prod2" : { "file_p2.1" : { "s-dir1" : {} }, "file_p3.1" : { "s-dir1" : {} }, "file_p4.1" : { "s-dir1" : {} }, 
                  },
-               };
+               };*/
                  
                            
     
     
-    /*var data = {
-                 "prod1jjjjjjjjjjj" : { "file1zzzzzzzzzzzzzzz" : {"service-dir1": { "s2_d" : {}, "s3_d" : {} }, "service-dir2":{} },
+    var data = {
+                 "prod1jjjjjjjjjjj" : { "file1zzzzzzzzzzzzzzz" : {"service-dir1": { "s2_d" : { "mything" : {}, "mything2" : {} }, "s3_d" : {} }, "service-dir2":{} },
                                         "file2" : { "f2-dir1":{}, "f2-dir2":{} }
                            },
                  "prod2jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj" : { "p2_f1" : { "p2-f1-dir1":{}, "p2-f1-dir2":{} } },
@@ -65,7 +65,7 @@ $(document).ready(function() {
                  "prod21" : { "p3_f1" : {} },
                  "prod22" : { "p3_f1" : {} },
                };
-    */
+    
 
     $('#columnview').columnview(data);
     
@@ -78,13 +78,6 @@ $(document).ready(function() {
     list-style-type: none;
     list-style-position: inside;
 }
-
-/*.column:after, #columnview:after {  
-    content: "";  
-    visibility: hidden;  
-    display: block;  
-    clear: both;  
-}*/
 
 #columnview {
     height: 360px;

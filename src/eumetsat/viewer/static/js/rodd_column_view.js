@@ -6,11 +6,9 @@
 (function($,_){
     
     var methods = {
+    	max_nb_levels: 5,
         columnview: null,
         options: null,
-        is_int: function(s) {
-            return (s.toString().search(/^-?[0-9]+$/) === 0);
-        },
         get_num: function(node) {
             return parseInt(node.data('num'));//make sure this is an integer
         },
@@ -86,54 +84,10 @@
             
             return path;
         },
-       
-        expand: function(path, new_position) {
-            var columnview = methods.columnview;
-            var seek = null;
-            
-            //Clean the different columns
-            columnview.find('.column').each(function() {
-                var colnum = methods.get_num($(this));
-                if(colnum == new_position) 
-                {
-                    // current column to be changed is the current one and is already displayed. clean it
-                    // seek = $(this);
-                    //seek.empty();
-                    $(this).remove();
-                    methods.dec_num(columnview);
-                    
-                    
-                } 
-                else if(colnum > new_position) 
-                {
-                    // current column is deeper than the one to display. supress it
-                    $(this).remove(); //kill leaves that no longer apply to new child
-                    methods.dec_num(columnview);
-                }
-            });
-            
-            // did not find the column to display so create a new one
-            if(!seek) 
-            {
-                seek = methods.create_column(path);
-                if (seek)
-                {
-                   seek.appendTo(columnview);
-                   methods.setup_links(seek);
-                   seek.scrollTop(0);
-                }
-            }
-            else
-            {
-                methods.setup_links(seek);
-                seek.scrollTop(0);
-            }
-            
-        },
         // expand from where we are
         expand_columns: function(path, position) {
             
-            var last_level = 3 ; // constant that should be moved somewhere else
+            var last_level = methods.max_nb_levels ; // constant that should be moved somewhere else
             var curr_pos   = position;
             
             // get the column view that needs to be populated
@@ -148,7 +102,7 @@
                methods.setup_links(div);
                
                // update the path
-               methods.get_data_to_display(path);
+               data_to_display = methods.get_data_to_display(path);
                
                path.push(methods.get_first_element(data_to_display));
                
@@ -156,32 +110,30 @@
                
             }
         },
-        create_3level_columns: function(orig_path) {
+        // create as many columns as you which (5 should be the maximum)
+        create_nlevel_columns: function(orig_path, nb_levels) {
             // get the column view that needs to be populated
             var columnview      = methods.columnview;
-	
-            var path = []; // the path that is constructed dynamically
+    
+            var path = _.clone(orig_path); // the path that is constructed dynamically
             
             var data_to_display = methods.get_data_to_display(orig_path);
             
-            var div1 = methods.create_column(orig_path);
-            
-            path.push(methods.get_first_element(data_to_display));
-            
-            var div2 = methods.create_column(path);
-            
-            path.push(methods.get_first_element(methods.get_data_to_display(path)));
-            
-            var div3 = methods.create_column(path);
-            
-            path.push(methods.get_first_element(methods.get_data_to_display(path)));
-            
-            columnview.append(div1);
-            methods.setup_links(div1);
-            columnview.append(div2);
-            methods.setup_links(div2);
-            columnview.append(div3);
-            methods.setup_links(div3);	
+            var i=0;
+           
+            for (i=0;i<nb_levels;i++)
+            {
+               var div = methods.create_column(path);	
+               
+               // add div in cloumnview
+               columnview.append(div);
+               methods.setup_links(div);
+               
+               // update path and data_to_display
+               path.push(methods.get_first_element(data_to_display));
+               
+               data_to_display = methods.get_data_to_display(path);
+            }
         },
         
         // remove all columns going further than where we are (position)
@@ -199,8 +151,7 @@
                 } 
             });
         },
-        
-        
+        // create an individual column
         create_column: function(path) {
             var columnview      = methods.columnview;
             
@@ -233,31 +184,29 @@
                   
                    if (cpt === 0)
                    {
-                      div.find('select').append('<option path="'+ methods.path_to_string(n_path) + '" selected="">'+key+'</option>'); 
+                      div.find('select').append('<option title="SELECTED" path="'+ methods.path_to_string(n_path) + '" selected="">'+key+'</option>'); 
                    }
                    else
                    {
-                      div.find('select').append('<option path="'+ methods.path_to_string(n_path) + '" >'+key+'</option>');
+                      div.find('select').append('<option title="UN SELECTED" path="'+ methods.path_to_string(n_path) + '" >'+key+'</option>');
                    }
                    cpt = cpt + 1;
                 });
             }
+            else
+            {
+            	// add an empty column
+            	var num = methods.inc_num(columnview); //next leaf in columns
+            	div = $('<span class="column"><select class="selector" multiple="multiple"></select></span>');
+            	// always apply the same width for all columns
+                div.css('width', 200);
+                div.data('num', num);
+                columnview.data('num', num);
+            }
 
             return div;
         },
-        smart_columns: function() { //Create a function that calculates the smart columns
-
-            //Reset column size to a 100% once view port has been adjusted
-		    $("#column").css({ 'width' : "100%"});
-		
-		    var colWrap = $("ul.column").width(); //Get the width of row
-		    var colNum = Math.floor(colWrap / 1000); //Find how many columns of 200px can fit per row / then round it down to a whole number
-		    var colFixed = Math.floor(colWrap / colNum); //Get the width of the row and divide it by the number of columns it can fit / then round it down to a whole number. This value will be the exact width of the re-adjusted column
-		
-		    $("ul.column").css({ 'width' : colWrap}); //Set exact width of row in pixels instead of using % - Prevents cross-browser bugs that appear in certain view port resolutions.
-		    $("ul.column li").css({ 'width' : colFixed}); //Set exact width of the re-adjusted column   
-
-        },   
+        // Update the links and create on click function
         setup_links: function(column) {
             //column.find('a:not(.ignore-link)').each(function() {
             column.find('option').each(function() {
@@ -265,22 +214,14 @@
                     
                     var key = $(this).text();   // the key clicked on
                     var position = methods.get_num(column); // the current position
-                    
-                    //methods.reduce_path(position);
-                    
+       
                     var path = methods.string_to_path($(this).attr("path"));
-                    
-                    // add selected element in path
-                    //path.push(key);
-                    
+                  
                     column.find('a.selected').removeClass('selected').trigger('columnview-deselected');
-                   
-                    //var url = $(this).attr('href'); // not necessary
-                    
+                  
                     methods.clean_columns(position);
                     methods.expand_columns(path, position);
                     
-                    //methods.expand(path, position+1); //expand into the next column
                     $(this).addClass('selected').trigger('columnview-selected');
                     evt.preventDefault();
                     return false;
@@ -293,7 +234,7 @@
             columnview.data('num', 0); //init column counter
             columnview.data('data', data);//add the data in the dom
             columnview.data('path', []);// list of keys where we are in the data
-            methods.create_3level_columns(columnview.data('path'));          
+            methods.create_nlevel_columns(columnview.data('path'),5); // instanciate column view structure          
         }
     };
         
