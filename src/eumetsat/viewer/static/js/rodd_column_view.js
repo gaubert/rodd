@@ -6,7 +6,7 @@
 (function($,_){
     
     var methods = {
-    	MAX_NB_LEVELS: 5, // constant
+        MAX_NB_LEVELS: 5, // constant
         columnview: null,
         options: null,
         get_num: function(node) {
@@ -98,19 +98,18 @@
             {
                var div = methods.create_column(path);
                columnview.append(div);
-               methods.set_on_click_listener(div);
+               methods.set_on_change_listener(div);
                
                // update the path
                data_to_display = methods.get_data_to_display(path);
                
-               // while we have more object add them in the path otherwise leave method
+               // while we have more object add them in the path otherwise
+               // do nothing and add an empty column for each missing level
+               // (use the fact that there are no more path elements and that the path
+               // stays constant)
                if (! $.isEmptyObject(data_to_display))
                {
                  path.push(methods.get_first_element(data_to_display));
-               }
-               else
-               {
-               	 break; // break loop
                }
                
                curr_pos += 1;
@@ -134,7 +133,7 @@
                
                // add div in cloumnview
                columnview.append(div);
-               methods.set_on_click_listener(div);
+               methods.set_on_change_listener(div);
                
                // update path and data_to_display
                path.push(methods.get_first_element(data_to_display));
@@ -158,7 +157,24 @@
                 } 
             });
         },
-        // create an individual column
+        // create an empty column
+        create_empty_column: function() {
+            var columnview      = methods.columnview;
+       
+            var num = methods.inc_num(columnview); //next leaf in columns
+            
+            div = $('<span class="column"><select class="selector" multiple="multiple"></select></span>');
+            
+            // always apply the same width for all columns
+            div.css('width', 200);
+            
+            div.data('num', num);
+            
+            columnview.data('num', num);
+            
+            return div;
+        },      
+        // create an individual column from a path
         create_column: function(path) {
             var columnview      = methods.columnview;
             
@@ -202,41 +218,22 @@
             }
             else
             {
-            	// add an empty column
-            	var num = methods.inc_num(columnview); //next leaf in columns
-            	div = $('<span class="column"><select class="selector" multiple="multiple"></select></span>');
-            	// always apply the same width for all columns
-                div.css('width', 200);
-                div.data('num', num);
-                columnview.data('num', num);
+                div = methods.create_empty_column();
             }
 
             return div;
         },
-        // Update the links and create on click function
-        set_on_click_listener: function(column) {
-        	
-        	/*column.find('select').each(function() {
-        		$(this).keydown(function(evt) {
-                  console.log("Hello");
-            
-                  
-                  var obj = $(this).find('option:selected')[0];
-                  
-                  jQuery.each(obj, function(key, val) {
-                  	  console.log("key = " + key + ", val = " + val);
-                  });
-                  
-                  console.log("Text " + obj.text());
-                  
-                });
-        	});*/
-        	
-        	column.find('select').change(function () {
+        // install listener on change events
+        set_on_change_listener: function(column) {
+
+            // use change event to detect keyboard movement and mouse click
+            // This will allow to navigate with the mouse or the keyboard 
+            // (before it was a click event on options)
+            column.find('select').change(function () {
                  var key       = "";
                  var path_attr = "";
                  
-                 $("select option:selected").each(function () {
+                 $(this).find("option:selected").each(function () {
                        key += $(this).text();
                        path_attr = $(this).attr("path");
                  });
@@ -246,23 +243,9 @@
                  var path = methods.string_to_path(path_attr); // get the path from the element
                   
                  methods.clean_columns(position); // clean from the position
+                 
                  methods.expand_columns(path, position); // expand from the position   
             });
-        	
-            /*column.find('option').each(function() {
-            	// add on click listener
-                $(this).click(function(evt) {
-                    
-                    var key = $(this).text();   // get the text of the element that has been clicked on
-                    
-                    var position = methods.get_num(column); // get the column position
-       
-                    var path = methods.string_to_path($(this).attr("path")); // get the path from the element
-                  
-                    methods.clean_columns(position); // clean from the position
-                    methods.expand_columns(path, position); // expand from the position
-                });
-            });*/
         },
         init: function(data, options) {
             methods.options = options;
