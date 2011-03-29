@@ -2,44 +2,18 @@
 <html>
 <head>
 <title>Columnview Demo</title>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
+
+
 <script type="text/javascript" language="javascript" src="/static/js/underscore-min.js"></script>
+<script type="text/javascript" src="/static/js/rodd.js"></script>
 <script type="text/javascript" src="/static/js/rodd_column_view.js"></script>
 <script type="text/javascript">
 $(document).ready(function() {
-
+    
     
     /*var data = {
-                 "prod1" : { "file_p1.1" : {"service-dir1": {}, 
-                                            "service-dir2": {} },
-                             "file_p1.2" : { "f2-dir1":{}, 
-                                             "f2-dir2":{} },
-                             "file_p1.3" : { "f2-dir3":{}, 
-                                             "f2-dir4":{} },
-                             "file_p1.4" : { "f2-dir5":{}, 
-                                             "f2-dir6":{} },
-                             "file_p1.5" : { "f2-dir7":{}, 
-                                             "f2-dir8":{} },
-                             "file_p1.6" : { "f2-dir9":{}, 
-                                             "f2-dir10":{} },
-                             "file_p1.7" : { "f2-dir11":{}, 
-                                             "f2-dir12":{} },
-                             "file_p1.8" : { "f2-dir13":{}, 
-                                             "f2-dir14":{} },
-                             "file_p1.9" : { "f2-dir15":{}, 
-                                             "f2-dir16":{} },
-                             "file_p1.10" : { "f2-dir17":{}, 
-                                             "f2-dir18":{} },     
-                             
-                 },
-                 "prod2" : { "file_p2.1" : { "s-dir1" : {} }, "file_p3.1" : { "s-dir1" : {} }, "file_p4.1" : { "s-dir1" : {} }, 
-                 },
-               };*/
-                 
-                           
-    
-    
-    var data = {
                  "prod1jjjjjjjjjjj" : { "file1zzzzzzzzzzzzzzz" : {"service-dir1": { "s2_d" : { "mything" : {}, "mything2" : {} }, "s3_d" : { "unique element" : {} } }, "service-dir2":{} },
                                         "file2" : { "f2-dir1":{}, "f2-dir2":{} }
                            },
@@ -65,9 +39,27 @@ $(document).ready(function() {
                  "prod21" : { "p3_f28" : {} },
                  "prod22" : { "p3_f29" : {} },
                };
+               
+     var options = { 'nb_cols' : 5 , 'col_width' : 200 };
+    
+     $('#columnview').columnview(data);
+     */
+               
+     $.getJSON("/products",
+                      {},
+                      function(data) {
+                         var options = { 'nb_cols' : 5 , 'col_width' : 200 };
+ 
+                         var data = rodd.column_view_format_product_data(data);
+                         
+                         $('#columnview').columnview(data);
+                      }
+                )
+               
+          
     
 
-    $('#columnview').columnview(data);
+    
     
     
 });
@@ -81,17 +73,18 @@ $(document).ready(function() {
 
 #columnview {
     height: 360px;
-    width:  1015px;
+    width:  1010px;
     border: 1px solid #999;
-    overflow-y: hidden;
     /*overflow-x: scroll;*/
+    overflow-y: hidden;
     /*background-color: #eee;*/
 }
 
 .column {
     height:100%;
     border: 1px solid #999;
-    float:left;  
+    float:left;
+    overflow-y: hidden;
 }
 
 .selector {
@@ -106,6 +99,7 @@ $(document).ready(function() {
 <h1>Tests</h1>
 
 <div id="columnview"/>
+
 
 <body>
 </html>

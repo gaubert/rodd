@@ -10,7 +10,7 @@
         columnview: null,
         options: null,
         get_num: function(node) {
-            return parseInt(node.data('num'));//make sure this is an integer
+            return parseInt(node.data('num'), 10);//make sure this is an integer
         },
         inc_num: function(node) {
             node.data('num', methods.get_num(node)+1);
@@ -58,7 +58,7 @@
             return path;
         },
         
-        // get first element of associative array dara
+        // get first element of associative array data
         get_first_element:function(data) {
             for (var prop in data)
             {
@@ -166,7 +166,7 @@
             div = $('<span class="column"><select class="selector" multiple="multiple"></select></span>');
             
             // always apply the same width for all columns
-            div.css('width', 200);
+            div.css('width', methods.options.col_width);
             
             div.data('num', num);
             
@@ -186,12 +186,10 @@
             {
                 var num = methods.inc_num(columnview); //next leaf in columns
                 
-                //div = $('<span class="column" style="float:left;"><ul class="list"></ul></span>');
                 div = $('<span class="column"><select class="selector" multiple="multiple"></select></span>');
-                //div = $('<select class="column" multiple="multiple"/>');
                 
                 // always apply the same width for all columns
-                div.css('width', 200);
+                div.css('width', methods.options.col_width);
                 
                 div.data('num', num);
                 columnview.data('num', num);
@@ -248,12 +246,32 @@
             });
         },
         init: function(data, options) {
+            
+            // check options
+            if (_.isNull(options) || _.isUndefined(options))
+            {
+                // add defaults 
+                options = { 'nb_cols' : 3, 'col_width' : 200 };
+            }
+           
+            if (_.isUndefined(options.nb_cols))
+            {
+                options.nb_cols = 3;
+            }
+            
+            if (_.isUndefined(options.col_width))
+            {
+               options.col_width = 200;
+            }
+            
             methods.options = options;
-            var columnview = methods.columnview;
+            var columnview  = methods.columnview;
+            
             columnview.data('num', 0); //init column counter
             columnview.data('data', data);//add the data in the dom
             columnview.data('path', []);// list of keys where we are in the data
-            methods.create_nlevel_columns(columnview.data('path'), 5); // instanciate column view structure          
+            
+            methods.create_nlevel_columns(columnview.data('path'), methods.options.nb_cols); // instanciate column view structure          
         }
     };
         

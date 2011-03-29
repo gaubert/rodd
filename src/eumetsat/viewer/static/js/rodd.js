@@ -13,6 +13,43 @@
 		},	
 		
 		/**
+         * Format product data to be column viewed
+         * @param data. The product data to format
+         * @return a map containing the data
+         */
+        column_view_format_product_data:function(data){
+            
+            var result = {};
+            _.each(data, function(product) {
+                
+                var item = {};
+                
+                // iter over distribution for this product
+                _.each(product.distribution, function(dist){
+                    
+                    // iter over each file elem
+                    _.each(product[dist].files, function(file){
+                        
+                        var serv_dirs = {};
+                        
+                        // iter over serv dirs
+                        _.each(file.service_dir, function(serv_name) {
+                            serv_dirs[serv_name] = {};
+                        });
+                        
+                        item[file.name] = { dist : serv_dirs };
+                    });
+                    
+                    
+                });
+                
+                result[product.name] = item;
+                
+                
+            });
+        },
+		
+		/**
          * Format product data
          * @param data. The product data to format
          * @param cols. The colums to display
