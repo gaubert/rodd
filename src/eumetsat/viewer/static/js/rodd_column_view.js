@@ -166,7 +166,7 @@
             div = $('<span class="column"><select class="selector" multiple="multiple"></select></span>');
             
             // always apply the same width for all columns
-            div.css('width', methods.options.col_width);
+            div.css('width', methods.options["col_width_"+num]);
             
             div.data('num', num);
             
@@ -189,7 +189,7 @@
                 div = $('<span class="column"><select class="selector" multiple="multiple"></select></span>');
                 
                 // always apply the same width for all columns
-                div.css('width', methods.options.col_width);
+                div.css('width', methods.options["col_width_" + num]);
                 
                 div.data('num', num);
                 columnview.data('num', num);
@@ -251,7 +251,7 @@
             if (_.isNull(options) || _.isUndefined(options))
             {
                 // add defaults 
-                options = { 'nb_cols' : 3, 'col_width' : 200 };
+                options = { 'nb_cols' : 3, 'col_width_1' : 200, 'col_width_2' : 200, 'col_width_3' : 200 };
             }
            
             if (_.isUndefined(options.nb_cols))
@@ -259,10 +259,14 @@
                 options.nb_cols = 3;
             }
             
-            if (_.isUndefined(options.col_width))
-            {
-               options.col_width = 200;
-            }
+            _.each(_.range(1, options.nb_cols+1), function(incr) {
+                
+                if (_.isUndefined(options["col_width_" + incr]))
+                {
+                    options["col_width_" + incr] = 200;
+                }
+                
+            });
             
             methods.options = options;
             var columnview  = methods.columnview;

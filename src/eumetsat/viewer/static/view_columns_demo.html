@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Columnview Demo</title>
+<!-- styles needed by jScrollPane -->
+<link type="text/css" href="/static/js/jscrollpane/jquery.jscrollpane.css" rel="stylesheet" media="all" />
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
+
+<!-- the mousewheel plugin - optional to provide mousewheel support -->
+<!-- <script type="text/javascript" src="/static/js/jscrollpane/jquery.mousewheel.js"></script>-->
+
+<script type="text/javascript" language="javascript" src="/static/js/jscrollpane/jquery.jscrollpane.min.js"></script>
+
+<script type="text/javascript" language="javascript" src="/static/js/underscore-min.js"></script>
+<style type="text/css">
+
+.list {
+    list-style-type: none;
+    list-style-position: inside;
+}
+
+#columnview {
+    height: 360px;
+    width:  1010px;
+    border: 1px solid #999;
+    /*overflow-x: scroll;*/
+    overflow-y: hidden;
+    /*background-color: #eee;*/
+}
+
+.column {
+    height:100%;
+    border: 1px solid #999;
+    float:left;
+    overflow-y: hidden;
+}
+
+.selector {
+   width:100%;
+   height:100%; 
+}
+
+
+</style>
+
+<!-- demo -->
+<style>
+    #feedback { font-size: 1.4em; }
+    #selectable .ui-selecting { background: #FECA40; }
+    #selectable .ui-selected { background: #F39814; color: white; }
+    #selectable { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+    #selectable li { margin: 3px; padding: 0.4em; font-size: 1em; height: 12px; }
+</style>
+<script>
+    $(function()
+    {
+         $("#selectable").selectable({
+            stop: function() {
+                var result = $( "#select-result" ).empty();
+                $( ".ui-selected", this ).each(function() {
+                    var index = $( "#selectable li" ).index( this );
+                    result.append( " #" + ( index + 1 ) );
+                });
+            }
+         });
+        $('.scrolling-list').jScrollPane();
+     });
+    
+</script>
+<!-- end of demo -->
+
+
+</head>
+<body>
+<h1>Tests</h1>
+
+<div id="columnview"/>
+
+
+
+
+
+
+
+<p id="feedback">
+<span>You've selected:</span> <span id="select-result">none</span>.
+</p>
+
+<div class="scrolling-list">
+<ul>
+<li> List item 1</li>
+<li> List item 2</li>
+<li> List item 3</li>
+<li> List item 4</li>
+<li> List item 5</li>
+</ul>    
+</div>
+
+<ol id="selectable">
+    <li class="ui-widget-content">Item 1</li>
+    <li class="ui-widget-content">Item 2</li>
+    <li class="ui-widget-content">Item 3</li>
+    <li class="ui-widget-content">Item 4</li>
+    <li class="ui-widget-content">Item 5</li>
+    <li class="ui-widget-content">Item 6</li>
+    <li class="ui-widget-content">Item 7</li>
+    <li class="ui-widget-content">Item 8</li>
+    <li class="ui-widget-content">Item 9</li>
+    <li class="ui-widget-content">Item 10</li>
+    <li class="ui-widget-content">Item 11</li>
+    <li class="ui-widget-content">Item 12</li>
+    <li class="ui-widget-content">Item 13</li>
+    <li class="ui-widget-content">Item 14</li>
+    <li class="ui-widget-content">Item 15</li>
+    <li class="ui-widget-content">Item 16</li>
+</ol>
+
+</div><!-- End demo -->
+
+
+<body>
+</html>
