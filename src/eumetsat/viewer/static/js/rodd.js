@@ -9,7 +9,10 @@
 	var rodd = {
 		
 		hello:function(){
+		    
 			alert("hello");
+			
+			
 		},	
 		
 		/**
@@ -19,34 +22,35 @@
          */
         column_view_format_product_data:function(data){
             
-            var result = {};
-            _.each(data, function(product) {
+                var result = {};
+                _.each(data.products, function(product) {
                 
-                var item = {};
+                     var item = {};
                 
-                // iter over distribution for this product
-                _.each(product.distribution, function(dist){
+                     // iter over distribution for this product
+                     _.each(product.distribution, function(dist){
+                            
+                         // iter over each file elem
+                         _.each(product[dist].files, function(file){
+                                    
+                                var serv_dirs = {};
+                                
+                                // iter over serv dirs
+                                _.each(file.service_dir, function(serv_name) {
+                                    serv_dirs[serv_name] = {};
+                                });
+                                  
+                                var i_dist      = {};
+                                i_dist[dist]    = serv_dirs;  
+                                item[file.name] = i_dist;
+                                });
                     
-                    // iter over each file elem
-                    _.each(product[dist].files, function(file){
-                        
-                        var serv_dirs = {};
-                        
-                        // iter over serv dirs
-                        _.each(file.service_dir, function(serv_name) {
-                            serv_dirs[serv_name] = {};
-                        });
-                        
-                        item[file.name] = { dist : serv_dirs };
-                    });
+                    result[product.name] = item;
                     
-                    
-                });
-                
-                result[product.name] = item;
-                
-                
-            });
+                    });               
+               });
+               
+               return result;
         },
 		
 		/**

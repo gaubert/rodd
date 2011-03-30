@@ -94,7 +94,7 @@
             
             var data_to_display = methods.get_data_to_display(path);
             
-            while (curr_pos != methods.MAX_NB_LEVELS)
+            while (curr_pos != methods.options.nb_cols)
             {
                var div = methods.create_column(path);
                columnview.append(div);

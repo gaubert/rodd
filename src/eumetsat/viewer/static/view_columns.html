@@ -4,9 +4,9 @@
 <title>Columnview Demo</title>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.11/jquery-ui.min.js"></script>
-
-
 <script type="text/javascript" language="javascript" src="/static/js/underscore-min.js"></script>
+<script type="text/javascript" language="javascript" src="/static/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="/static/js/FixedHeader.min.js"></script>
 <script type="text/javascript" src="/static/js/rodd.js"></script>
 <script type="text/javascript" src="/static/js/rodd_column_view.js"></script>
 <script type="text/javascript">
@@ -44,24 +44,18 @@ $(document).ready(function() {
     
      $('#columnview').columnview(data);
      */
-               
-     $.getJSON("/products",
-                      {},
-                      function(data) {
-                         var options = { 'nb_cols' : 5 , 'col_width' : 200 };
- 
-                         var data = rodd.column_view_format_product_data(data);
-                         
-                         $('#columnview').columnview(data);
-                      }
-                )
-               
-          
     
-
+     var products;
+     $.getJSON("/products",{}, function(data) {
+         products = data;
+     });  
+     
+     var data_column = rodd.column_view_format_product_data(products);  
+     
+     var options = { 'nb_cols' : 3 , 'col_width' : 200 };
     
-    
-    
+     $('#columnview').columnview(data_column, options);
+            
 });
 </script>
 <style type="text/css">
