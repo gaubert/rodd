@@ -1,23 +1,45 @@
 #!/bin/bash
 set -x
-font_dir=/homespace/gaubert/.gimp-2.6/plug-ins/fonts/
-convert=/homespace/gaubert/ImageMagick-6.6.9-8/bin/convert
-composite=/homespace/gaubert/ImageMagick-6.6.9-8/bin/composite
+
+IMG_MANIP_HOME=/homespace/gaubert/Dev/projects/rodd/etc/img-manip
+IMAGEMAGICK_DIR=/homespace/gaubert/ImageMagick-6.6.9-8
+
+font_dir=$IMG_MANIP_HOME/fonts/
+
+convert=$IMAGEMAGICK_DIR/bin/convert
+composite=$IMAGEMAGICK_DIR/bin/composite
 
 in=$1
+out=$3
 text=$2
 
-working_dir=/homespace/gaubert/.gimp-2.6/plug-ins/wrk_dir
+usage="./bottom_card.sh input_file \"My text to add\" output_file"
+
+if [ -z "$in" ]; then
+  echo "in is not defined"
+fi
+
+#################################
+## if $1 is relative,
+## build the absolute path
+#################################
+D=`dirname "$1"`
+B=`basename "$1"`
+in="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+
+#################################
+## if $3 is relative,
+## build the absolute path
+#################################
+D=`dirname "$3"`
+B=`basename "$3"`
+out="`cd \"$D\" 2>/dev/null && pwd || echo \"$D\"`/$B"
+
+working_dir=/tmp/wrk_dir
 mkdir -p $working_dir
 
 rm -f out.jpg
 cd $working_dir
-
-#rm -f rounded_corner_mask.png
-#rm -f rounded_corner.mvg
-#rm -f temp.jpg
-#rm -f dummy.jpg
-#rm -f label.jpg
 
 #resize image and border of 25x25
 $convert $in -normalize -resize 640 -bordercolor White -border 25x25 dummy.jpg
@@ -25,7 +47,7 @@ $convert $in -normalize -resize 640 -bordercolor White -border 25x25 dummy.jpg
 $convert dummy.jpg -gravity south -splice 0x60 -background White -gravity Center -append temp.jpg
 #get width and height of the produced picture
 W=`convert dummy.jpg -format %w info:`
-echo "W is $W"
+#echo "W is $W"
 #H='convert temp.jpg -format %h info:'
 
 # create a mask fro rounding the borders
@@ -40,15 +62,17 @@ $convert temp.png \( +clone -background black -shadow 80x3+20+20 \) +swap -backg
 
 #$convert -font /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf  -pointsize 36 label:"$text" label.png 
 #$convert -font /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf  -size "$W"x85 -pointsize 36 caption:"$text" label.png
+
 #label size: remove the 50 pixels corresponding to the borders
 W=$(($W-50))
 $convert -font /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf -gravity center -size "$W"x60 label:"$text" label.png
 #when we have a label without any size
 #$composite label.png -gravity south -geometry +0+52 shadow.png out.png
-$composite label.png -gravity south -geometry +0+40 shadow.png out.png
-cp out.png ../out.png
 
-#rm -Rf $working_dir
+$composite label.png -gravity south -geometry +0+40 shadow.png out.png
+cp out.png $out
+
+rm -Rf $working_dir
 
 
 
