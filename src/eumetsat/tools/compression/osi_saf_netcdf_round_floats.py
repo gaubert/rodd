@@ -344,7 +344,7 @@ def run_unitary_test(filename, temp_root_dir, to_clean, version, transform = Tru
 
 def run_full_tests(version = 3, result_file_name = '/tmp/result-nc3.csv', nb_runs = 50, transform = True):
     """ run the complete tests """
-    TO_CLEAN      = True
+    TO_CLEAN      = False
     #ROOT_TEMP_DIR = "/homespace/gaubert/tempo"
     ROOT_TEMP_DIR = "/tmp/comp-tempo"
     
