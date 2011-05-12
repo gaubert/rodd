@@ -57,10 +57,10 @@ fi
 
 #resize image and border of 25x25
 #$convert $in -normalize -resize 300x400^ -bordercolor White -border 12x12 dummy.jpg
-#$convert $in -resize x160 -resize '160x<' -resize 50% -gravity center -crop 80x80+0+0 +repage dummy.jpg
-$convert $in -normalize -bordercolor White -border 12x12 dummy.jpg
+$convert $in -normalize -resize x640 -resize '640x<' -resize 50% -gravity center -crop 640x480+0+0 +repage -bordercolor White -border 12x12 dummy.jpg
+#$convert $in -normalize -bordercolor White -border 12x12 dummy.jpg
 # add bigger bottom border
-$convert dummy.jpg -gravity east -splice 350x0 -background White -append temp.jpg
+$convert dummy.jpg -gravity east -splice 350x0 -background White -append temp.png
 #get width and height of the produced picture
 #W=`convert dummy.jpg -format %w info:`
 #echo "W is $W"
@@ -69,9 +69,9 @@ H=`convert temp.jpg -format %h info:`
 # create a mask fro rounding the borders
 # apply the mask
 #create mvg mask
-$convert temp.jpg -format 'roundrectangle 1,1 %[fx:w+4],%[fx:h+4] 12,12' info: > rounded_corner.mvg
-$convert temp.jpg -border 3 -alpha transparent -background none -fill white -stroke none -strokewidth 0 -draw "@rounded_corner.mvg" rounded_corner_mask.png
-$convert temp.jpg -matte -bordercolor none -border 3 rounded_corner_mask.png -compose DstIn -composite temp.png 
+$convert temp.png -format 'roundrectangle 1,1 %[fx:w+4],%[fx:h+4] 12,12' info: > rounded_corner.mvg
+$convert temp.png -border 3 -alpha transparent -background none -fill white -stroke none -strokewidth 0 -draw "@rounded_corner.mvg" rounded_corner_mask.png
+$convert temp.png -matte -bordercolor none -border 3 rounded_corner_mask.png -compose DstIn -composite temp.png 
 # add drop shadow
 $convert temp.png \( +clone -background black -shadow 80x3+20+20 \) +swap -background white -layers merge +repage shadow.png 
 #cp shadow.png /home/aubert/Dev/projects/rodd/etc/img-manip
