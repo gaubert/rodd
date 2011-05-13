@@ -42,25 +42,31 @@ mkdir -p $working_dir
 rm -f out.jpg
 cd $working_dir
 
-W=`convert dummy.jpg -format %w info:`
-H=`convert temp.jpg -format %h info:`
+W=`convert $in -format %w info:`
+H=`convert $in -format %h info:`
 
 if [ "$W" -gt "$H" ]; then
    echo "Width is greater than Height"
    #resize image and border of 25x25
-   $convert $in -normalize -resize 320x240^ -bordercolor White -border 12x12 dummy.jpg
+   $convert $in -normalize -resize '420x>' -bordercolor White -border 12x12 dummy.jpg
+   # add side border to put the text
+   $convert dummy.jpg -gravity east -splice 350x0 -background White -append temp.png
 else
    echo "Width is not greater than Height"
-   $convert $in -normalize -resize 240x320^ -bordercolor White -border 12x12 dummy.jpg
+   $convert $in -normalize -resize 'x420>' -bordercolor White -border 12x12 dummy.jpg
+   # add side border to put the text
+   $convert dummy.jpg -gravity east -splice 300x0 -background White -append temp.png
 fi
+newsize=`convert dummy.jpg -format %wx%h info:`
+echo "resized imaged size="$newsize
 
 
 #resize image and border of 25x25
 #$convert $in -normalize -resize 300x400^ -bordercolor White -border 12x12 dummy.jpg
-$convert $in -normalize -resize x640 -resize '640x<' -resize 50% -gravity center -crop 640x480+0+0 +repage -bordercolor White -border 12x12 dummy.jpg
+#$convert $in -normalize -resize x640 -resize '640x<' -resize 50% -gravity center -crop 640x480+0+0 +repage -bordercolor White -border 12x12 dummy.jpg
 #$convert $in -normalize -bordercolor White -border 12x12 dummy.jpg
 # add bigger bottom border
-$convert dummy.jpg -gravity east -splice 350x0 -background White -append temp.png
+#$convert dummy.jpg -gravity east -splice 350x0 -background White -append temp.png
 #get width and height of the produced picture
 #W=`convert dummy.jpg -format %w info:`
 #echo "W is $W"
@@ -76,6 +82,8 @@ $convert temp.png -matte -bordercolor none -border 3 rounded_corner_mask.png -co
 $convert temp.png \( +clone -background black -shadow 80x3+20+20 \) +swap -background white -layers merge +repage shadow.png 
 #cp shadow.png /home/aubert/Dev/projects/rodd/etc/img-manip
 #cp shadow.png /home/aubert/Dev/projects/rodd/etc/img-manip
+newsize=`convert shadow.png -format %wx%h info:`
+echo "resized imaged size="$newsize
 cp shadow.png /homespace/gaubert/Dev/projects/rodd/etc/img-manip
 #create label and add it with composite
 
