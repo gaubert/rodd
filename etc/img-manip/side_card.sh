@@ -49,13 +49,15 @@ if [ "$W" -gt "$H" ]; then
    echo "Width is greater than Height"
    #resize image and border of 25x25
    $convert $in -normalize -resize '420x>' -bordercolor White -border 12x12 dummy.jpg
+   W=`convert dummy.jpg -format %w info:`
    # add side border to put the text
-   $convert dummy.jpg -gravity east -splice 350x0 -background White -append temp.png
+   $convert dummy.jpg -gravity east -splice "$W"x0 -background White -append temp.png
 else
    echo "Width is not greater than Height"
    $convert $in -normalize -resize 'x420>' -bordercolor White -border 12x12 dummy.jpg
+   W=`convert dummy.jpg -format %w info:`
    # add side border to put the text
-   $convert dummy.jpg -gravity east -splice 300x0 -background White -append temp.png
+   $convert dummy.jpg -gravity east -splice "$W"x0 -background White -append temp.png
 fi
 newsize=`convert dummy.jpg -format %wx%h info:`
 echo "resized imaged size="$newsize
