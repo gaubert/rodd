@@ -1,7 +1,8 @@
 #!/bin/bash
 set -x
 
-IMG_MANIP_HOME=/homespace/gaubert/Dev/projects/rodd/etc/img-manip
+#IMG_MANIP_HOME=/homespace/gaubert/Dev/projects/rodd/etc/img-manip
+IMG_MANIP_HOME=/home/aubert/Dev/projects/rodd/etc/img-manip
 #IMAGEMAGICK_DIR=/homespace/gaubert/ImageMagick-6.6.9-8
 IMAGEMAGICK_DIR=/usr
 
@@ -66,7 +67,7 @@ $convert temp.png \( +clone -background black -shadow 80x3+20+20 \) +swap -backg
 
 #label size: remove the 50 pixels corresponding to the borders
 W=$(($W-50))
-$convert -font /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf -gravity center -size "$W"x60 label:"$text" label.png
+$convert -font $IMG_MANIP_HOME/fonts/Candice.ttf -gravity center -size "$W"x60 label:"$text" label.png
 #when we have a label without any size
 #$composite label.png -gravity south -geometry +0+52 shadow.png out.png
 
