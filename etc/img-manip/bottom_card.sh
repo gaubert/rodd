@@ -1,10 +1,10 @@
 #!/bin/bash
 set -x
 
-#IMG_MANIP_HOME=/homespace/gaubert/Dev/projects/rodd/etc/img-manip
-IMG_MANIP_HOME=/home/aubert/Dev/projects/rodd/etc/img-manip
-#IMAGEMAGICK_DIR=/homespace/gaubert/ImageMagick-6.6.9-8
-IMAGEMAGICK_DIR=/usr
+IMG_MANIP_HOME=/homespace/gaubert/Dev/projects/rodd/etc/img-manip
+IMAGEMAGICK_DIR=/homespace/gaubert/ImageMagick-6.6.9-8
+#IMG_MANIP_HOME=/home/aubert/Dev/projects/rodd/etc/img-manip
+#IMAGEMAGICK_DIR=/usr
 
 font_dir=$IMG_MANIP_HOME/fonts/
 

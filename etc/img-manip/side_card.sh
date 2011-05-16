@@ -50,29 +50,38 @@ if [ "$W" -gt "$H" ]; then
    #resize image and border of 25x25
    $convert $in -normalize -resize '420x>' -bordercolor White -border 12x12 dummy.jpg
    W=`convert dummy.jpg -format %w info:`
+   echo "original W=$W"
+   if [ "$W" -lt "200" ]; then
+	   W=200
+   else
+	   W=$(($W-30))
+   fi
+   # add side border to put the text
+   echo "final W=$W"
    # add side border to put the text
    $convert dummy.jpg -gravity east -splice "$W"x0 -background White -append temp.png
 else
    echo "Width is not greater than Height"
    $convert $in -normalize -resize 'x420>' -bordercolor White -border 12x12 dummy.jpg
    W=`convert dummy.jpg -format %w info:`
+   echo "original W=$W"
+   if [ "$W" -lt "200" ]; then
+	   W=200
+   else
+	   W=$(($W-20))
+   fi
    # add side border to put the text
    $convert dummy.jpg -gravity east -splice "$W"x0 -background White -append temp.png
 fi
 newsize=`convert dummy.jpg -format %wx%h info:`
 echo "resized imaged size="$newsize
 
-
-#resize image and border of 25x25
-#$convert $in -normalize -resize 300x400^ -bordercolor White -border 12x12 dummy.jpg
+# crop to keep balanc in the postcard
 #$convert $in -normalize -resize x640 -resize '640x<' -resize 50% -gravity center -crop 640x480+0+0 +repage -bordercolor White -border 12x12 dummy.jpg
-#$convert $in -normalize -bordercolor White -border 12x12 dummy.jpg
-# add bigger bottom border
-#$convert dummy.jpg -gravity east -splice 350x0 -background White -append temp.png
 #get width and height of the produced picture
 #W=`convert dummy.jpg -format %w info:`
 #echo "W is $W"
-H=`convert temp.jpg -format %h info:`
+H=`convert temp.png -format %h info:`
 
 # create a mask fro rounding the borders
 # apply the mask
@@ -82,23 +91,23 @@ $convert temp.png -border 3 -alpha transparent -background none -fill white -str
 $convert temp.png -matte -bordercolor none -border 3 rounded_corner_mask.png -compose DstIn -composite temp.png 
 # add drop shadow
 $convert temp.png \( +clone -background black -shadow 80x3+20+20 \) +swap -background white -layers merge +repage shadow.png 
-#cp shadow.png /home/aubert/Dev/projects/rodd/etc/img-manip
-#cp shadow.png /home/aubert/Dev/projects/rodd/etc/img-manip
 newsize=`convert shadow.png -format %wx%h info:`
 echo "resized imaged size="$newsize
-cp shadow.png /homespace/gaubert/Dev/projects/rodd/etc/img-manip
+#cp shadow.png /homespace/gaubert/Dev/projects/rodd/etc/img-manip
 #create label and add it with composite
 
 #$convert -font $IMG_MANIP_HOME/fonts/Candice.ttf  -pointsize 36 label:"$text" label.png 
 ##$convert -font $IMG_MANIP_HOME/fonts/Candice.ttf -size 350x"$H" -gravity center -pointsize 36 label:"$text" label.png
 
 #label size: remove the 50 pixels corresponding to the borders
-#W=$(($W-50))
-#$convert -font /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf -gravity center -size "$W"x60 label:"$text" label.png
+W=$(($W-50))
+H=$(($H-50))
+$convert -font /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf -size "$W"x"$H" label:"$text" label.png
+cp label.png /homespace/gaubert/Dev/projects/rodd/etc/img-manip
 #when we have a label without any size
 #$composite label.png -gravity south -geometry +0+52 shadow.png out.png
 
-##$composite label.png -gravity east -geometry +0+0 shadow.png out.png
+$composite label.png -gravity east -geometry +90+0 shadow.png out.png
 cp out.png $out
 
 #rm -Rf $working_dir
