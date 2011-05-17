@@ -102,6 +102,7 @@ echo "resized imaged size="$newsize
 #label size: remove the 50 pixels corresponding to the borders
 W=$(($W-50))
 H=$(($H-50))
+echo "WxH = $W x $H"
 $convert -font /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf -size "$W"x"$H" label:"$text" label.png
 cp label.png /homespace/gaubert/Dev/projects/rodd/etc/img-manip
 #when we have a label without any size
