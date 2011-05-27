@@ -1,0 +1,3 @@
+260  center  black  14  /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf  0 5    This is centered 
+180  west    green  8  /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf  0 80   This left aligned \n and left aligned
+180  center  blue   8  /homespace/gaubert/.gimp-2.6/plug-ins/fonts/Candice.ttf  0 180   Centered text
