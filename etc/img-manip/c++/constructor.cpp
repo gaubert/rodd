@@ -30,4 +30,8 @@ int main()
   cout << "Call f('c')" << endl;
   Foo f('c');
   cout << "Foo precious = " << f.c() << endl;
+  cout << "Instanciate array of Foo 3 times" << endl;
+  Foo a[3];          
+  cout << "Instanciate array of Foo 3 times via pointer and new" << endl;
+  Foo* p = new Foo[3];
 }
