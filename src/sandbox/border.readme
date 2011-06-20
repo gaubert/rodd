@@ -1,0 +1,4 @@
+To redirect sterr in stdout
+
+./border.sh  >> border.log 2>&1
+
