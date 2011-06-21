@@ -211,6 +211,8 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         #information returned to the user
         user_info = { 'stdout' : [], 'stderr' : []}
         
+        print("Execute command=%s\n" %(a_command))
+        
         #execute process 
         proc = subprocess.Popen(a_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env= self._get_env())
         
@@ -302,7 +304,10 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
 if __name__ == '__main__':
     
     
-    helper = WMCTRLHelper(50*1024, 10000,"/homespace/gaubert/bin/wmctrl")
+    wmctrl_cmd = "/homespace/gaubert/bin/wmctrl"
+    wmctrl_cmd = "wmctrl"
+    
+    helper = WMCTRLHelper(50*1024, 10000, wmctrl_cmd)
     
     helper._get_desktop_dimensions()
     
@@ -315,6 +320,9 @@ if __name__ == '__main__':
     print("add y=%d, x=%d\n" % ( decorations_dim['Y'],decorations_dim['X']) )
     
     retval, user_info = helper.execute_command(helper.create_move_to_window_north_east_command(active_window_id, decorations_dim['X'], decorations_dim['Y'],0,40))
+    
+    # in ubuntu you need to add -i -r id and when the window is maximized you cannot touch it after (see why)
+    print("retval = %d, user_info=%s\n" %(retval, user_info))
     
     #time.sleep(1)
     
