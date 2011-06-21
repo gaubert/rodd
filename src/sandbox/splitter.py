@@ -39,10 +39,11 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         flags = fcntl.fcntl(a_proc.stderr, fcntl.F_GETFL)
         if not a_proc.stderr.closed:
             fcntl.fcntl(a_proc.stderr, fcntl.F_SETFL, flags| os.O_NONBLOCK)
-            
+        
+        
     def _generate_wmctrl_command_line(self, x, y, width, height):
         """
-          wmctlr -r :ACTIVE: -e 1,x,y,width,height.
+          wmctlr -r :ACTIVE: -e 1,x,y,width,height. for active window
           example "/bin/wmctrl -r :ACTIVE: -e 1,960,580,950,580"
         """
         
@@ -113,6 +114,56 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         
         return self._generate_wmctrl_command_line(x_pos, y_pos, width, height)
     
+    def _get_active_window_command(self):
+        """
+          get the active window id
+        """
+        command = "xprop -root | grep '_NET_ACTIVE_WINDOW(WINDOW)' | awk '{print $5}'"
+        
+        retval, output = self.execute_command(command)
+        
+        if retval == 1:
+            raise Exception("Error: Cannot get the active window")
+        
+        id = ''.join(output['stdout'])
+        
+        return id.strip()
+    
+    def _get_window_decoration_dimensions(self, a_win_id):
+        """ 
+           get the window decoration dimensions
+           call border.sh id
+        """
+        
+        command = "./border.sh %s" % (a_win_id)
+        
+        retval, output = self.execute_command(command)
+        
+        if retval == 1:
+            raise Exception("Error: Cannot get the border dimensions")
+        
+        stdout = ''.join(output['stdout'])
+        
+        pattern = "\s*Class=\"\w*\",\s*Name=\"\w*\",\s*N=(?P<N>\d*)\s*,\s*E=(?P<E>\d*)\s*,\s*S=(?P<S>\d*)\s*,\s*W=(?P<W>\d*)\s*"
+        
+        re_decorations = re.compile(pattern, re.IGNORECASE)
+        
+        match = re_decorations.match(stdout)
+        
+        decoration_dimensions = { 'N' : -1 , 'S' : -1, 'W' : -1, 'E' : -1 , 'Y' : -1, 'X' : -1}
+        
+        if match is not None:
+            decoration_dimensions = { 'N' : int(match.group('N')) , \
+                                      'S' : int(match.group('S')), \
+                                      'W' : int(match.group('W')), \
+                                      'E' : int(match.group('E'))
+                                    }
+            
+            decoration_dimensions['Y'] = decoration_dimensions['N'] + decoration_dimensions['S']
+            decoration_dimensions['X'] = decoration_dimensions['W'] + decoration_dimensions['E']
+            
+        return decoration_dimensions
+        
     
     def _get_desktop_dimensions(self):
         """ get the desktop dimensions """
@@ -240,15 +291,23 @@ if __name__ == '__main__':
     
     helper._get_desktop_dimensions()
     
-    retval, user_info = helper.execute_command(helper.create_move_to_window_north_east_command())
+    active_window_id = helper._get_active_window_command()
     
-    time.sleep(1)
+    print("active_window_id = %s\n" %(active_window_id))
     
-    retval, user_info = helper.execute_command(helper.create_move_to_window_north_west_command())
+    decorations_dim = helper._get_window_decoration_dimensions(active_window_id)
     
-    time.sleep(1)
+    print("add y=%d, x=%d\n" % ( decorations_dim['Y'],decorations_dim['X']) )
     
-    retval, user_info = helper.execute_command(helper.create_move_to_full_screen_command())
+    #retval, user_info = helper.execute_command(helper.create_move_to_window_north_east_command())
+    
+    #time.sleep(1)
+    
+    #retval, user_info = helper.execute_command(helper.create_move_to_window_north_west_command())
+    
+    #time.sleep(1)
+    
+    #retval, user_info = helper.execute_command(helper.create_move_to_full_screen_command())
     
     
     #print("retval, userinfo = %s, %s\n" % (retval, user_info))

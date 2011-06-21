@@ -20,5 +20,5 @@ while read line;
         S=`echo $4|sed 's/,$//'`
         NAME=`echo $5|sed 's/,$//'`
         CLASS=`echo $6|sed 's/,$//'`
-        echo -e "$CLASS $NAME N=$N, E=$E S=$S W=$W"
+        echo -e "Class=$CLASS, Name=$NAME, N=$N, E=$E, S=$S, W=$W."
  done
