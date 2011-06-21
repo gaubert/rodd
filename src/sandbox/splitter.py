@@ -41,15 +41,15 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
             fcntl.fcntl(a_proc.stderr, fcntl.F_SETFL, flags| os.O_NONBLOCK)
         
         
-    def _generate_wmctrl_command_line(self, x, y, width, height):
+    def _generate_wmctrl_command_line(self, win_id, x, y, width, height):
         """
           wmctlr -r :ACTIVE: -e 1,x,y,width,height. for active window
           example "/bin/wmctrl -r :ACTIVE: -e 1,960,580,950,580"
         """
         
-        return "%s -r :ACTIVE: -e 1,%s,%s,%s,%s" % (self._command, x, y, width, height)
+        return "%s -r %s -e 1,%s,%s,%s,%s" % (self._command, win_id, x, y, width, height)
         
-    def create_move_to_full_screen_command(self):
+    def create_move_to_full_screen_command(self, win_id, x_deco, y_deco):
         """ 
            Move command north_east.
            -e gravity,x_position,y_position,width,height
@@ -57,12 +57,53 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         """
         x_pos   = 0
         y_pos   = 0
-        width   = self._desktop_dimensions["width"]
-        height  = self._desktop_dimensions["height"]
+        width   = self._desktop_dimensions["width"]  - x_deco
+        height  = self._desktop_dimensions["height"] - y_deco
         
-        return self._generate_wmctrl_command_line(x_pos, y_pos, width, height)
+        return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
             
-    def create_move_to_window_north_east_command(self):
+    def create_move_to_window_north_east_command(self, win_id, x_deco, y_deco, x_visible, y_visible ):
+        """ 
+           Move command north_east.
+           -e gravity,x_position,y_position,width,height
+           
+           here is the formula with the decorations:
+           x=(desktop width/2)
+           y=0
+           width  = (desktop width:1920/2) - x_deco = 960 - 8 = 952
+           height = (desktop_height:1200) - y_deco = 1200 -32 = 1128
+
+
+        
+        """
+        x_pos   = self._desktop_dimensions["width"] / 2
+        y_pos   = 0
+        width   = (self._desktop_dimensions["width"] / 2)  - (x_deco + x_visible)
+        height  = (self._desktop_dimensions["height"] / 2) - (y_deco + y_visible)
+        
+        return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
+    
+    def create_move_to_window_north_west_command(self, win_id, x_deco, y_deco, x_visible, y_visible ):
+        """ 
+           Move command north_east.
+           -e gravity,x_position,y_position,width,height
+           here is the formula with the decorations:
+           x=(desktop width/2)
+           y=0
+           width  = (desktop width:1920/2) - (x_deco+x_visible) = 960 - 8 = 952
+           height = (desktop_height:1200) - (y_deco+y_visible)  = 1200 -32 = 1128
+           
+           with x_visible and y_visible the always visible parts like the kicker in kde
+        
+        """
+        x_pos   = 0
+        y_pos   = 0
+        width   = self._desktop_dimensions["width"] / 2  - (x_deco + x_visible)
+        height  = self._desktop_dimensions["height"] / 2 - (y_deco + y_visible)
+        
+        return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
+    
+    def create_move_to_window_east_command(self, win_id, x_deco, y_deco):
         """ 
            Move command north_east.
            -e gravity,x_position,y_position,width,height
@@ -70,12 +111,12 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         """
         x_pos   = self._desktop_dimensions["width"] / 2
         y_pos   = 0
-        width   = self._desktop_dimensions["width"] / 2
-        height  = self._desktop_dimensions["height"] / 2
+        width   = (self._desktop_dimensions["width"] / 2) - x_deco
+        height  = (self._desktop_dimensions["height"]) - y_deco
         
-        return self._generate_wmctrl_command_line(x_pos, y_pos, width, height)
+        return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
     
-    def create_move_to_window_north_west_command(self):
+    def create_move_to_window_west_command(self, win_id, x_deco, y_deco):
         """ 
            Move command north_east.
            -e gravity,x_position,y_position,width,height
@@ -83,36 +124,10 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         """
         x_pos   = 0
         y_pos   = 0
-        width   = self._desktop_dimensions["width"] / 2
-        height  = self._desktop_dimensions["height"] / 2
+        width   = (self._desktop_dimensions["width"] / 2) - x_deco
+        height  = self._desktop_dimensions["height"] - y_deco
         
-        return self._generate_wmctrl_command_line(x_pos, y_pos, width, height)
-    
-    def create_move_to_window_east_command(self):
-        """ 
-           Move command north_east.
-           -e gravity,x_position,y_position,width,height
-        
-        """
-        x_pos   = self._desktop_dimensions["width"] / 2
-        y_pos   = 0
-        width   = self._desktop_dimensions["width"] / 2
-        height  = self._desktop_dimensions["height"]
-        
-        return self._generate_wmctrl_command_line(x_pos, y_pos, width, height)
-    
-    def create_move_to_window_west_command(self):
-        """ 
-           Move command north_east.
-           -e gravity,x_position,y_position,width,height
-        
-        """
-        x_pos   = 0
-        y_pos   = 0
-        width   = self._desktop_dimensions["width"] / 2
-        height  = self._desktop_dimensions["height"]
-        
-        return self._generate_wmctrl_command_line(x_pos, y_pos, width, height)
+        return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
     
     def _get_active_window_command(self):
         """
@@ -299,7 +314,7 @@ if __name__ == '__main__':
     
     print("add y=%d, x=%d\n" % ( decorations_dim['Y'],decorations_dim['X']) )
     
-    #retval, user_info = helper.execute_command(helper.create_move_to_window_north_east_command())
+    retval, user_info = helper.execute_command(helper.create_move_to_window_north_east_command(active_window_id, decorations_dim['X'], decorations_dim['Y'],0,40))
     
     #time.sleep(1)
     
