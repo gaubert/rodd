@@ -44,12 +44,12 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
     def _generate_wmctrl_command_line(self, win_id, x, y, width, height):
         """
           wmctlr -r :ACTIVE: -e 1,x,y,width,height. for active window
-          example "/bin/wmctrl -r :ACTIVE: -e 1,960,580,950,580"
+          example "/bin/wmctrl -i -r :ACTIVE: -e 1,960,580,950,580"
         """
         
-        return "%s -r %s -e 1,%s,%s,%s,%s" % (self._command, win_id, x, y, width, height)
+        return "%s -i -r %s -e 1,%s,%s,%s,%s" % (self._command, win_id, x, y, width, height)
         
-    def create_move_to_full_screen_command(self, win_id, x_deco, y_deco):
+    def create_move_to_full_screen_command(self, win_id, x_deco, y_deco, x_visible, y_visible ):
         """ 
            Move command north_east.
            -e gravity,x_position,y_position,width,height
@@ -57,8 +57,8 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         """
         x_pos   = 0
         y_pos   = 0
-        width   = self._desktop_dimensions["width"]  - x_deco
-        height  = self._desktop_dimensions["height"] - y_deco
+        width   = self._desktop_dimensions["width"]  - (x_deco + x_visible)
+        height  = self._desktop_dimensions["height"] - (y_deco + y_visible)
         
         return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
             
@@ -83,7 +83,7 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         
         return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
     
-    def create_move_to_window_north_west_command(self, win_id, x_deco, y_deco, x_visible, y_visible ):
+    def create_move_to_window_north_west_command(self, win_id, x_deco, y_deco, x_visible, y_visible):
         """ 
            Move command north_east.
            -e gravity,x_position,y_position,width,height
@@ -103,7 +103,7 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         
         return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
     
-    def create_move_to_window_east_command(self, win_id, x_deco, y_deco):
+    def create_move_to_window_east_command(self, win_id, x_deco, y_deco, x_visible, y_visible):
         """ 
            Move command north_east.
            -e gravity,x_position,y_position,width,height
@@ -111,12 +111,12 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         """
         x_pos   = self._desktop_dimensions["width"] / 2
         y_pos   = 0
-        width   = (self._desktop_dimensions["width"] / 2) - x_deco
-        height  = (self._desktop_dimensions["height"]) - y_deco
+        width   = (self._desktop_dimensions["width"] / 2) - (x_deco + x_visible)
+        height  = (self._desktop_dimensions["height"]) - (y_deco + y_visible)
         
         return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
     
-    def create_move_to_window_west_command(self, win_id, x_deco, y_deco):
+    def create_move_to_window_west_command(self, win_id, x_deco, y_deco, x_visible, y_visible):
         """ 
            Move command north_east.
            -e gravity,x_position,y_position,width,height
@@ -124,8 +124,8 @@ class WMCTRLHelper(object): # pylint: disable-msg=R0903
         """
         x_pos   = 0
         y_pos   = 0
-        width   = (self._desktop_dimensions["width"] / 2) - x_deco
-        height  = self._desktop_dimensions["height"] - y_deco
+        width   = (self._desktop_dimensions["width"] / 2) - (x_deco + x_visible)
+        height  = self._desktop_dimensions["height"] - (y_deco + y_visible)
         
         return self._generate_wmctrl_command_line(win_id, x_pos, y_pos, width, height)
     
@@ -319,18 +319,17 @@ if __name__ == '__main__':
     
     print("add y=%d, x=%d\n" % ( decorations_dim['Y'],decorations_dim['X']) )
     
-    retval, user_info = helper.execute_command(helper.create_move_to_window_north_east_command(active_window_id, decorations_dim['X'], decorations_dim['Y'],0,40))
+    retval, user_info = helper.execute_command(helper.create_move_to_window_north_east_command(active_window_id, decorations_dim['X'], decorations_dim['Y'],0,41))
     
     # in ubuntu you need to add -i -r id and when the window is maximized you cannot touch it after (see why)
     print("retval = %d, user_info=%s\n" %(retval, user_info))
     
-    #time.sleep(1)
+    time.sleep(1)
     
-    #retval, user_info = helper.execute_command(helper.create_move_to_window_north_west_command())
+    retval, user_info = helper.execute_command(helper.create_move_to_window_north_west_command(active_window_id, decorations_dim['X'], decorations_dim['Y'], 0, 41))
     
-    #time.sleep(1)
+    time.sleep(1)
     
-    #retval, user_info = helper.execute_command(helper.create_move_to_full_screen_command())
+    retval, user_info = helper.execute_command(helper.create_move_to_full_screen_command(active_window_id, decorations_dim['X'], decorations_dim['Y'],0,41))
     
-    
-    #print("retval, userinfo = %s, %s\n" % (retval, user_info))
+    print("retval, userinfo = %s, %s\n" % (retval, user_info))

@@ -31,8 +31,9 @@ Foo::Foo(char x): _c(x)
 
 Foo Foo::return_a_foo()
 {
-  Foo foo('z');
-  return foo; //return by value. Copy constructor should be called
+  //Foo foo('z');
+  //return foo; //return by value. Copy constructor should be called
+  return Foo('z');
 }
 
 void Foo::passed_by_value(Foo aFoo)
@@ -61,6 +62,7 @@ int main()
 
   cout << "Return a foo by value. Copy constructor should be called" << endl;
   Foo f1 = f.return_a_foo();
+
   Foo another_fool(f);
   cout << "another_fool.c() = " << another_fool.c() << endl;
 
