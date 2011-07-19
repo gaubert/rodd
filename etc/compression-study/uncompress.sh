@@ -2,8 +2,8 @@
 # version 0.5
 #set -x
 
-#echo "0=$0"
-#echo "1=$1"
+### ./uncompress dir-to-uncompress (Uncompress all sub-dirs below that)
+
 
 
 targetdir="$1"
