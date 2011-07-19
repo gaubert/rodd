@@ -1,5 +1,10 @@
 #!/bin/bash
+# version 0.5
 #set -x
+
+#echo "0=$0"
+#echo "1=$1"
+
 
 targetdir="$1"
 origdir=`pwd`
@@ -8,7 +13,7 @@ origdir=`pwd`
 
 echo "========================== Unzip process =========================="
 
-files=`find ./test-dir -name *.zip -o -name *.ZIP`
+files=`find $1 -name *.zip -o -name *.ZIP`
 
 for file in $files
 do
@@ -48,7 +53,7 @@ done
 echo "========================== tar.bz2 process =========================="
 
 # look for tar.bz2 files
-files=`find ./test-dir -name *.tar.bz2 -o -name *.tbz2 -o -name *.TAR.BZ2 -o -name *.tar.bz2`
+files=`find $1 -name *.tar.bz2 -o -name *.tbz2 -o -name *.TAR.BZ2 -o -name *.tar.bz2`
 
 for file in $files
 do
@@ -78,7 +83,7 @@ done
 echo "========================== bz2 process =========================="
 
 # look for bz2 files
-files=`find ./test-dir -name *.bz2 -o -name *.BZ2`
+files=`find $1 -name *.bz2 -o -name *.BZ2`
 
 for file in $files
 do
@@ -92,10 +97,10 @@ do
     echo "bunzip2 $abs_file"
 
     # bunzip  file 
-    if ! bunzip2 ${abs_file} 
+    if ! bunzip2 -f ${abs_file} 
     then
       echo "$0 - bunzip2 error for file : ${abs_file}"
-      return 1
+      exit 1
     fi
 
     #go back to original
@@ -105,7 +110,7 @@ done
 echo "========================== tar.gz process =========================="
 
 # look for tar.gz files
-files=`find ./test-dir -name *.tar.gz -o -name *.tgz -o -name *.TAR.GZ -o -name *.TGZ`
+files=`find $1 -name *.tar.gz -o -name *.tgz -o -name *.TAR.GZ -o -name *.TGZ`
 
 for file in $files
 do
@@ -116,13 +121,13 @@ do
     dir=`dirname $abs_file`
     cd $dir
 
-    echo "gunzip $abs_file"
+    echo "untar $abs_file"
 
     # bunzip  file
     if ! tar zxvf ${abs_file}
     then
       echo "$0 - tar error for file : ${abs_file}"
-      return 1
+      exit 1
     else
       echo "Delete file ${abs_file}"
       rm -f ${abs_file}
@@ -135,7 +140,7 @@ done
 echo "========================== gz process =========================="
 
 # look for gz files
-files=`find ./test-dir -name *.gz -o -name *.GZ`
+files=`find $1 -name *.gz -o -name *.GZ`
 
 for file in $files
 do
@@ -148,11 +153,11 @@ do
 
     echo "gunzip $abs_file"
 
-    # bunzip  file 
+    # gunzip  file 
     if ! gunzip ${abs_file} 
     then
       echo "$0 - gunzip error for file : ${abs_file}"
-      return 1
+      exit 1
     fi
 
     #go back to original
@@ -179,7 +184,7 @@ done
 #    if ! tar zxvf ${abs_file}
 #    then
 #      echo "$0 - tar error for file : ${abs_file}"
-#      return 1
+#      exit 1
 #    else
 #      echo "Delete file ${abs_file}"
 #      rm -f ${abs_file}
