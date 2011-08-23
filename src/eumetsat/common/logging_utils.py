@@ -7,7 +7,7 @@ Created on Jan 28, 2010
 import logging.config
 import traceback
 import sys
-from org.eumetsat.conf.conf_helper import Conf
+#from org.eumetsat.conf.conf_helper import Conf
 
 class LoggerFactory:
     """ Factory for handling Loggers """
@@ -20,6 +20,33 @@ class LoggerFactory:
         """ default cons  """
         
         self._additional_handlers = []
+    
+    @classmethod
+    def _get_logging_from_config(cls):
+        """ login configuration"""
+        conf_file = None
+        debug = False
+        try:
+            #to be removed
+            Conf = None
+            conf_file = Conf.get_instance().get('Logging', 'conf_file', None)
+            logging.addLevelName(LoggerFactory.DISABLED, "DISABLED")
+            debug = Conf.get_instance().getboolean('Logging', 'debug', False)
+            if debug is True:
+                print 'debug ' + str(debug) + ',initializing logging, using ' + conf_file
+            
+            logging.config.fileConfig(conf_file)
+            
+            #add console handler: specific for RNPicker Apps
+            cls._add_console_handler()
+            
+            
+        except Exception, ex: #pylint: disable-msg=W0703
+            err_msg = str(ex)
+            if conf_file and not cls.__check_conf_file_exist__(conf_file):
+                err_msg = ('file ' + conf_file + ' not found')
+            print('logging configuration error, ' + err_msg)
+            print("load default logger")
         
     
     @classmethod
@@ -29,9 +56,9 @@ class LoggerFactory:
             conf_file = None
             debug = False
             try:
-                conf_file = Conf.get_instance().get('Logging', 'conf_file', None)
+                conf_file = "/homespace/gaubert/ecli-workspace/rodd/etc/conf/logging_rodd.conf"
                 logging.addLevelName(LoggerFactory.DISABLED, "DISABLED")
-                debug = Conf.get_instance().getboolean('Logging', 'debug', False)
+                debug = True
                 if debug is True:
                     print 'debug ' + str(debug) + ',initializing logging, using ' + conf_file
                 
@@ -40,14 +67,12 @@ class LoggerFactory:
                 #add console handler: specific for RNPicker Apps
                 cls._add_console_handler()
                 
-                
             except Exception, ex: #pylint: disable-msg=W0703
                 err_msg = str(ex)
                 if conf_file and not cls.__check_conf_file_exist__(conf_file):
                     err_msg = ('file ' + conf_file + ' not found')
                 print('logging configuration error, ' + err_msg)
                 print("load default logger")
-                #print traceback.print_exc(10, sys.stderr)
             cls.__INITIALIZED__ = True
         return logging.getLogger(logger_name)
     
@@ -58,7 +83,8 @@ class LoggerFactory:
         #create console handler
         console = logging.StreamHandler()
         console_formatter = logging.Formatter("%(levelname)s - %(message)s")
-        console_filter    = logging.Filter(Conf.get_instance().get('Logging', 'consoleFilter', 'Runner'))
+        #console_filter    = logging.Filter(Conf.get_instance().get('Logging', 'consoleFilter', 'Runner'))
+        console_filter    = logging.Filter('Runner')
         console.setFormatter(console_formatter)
         console.addFilter(console_filter)
 

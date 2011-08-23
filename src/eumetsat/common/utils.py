@@ -3,6 +3,9 @@ import time
 import itertools
 import gc
 import base64
+import StringIO
+import sys
+import traceback
 
 class curry:
     """ Class used to implement the currification (functional programming technic) :
@@ -189,7 +192,7 @@ def dirwalk(dir):
      This implementation returns only the files in all the subdirectories.
      Beware, this is a generator.
     """
-    for f in os.listdir(dir):
+    for f in sorted(os.listdir(dir)):
         fullpath = os.path.join(dir,f)
         if os.path.isdir(fullpath) and not os.path.islink(fullpath):
             for x in dirwalk(fullpath):  # recurse into subdir
@@ -205,6 +208,25 @@ def obfuscate_string(a_str):
 def deobfuscate_string(a_str):
     """ deobfuscate a string """
     return base64.b64decode(a_str)
+
+
+def get_exception_traceback():
+    """
+            return the exception traceback (stack info and so on) in a string
+        
+            Args:
+               None
+               
+            Returns:
+               return a string that contains the exception traceback
+        
+            Raises:
+               
+    """
+    the_file = StringIO.StringIO()
+    exception_type, exception_value, exception_traceback = sys.exc_info() #IGNORE:W0702
+    traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
+    return the_file.getvalue()
  
 
 

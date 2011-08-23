@@ -4,6 +4,8 @@ Created on Sep 13, 2010
 @author: guillaume.aubert@eumetsat.int
 '''
 import sqlalchemy
+from sqlalchemy.orm import sessionmaker
+
 
 
 from eumetsat.common.utils import ftimer
@@ -24,6 +26,7 @@ class DatabaseConnector:
         self._engine        = None
         self._conn          = None
         self._metadata      = None
+        self._session_maker = None
         
         self._log           = LoggerFactory.get_logger(self)
     
@@ -45,6 +48,8 @@ class DatabaseConnector:
         self._conn = self._engine.connect()
         
         self._metadata  = sqlalchemy.MetaData(bind=self._engine)
+        
+        self._session_maker = sessionmaker(bind=self._engine)
         
         self._connected = True
         
@@ -69,6 +74,10 @@ class DatabaseConnector:
     
     def get_connection(self):
         return self._conn
+    
+    def get_session(self):
+        """ return a Session """
+        return self._session_maker()
     
     def get_table_metadata(self, a_table_name):
         """ Return the metadata related to a table """

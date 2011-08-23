@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+from gimpfu import *
+
+# create an output function that redirects to gimp's Error Console
+def gprint( text ):
+   pdb.gimp_message(text)
+   return 
+
+# our script
+def my_script_function(image, drawable) :
+
+    gprint("Lets flip the image!")
+#    pdb.gimp_image_flip( image, ORIENTATION_HORIZONTAL )
+    # get width and height
+    height = pdb.gimp_image_height(image)
+    width  = pdb.gimp_image_width(image)
+
+    # resize width to 640 and keep the same proportion
+    n_height = round((640*height)/float(width))
+    pdb.gimp_image_scale( image, 640, n_height)
+	# pdb.script_fu_addborder(RUN_INTERACTIVE,img, gimp.Drawable, 25, 70, (0,0,0),1)
+    
+    return
+
+# This is the plugin registration function
+register(
+    "my_first_script",    
+    "My first Python-Fu",   
+    "This script does nothing and is extremely good at it",
+    "Guillaume Aubert", 
+    "Guillaume Aubert Company", 
+    "May 2011",
+    "<Image>/Filters/Blur/aTest", 
+    "*", 
+    [
+    ], 
+    [],
+    my_script_function,
+    )
+
+main()
+

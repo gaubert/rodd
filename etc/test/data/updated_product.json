@@ -1,0 +1,71 @@
+{
+  "products" : [{
+  
+     "name" : "updated product", 
+     "uid"  : "EO:EUM:DAT:METOP:ASCSZR1B",
+     "description": "UPDATED DESCRIPTION",
+     "distribution":["EUMETSAT Data Centre","GTS","EUMETCast-Europe"],
+     
+     "eumetcast-info" : {
+     
+        "files" : [
+           {
+	          "name": "ascat_bufr4",
+	          "regexpr": "ascat_20070630_222400_metopa_03612_eps_o_125.l1_ bufr",
+	          "size": "500TB",
+	          "type": "bufr",
+	          "frequency": "480 per day",
+	          "service_dir": ["EPS-METOP-ASCA-L1"]
+	       },
+	       {
+	          "name": "ascat_native",
+	          "regexpr": "ASCA_SZR_1B_M02_20070630222400Z_20070630222658Z_ N_O_20070701001421Z",
+	          "size": "740KB",
+	          "type": "native",
+	          "frequency": "480 per day",
+	          "service_dir": ["EPS-METOP-ASCA-L1"]
+	       }
+        
+        ]
+     
+     },
+    "gts-info" : {
+        "files" : [
+          {
+            "name": "ascat_bufr",
+	        "regexpr": "ascat_20070630_222400_metopa_03612_eps_o_125.l1_ bufr",
+	        "size": "200KB",
+	        "type": "bufr",
+	        "frequency": "480 per day"
+          }
+        ]
+    },
+    "geonetcast-info" : {
+        "files" : [
+          {
+            "name": "ascat_bufr5",
+	        "regexpr": "ascat_20070630_222400_metopa_03612_eps_o_125.l1_ bufr",
+	        "size": "200KB",
+	        "type": "bufr",
+	        "frequency": "480 per day"
+          }
+        ]
+    },
+    "data-centre-info" : {
+        "files" : [
+          {
+            "name": "ascat_native_large",
+	        "size": "25MB",
+	        "type": "native",
+	        "frequency": "15 per day"
+          },
+          {
+            "name": "ascat_hdf5eps",
+	        "size": "27MB",
+	        "type": "hdf5eps",
+	        "frequency": "15 per day"
+          }
+        ]
+    }
+  }]
+}

@@ -1,0 +1,1505 @@
+{
+ "channels": [
+  {
+   "channel_function": "Announcement channel", 
+   "max_rate": "", 
+   "min_rate": "400000", 
+   "multicast_address": "224.223.222.223:4711", 
+   "name": "TSL Announcement Channel"
+  }, 
+  {
+   "channel_function": "EARS service", 
+   "max_rate": "1710000", 
+   "min_rate": "855500", 
+   "multicast_address": "224.223.222.1:4811", 
+   "name": "EUMETSAT Data Channel 1"
+  }, 
+  {
+   "channel_function": "primary high rate SEVIRI", 
+   "max_rate": "1688000", 
+   "min_rate": "1688000", 
+   "multicast_address": "224.223.222.21:2511", 
+   "name": "EUMETSAT Data Channel 2"
+  }, 
+  {
+   "channel_function": "multi service Europe/Africa1", 
+   "max_rate": "659000", 
+   "min_rate": "385000", 
+   "multicast_address": "224.223.222.23:2611", 
+   "name": "EUMETSAT Data Channel 3"
+  }, 
+  {
+   "channel_function": "multi service Europe", 
+   "max_rate": "1139600", 
+   "min_rate": "69000", 
+   "multicast_address": "224.223.222.27:2811", 
+   "name": "EUMETSAT Data Channel 4"
+  }, 
+  {
+   "channel_function": "secondary high rate SEVIRI", 
+   "max_rate": "1619000", 
+   "min_rate": "1619000", 
+   "multicast_address": "224.223.222.29:3111", 
+   "name": "EUMETSAT Data Channel 5"
+  }, 
+  {
+   "channel_function": "secondary meteorological products", 
+   "max_rate": "387000", 
+   "min_rate": "114000", 
+   "multicast_address": "224.223.222.30:3211", 
+   "name": "EUMETSAT Data Channel 6"
+  }, 
+  {
+   "channel_function": "multi service Europe/Americas2", 
+   "max_rate": "273000", 
+   "min_rate": "3800", 
+   "multicast_address": "224.223.222.248:2480", 
+   "name": "EUMETSAT Data Channel 7"
+  }, 
+  {
+   "channel_function": "multi service Europe/Africa/Americas", 
+   "max_rate": "273000", 
+   "min_rate": "3000", 
+   "multicast_address": "224.223.222.31:3311", 
+   "name": "EUMETSAT Data Channel 8"
+  }, 
+  {
+   "channel_function": "DCP data", 
+   "max_rate": "46000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.251:2510", 
+   "name": "EUMETSAT Data Channel 9"
+  }, 
+  {
+   "channel_function": "Jason data", 
+   "max_rate": "273000", 
+   "min_rate": "43000", 
+   "multicast_address": "224.223.222.252:2520", 
+   "name": "EUMETSAT Data Channel 10"
+  }, 
+  {
+   "channel_function": "CMA data", 
+   "max_rate": "399000", 
+   "min_rate": "141000", 
+   "multicast_address": "224.223.222.253:2530", 
+   "name": "EUMETSAT Data Channel 11"
+  }, 
+  {
+   "channel_function": "multi service Europe/Africa", 
+   "max_rate": "273000", 
+   "min_rate": "3800", 
+   "multicast_address": "224.223.222.35:3711", 
+   "name": "EUMETSAT Data Channel 12"
+  }, 
+  {
+   "channel_function": "static info, software updates", 
+   "max_rate": "273000", 
+   "min_rate": "3000", 
+   "multicast_address": "224.223.222.34:3611", 
+   "name": "Info-Channel-1"
+  }, 
+  {
+   "channel_function": "demo, training data", 
+   "max_rate": "273000", 
+   "min_rate": "3000", 
+   "multicast_address": "224.223.222.36:3811", 
+   "name": "Info-Channel-2"
+  }, 
+  {
+   "channel_function": "BMD RA-VI data", 
+   "max_rate": "292000", 
+   "min_rate": "292000", 
+   "multicast_address": "224.223.222.22:2911", 
+   "name": "BMD-RA-VI"
+  }, 
+  {
+   "channel_function": "DWDSAT service", 
+   "max_rate": "1750426", 
+   "min_rate": "1750426", 
+   "multicast_address": "224.223.222.25:2711", 
+   "name": "DWDSAT"
+  }, 
+  {
+   "channel_function": "SAF Europe", 
+   "max_rate": "410000", 
+   "min_rate": "137000", 
+   "multicast_address": "224.223.222.28:3011", 
+   "name": "SAF-Europe"
+  }, 
+  {
+   "channel_function": "SAF Europe/Americas", 
+   "max_rate": "91000", 
+   "min_rate": "3800", 
+   "multicast_address": "224.223.222.249:2490", 
+   "name": "SAF-Americas"
+  }, 
+  {
+   "channel_function": "SAF Europe/Africa", 
+   "max_rate": "324000", 
+   "min_rate": "55000", 
+   "multicast_address": "224.223.222.33:3511", 
+   "name": "SAF-Africa"
+  }, 
+  {
+   "channel_function": "SAF Europe/Africa/Americas", 
+   "max_rate": "200000", 
+   "min_rate": "50000", 
+   "multicast_address": "224.223.222.32:3411", 
+   "name": "SAF-Global"
+  }, 
+  {
+   "channel_function": "products from data providers in the Americas", 
+   "max_rate": "456000", 
+   "min_rate": "3800", 
+   "multicast_address": "224.223.222.250:2500", 
+   "name": "Americas-CH1"
+  }, 
+  {
+   "channel_function": "DevCoCast products", 
+   "max_rate": "114000", 
+   "min_rate": "73000", 
+   "multicast_address": "224.223.222.37:3911", 
+   "name": "DEVCOCAST-1"
+  }, 
+  {
+   "channel_function": "RANET products", 
+   "max_rate": "73000", 
+   "min_rate": "36000", 
+   "multicast_address": "224.223.222.38:4011", 
+   "name": "RANET-1"
+  }, 
+  {
+   "channel_function": "AIDA products", 
+   "max_rate": "18000", 
+   "min_rate": "18000", 
+   "multicast_address": "224.223.222.39:4111", 
+   "name": "AIDA-1"
+  }, 
+  {
+   "channel_function": "WWW Content", 
+   "max_rate": "72000", 
+   "min_rate": "3000", 
+   "multicast_address": "224.223.222.40:4211", 
+   "name": "WWW-Channel"
+  }, 
+  {
+   "channel_function": "Metop ADCS", 
+   "max_rate": "30000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.230:2300", 
+   "name": "EPS-1"
+  }, 
+  {
+   "channel_function": "Metop AMSA", 
+   "max_rate": "24000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.231:2310", 
+   "name": "EPS-2"
+  }, 
+  {
+   "channel_function": "Metop ASCA", 
+   "max_rate": "440000", 
+   "min_rate": "163000", 
+   "multicast_address": "224.223.222.232:2320", 
+   "name": "EPS-3"
+  }, 
+  {
+   "channel_function": "Metop ATOV", 
+   "max_rate": "737000", 
+   "min_rate": "243000", 
+   "multicast_address": "224.223.222.233:2330", 
+   "name": "EPS-4"
+  }, 
+  {
+   "channel_function": "Metop GOME ", 
+   "max_rate": "4209000", 
+   "min_rate": "1895000", 
+   "multicast_address": "224.223.222.234:2340", 
+   "name": "EPS-5"
+  }, 
+  {
+   "channel_function": "Metop GRAS ", 
+   "max_rate": "1723000", 
+   "min_rate": "497000", 
+   "multicast_address": "224.223.222.235:2350", 
+   "name": "EPS-6"
+  }, 
+  {
+   "channel_function": "Metop HIRS", 
+   "max_rate": "36000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.236:2360", 
+   "name": "EPS-7"
+  }, 
+  {
+   "channel_function": "Metop MHS", 
+   "max_rate": "54000", 
+   "min_rate": "11000", 
+   "multicast_address": "224.223.222.237:2370", 
+   "name": "EPS-8"
+  }, 
+  {
+   "channel_function": "Metop SEM", 
+   "max_rate": "18000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.238:2380", 
+   "name": "EPS-9"
+  }, 
+  {
+   "channel_function": "Metop AVHRR ", 
+   "max_rate": "4077000", 
+   "min_rate": "1500000", 
+   "multicast_address": "224.223.222.239:2390", 
+   "name": "EPS-10"
+  }, 
+  {
+   "channel_function": "Metop IASI ", 
+   "max_rate": "4982000", 
+   "min_rate": "3323000", 
+   "multicast_address": "224.223.222.240:2400", 
+   "name": "EPS-11"
+  }, 
+  {
+   "channel_function": "Metop HKTM", 
+   "max_rate": "58000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.241:2410", 
+   "name": "EPS-12"
+  }, 
+  {
+   "channel_function": "NOAA AMSA", 
+   "max_rate": "18000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.242:2420", 
+   "name": "EPS-13"
+  }, 
+  {
+   "channel_function": "NOAA ATOV", 
+   "max_rate": "736000", 
+   "min_rate": "243000", 
+   "multicast_address": "224.223.222.243:2430", 
+   "name": "EPS-14"
+  }, 
+  {
+   "channel_function": "NOAA GAC", 
+   "max_rate": "553000", 
+   "min_rate": "178000", 
+   "multicast_address": "224.223.222.244:2440", 
+   "name": "EPS-15"
+  }, 
+  {
+   "channel_function": "NOAA HIRS", 
+   "max_rate": "25000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.245:2450", 
+   "name": "EPS-16"
+  }, 
+  {
+   "channel_function": "NOAA MHS", 
+   "max_rate": "38000", 
+   "min_rate": "11000", 
+   "multicast_address": "224.223.222.246:2460", 
+   "name": "EPS-17"
+  }, 
+  {
+   "channel_function": "Test", 
+   "max_rate": "18000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.247:2470", 
+   "name": "EPS-18"
+  }, 
+  {
+   "channel_function": "commissioning", 
+   "max_rate": "980800", 
+   "min_rate": "10000", 
+   "multicast_address": "224.223.222.229:2290", 
+   "name": "EPS-19"
+  }, 
+  {
+   "channel_function": "EPS Global", 
+   "max_rate": "60000", 
+   "min_rate": "25000", 
+   "multicast_address": "224.223.222.226:2226", 
+   "name": "EPS-Global"
+  }, 
+  {
+   "channel_function": "EPS Africa", 
+   "max_rate": "50000", 
+   "min_rate": "14000", 
+   "multicast_address": "224.223.222.227:2227", 
+   "name": "EPS-Africa"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "10000", 
+   "min_rate": "1000", 
+   "multicast_address": "224.223.222.95:2950", 
+   "name": "MFRSYSG1"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "3000", 
+   "min_rate": "1000", 
+   "multicast_address": "224.223.222.96:2960", 
+   "name": "MFRSYSG2"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "200000", 
+   "min_rate": "30000", 
+   "multicast_address": "224.223.222.81:2810", 
+   "name": "MFRAFRG1"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "109000", 
+   "min_rate": "16000", 
+   "multicast_address": "224.223.222.82:2820", 
+   "name": "MFRAFRG2"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "200000", 
+   "min_rate": "100000", 
+   "multicast_address": "224.223.222.83:2830", 
+   "name": "MFRAFRG3"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "200000", 
+   "min_rate": "30000", 
+   "multicast_address": "224.223.222.84:2840", 
+   "name": "MFRAFRG4"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "292000", 
+   "min_rate": "104000", 
+   "multicast_address": "224.223.222.85:2850", 
+   "name": "MFRAFRG5"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "292000", 
+   "min_rate": "10000", 
+   "multicast_address": "224.223.222.86:2860", 
+   "name": "MFRAFRG6"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "3000", 
+   "min_rate": "1000", 
+   "multicast_address": "224.223.222.87:2870", 
+   "name": "MFRAFRG7"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "3000", 
+   "min_rate": "1000", 
+   "multicast_address": "224.223.222.88:2880", 
+   "name": "MFRAFRG8"
+  }, 
+  {
+   "channel_function": "Retim Africa", 
+   "max_rate": "3000", 
+   "min_rate": "1000", 
+   "multicast_address": "224.223.222.89:2890", 
+   "name": "MFRAFRG9"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "17000", 
+   "min_rate": "5500", 
+   "multicast_address": "224.223.222.101:2101", 
+   "name": "MFREURG1"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "1994300", 
+   "min_rate": "175000", 
+   "multicast_address": "224.223.222.102:2102", 
+   "name": "MFREURG2"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "76000", 
+   "min_rate": "20000", 
+   "multicast_address": "224.223.222.103:2103", 
+   "name": "MFREURG3"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "900000", 
+   "min_rate": "108000", 
+   "multicast_address": "224.223.222.104:2104", 
+   "name": "MFREURG4"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "200000", 
+   "min_rate": "73000", 
+   "multicast_address": "224.223.222.105:2105", 
+   "name": "MFREURG5"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "45000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.106:2106", 
+   "name": "MFREURG6"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "180000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.107:2107", 
+   "name": "MFREURG7"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "90000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.108:2108", 
+   "name": "MFREURG8"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "90000", 
+   "min_rate": "9000", 
+   "multicast_address": "224.223.222.109:2109", 
+   "name": "MFREURG9"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "1994300", 
+   "min_rate": "660000", 
+   "multicast_address": "224.223.222.110:2110", 
+   "name": "MFREURG10"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "18000", 
+   "min_rate": "9120", 
+   "multicast_address": "224.223.222.111:2111", 
+   "name": "MFREURG11"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "292000", 
+   "min_rate": "55000", 
+   "multicast_address": "224.223.222.112:2112", 
+   "name": "MFREURG12"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "1300000", 
+   "min_rate": "305000", 
+   "multicast_address": "224.223.222.113:2113", 
+   "name": "MFREURG13"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "1300000", 
+   "min_rate": "305000", 
+   "multicast_address": "224.223.222.114:2114", 
+   "name": "MFREURG14"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "400000", 
+   "min_rate": "64000", 
+   "multicast_address": "224.223.222.115:2115", 
+   "name": "MFREURG15"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "1994300", 
+   "min_rate": "175000", 
+   "multicast_address": "224.223.222.116:2116", 
+   "name": "MFREURG16"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "3000", 
+   "min_rate": "1000", 
+   "multicast_address": "224.223.222.117:2117", 
+   "name": "MFREURG17"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "3000", 
+   "min_rate": "1000", 
+   "multicast_address": "224.223.222.118:2118", 
+   "name": "MFREURG18"
+  }, 
+  {
+   "channel_function": "Retim Europe", 
+   "max_rate": "3000", 
+   "min_rate": "1000", 
+   "multicast_address": "224.223.222.119:2119", 
+   "name": "MFREURG19"
+  }
+ ], 
+ "service_dirs": [
+  {
+   "channel": "AIDA-1", 
+   "name": "aida-1-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 12", 
+   "name": "channel-12-test-1"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 4", 
+   "name": "channel-4-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 4", 
+   "name": "channel-4-test-1"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 4", 
+   "name": "channel-4-test-2"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 5", 
+   "name": "channel-5-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "channel-6-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 7", 
+   "name": "channel-7-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 8", 
+   "name": "channel-8-test-1"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 8", 
+   "name": "channel-8-test-2"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": "dailylog-trial"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 4", 
+   "name": "dbwinds-modis"
+  }, 
+  {
+   "channel": "DEVCOCAST-1", 
+   "name": "devcocast-1-test"
+  }, 
+  {
+   "channel": "DEVCOCAST-1", 
+   "name": "devcocast-1-trial"
+  }, 
+  {
+   "channel": "DEVCOCAST-1", 
+   "name": "devcocast-afr"
+  }, 
+  {
+   "channel": "DEVCOCAST-1", 
+   "name": "devcocast-sam"
+  }, 
+  {
+   "channel": "DEVCOCAST-1", 
+   "name": "devcocast-vgt-sam"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-DWDintern"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-ECM"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-EUM"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-GDS"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-GME"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-LM"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-LMK"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-MOS"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-RAD"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-RBSN"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-SYN"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-WAFS"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "DWD-WWW"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 1", 
+   "name": "ears"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 1", 
+   "name": "ears-ascat"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 1", 
+   "name": "ears-atovs"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 1", 
+   "name": "ears-avhrr"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 1", 
+   "name": "ears-ers-scat"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 1", 
+   "name": "ears-iasi"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 1", 
+   "name": "ears-test"
+  }, 
+  {
+   "channel": "EPS-1", 
+   "name": "EPS-METOP-ADCS-L0"
+  }, 
+  {
+   "channel": "EPS-2", 
+   "name": "EPS-METOP-AMSA-L0"
+  }, 
+  {
+   "channel": "EPS-2", 
+   "name": "EPS-METOP-AMSA-L1"
+  }, 
+  {
+   "channel": "EPS-3", 
+   "name": "EPS-METOP-ASCA-L0"
+  }, 
+  {
+   "channel": "EPS-3", 
+   "name": "EPS-METOP-ASCA-L1"
+  }, 
+  {
+   "channel": "EPS-3", 
+   "name": "EPS-METOP-ASCA-L2"
+  }, 
+  {
+   "channel": "EPS-Global", 
+   "name": "EPS-METOP-ATOV-L2"
+  }, 
+  {
+   "channel": "EPS-10", 
+   "name": "EPS-METOP-AVHR-L0"
+  }, 
+  {
+   "channel": "EPS-10", 
+   "name": "EPS-METOP-AVHR-L1"
+  }, 
+  {
+   "channel": "EPS-5", 
+   "name": "EPS-METOP-GOME-L0"
+  }, 
+  {
+   "channel": "EPS-5", 
+   "name": "EPS-METOP-GOME-L1"
+  }, 
+  {
+   "channel": "EPS-6", 
+   "name": "EPS-METOP-GRAS-L0"
+  }, 
+  {
+   "channel": "EPS-6", 
+   "name": "EPS-METOP-GRAS-L1"
+  }, 
+  {
+   "channel": "EPS-7", 
+   "name": "EPS-METOP-HIRS-L0"
+  }, 
+  {
+   "channel": "EPS-7", 
+   "name": "EPS-METOP-HIRS-L1"
+  }, 
+  {
+   "channel": "EPS-12", 
+   "name": "EPS-METOP-HKTM-L0"
+  }, 
+  {
+   "channel": "EPS-11", 
+   "name": "EPS-METOP-IASI-L0"
+  }, 
+  {
+   "channel": "EPS-11", 
+   "name": "EPS-METOP-IASI-L1"
+  }, 
+  {
+   "channel": "EPS-11", 
+   "name": "EPS-METOP-IASI-L2"
+  }, 
+  {
+   "channel": "EPS-8", 
+   "name": "EPS-METOP-MHS-L0"
+  }, 
+  {
+   "channel": "EPS-8", 
+   "name": "EPS-METOP-MHS-L1"
+  }, 
+  {
+   "channel": "EPS-9", 
+   "name": "EPS-METOP-SEM-L0"
+  }, 
+  {
+   "channel": "EPS-13", 
+   "name": "EPS-NOAA-AMSA-L1"
+  }, 
+  {
+   "channel": "EPS-Global", 
+   "name": "EPS-NOAA-ATOV-L2"
+  }, 
+  {
+   "channel": "EPS-15", 
+   "name": "EPS-NOAA-AVHR-L1"
+  }, 
+  {
+   "channel": "EPS-19", 
+   "name": "EPS-NOAA-COM"
+  }, 
+  {
+   "channel": "EPS-15", 
+   "name": "EPS-NOAA-GAC-L0"
+  }, 
+  {
+   "channel": "EPS-16", 
+   "name": "EPS-NOAA-HIRS-L1"
+  }, 
+  {
+   "channel": "EPS-17", 
+   "name": "EPS-NOAA-MHS-L1"
+  }, 
+  {
+   "channel": "EPS-18", 
+   "name": "EPS-SERVICE"
+  }, 
+  {
+   "channel": "EPS-19", 
+   "name": "EPS-TEST"
+  }, 
+  {
+   "channel": "Americas-CH1", 
+   "name": "geonetcast-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 11", 
+   "name": "gnc-cn-cma"
+  }, 
+  {
+   "channel": "AIDA-1", 
+   "name": "gnc-eum-csir"
+  }, 
+  {
+   "channel": "DEVCOCAST-1", 
+   "name": "gnc-eum-dmi"
+  }, 
+  {
+   "channel": "DEVCOCAST-1", 
+   "name": "gnc-eum-inpe"
+  }, 
+  {
+   "channel": "DEVCOCAST-1", 
+   "name": "gnc-eum-pml"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 12", 
+   "name": "gnc-eum-saws"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 12", 
+   "name": "gnc-eum-tamsat"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 12", 
+   "name": "gnc-eum-tamsat-test"
+  }, 
+  {
+   "channel": "DEVCOCAST-1", 
+   "name": "gnc-eum-vito"
+  }, 
+  {
+   "channel": "Americas-CH1", 
+   "name": "gnc-us-epa"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 8", 
+   "name": "gnc-us-inpe"
+  }, 
+  {
+   "channel": "Americas-CH1", 
+   "name": "gnc-us-noaa-nesdis"
+  }, 
+  {
+   "channel": "RANET-1", 
+   "name": "gnc-us-ranet"
+  }, 
+  {
+   "channel": "RANET-1", 
+   "name": "gnc-us-ranet-test"
+  }, 
+  {
+   "channel": "Americas-CH1", 
+   "name": "gnc-us-servir"
+  }, 
+  {
+   "channel": "Americas-CH1", 
+   "name": "gnc-us-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 2", 
+   "name": "hrit-test"
+  }, 
+  {
+   "channel": "Info-Channel-1", 
+   "name": "info-1"
+  }, 
+  {
+   "channel": "Info-Channel-1", 
+   "name": "info-2"
+  }, 
+  {
+   "channel": "Info-Channel-1", 
+   "name": "info-3"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": "ipps"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 10", 
+   "name": "jason"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 10", 
+   "name": "jason-low"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 10", 
+   "name": "jason-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 10", 
+   "name": "jason-trial"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "lrit-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "lrit-test-1"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "lrit-test-2"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "lrit-test-3"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "mdd-acmad"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "mdd-acmad-low"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "mdd-com-acmad"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "mdd-com-nominal"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "mdd-nominal"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "mdd-nominal-low"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "mdd_5"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 12", 
+   "name": "modis-fire"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 4", 
+   "name": "modis-l1"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 5", 
+   "name": "msg-com-hrit-15m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 5", 
+   "name": "msg-com-hrit-30m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 5", 
+   "name": "msg-com-hrit-3h"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 5", 
+   "name": "msg-com-hrit-60m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 5", 
+   "name": "msg-com-hrit-6h"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-com-lrit-30m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-com-lrit-3h"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-com-lrit-60m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-com-lrit-6h"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-com-lrit-dcp"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-com-lrit-fsd"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-com-lrit-mpef"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-com-lrit-mpef-CRM"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-com-lrit-mpef-low"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 2", 
+   "name": "msg-hrit-15m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 2", 
+   "name": "msg-hrit-30m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 2", 
+   "name": "msg-hrit-3h"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 2", 
+   "name": "msg-hrit-60m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 2", 
+   "name": "msg-hrit-6h"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "msg-lrit-30m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "msg-lrit-3h"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "msg-lrit-60m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "msg-lrit-6h"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 9", 
+   "name": "msg-lrit-dcp"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 9", 
+   "name": "msg-lrit-dcp-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "msg-lrit-fsd"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 4", 
+   "name": "msg-lrit-fsd-60m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 7", 
+   "name": "msg-lrit-fsd-sam"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "msg-lrit-mpef"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "msg-lrit-mpef-CRM"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 4", 
+   "name": "msg-lrit-mpef-eur"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 4", 
+   "name": "msg-lrit-mpef-eur-low"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "msg-lrit-mpef-low"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 7", 
+   "name": "msg-lrit-mpef-sam"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 7", 
+   "name": "msg-lrit-mpef-sam-low"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-rss-lrit-mpef"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 6", 
+   "name": "msg-rss-lrit-mpef-low"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 5", 
+   "name": "msg-rss-seviri"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "mtp-iodc-30m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "mtp-iodc-3h"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "mtp-iodc-60m"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "mtp-iodc-6h"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "ninjo-aux"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "ninjo-gme"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "ninjo-lme"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "ninjo-ptp"
+  }, 
+  {
+   "channel": "DWDSAT", 
+   "name": "ninjo-radar"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 7", 
+   "name": "ocean-modis"
+  }, 
+  {
+   "channel": "SAF-Africa", 
+   "name": "SAF-Africa-test"
+  }, 
+  {
+   "channel": "SAF-Americas", 
+   "name": "SAF-Americas-test"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-Europe-test"
+  }, 
+  {
+   "channel": "SAF-Global", 
+   "name": "SAF-Global-test"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-GRAS-eur"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-GRAS-eur-test"
+  }, 
+  {
+   "channel": "SAF-Africa", 
+   "name": "SAF-LSA"
+  }, 
+  {
+   "channel": "SAF-Africa", 
+   "name": "SAF-LSA-15m"
+  }, 
+  {
+   "channel": "SAF-Africa", 
+   "name": "SAF-LSA-afr"
+  }, 
+  {
+   "channel": "SAF-Africa", 
+   "name": "SAF-LSA-afr-15m"
+  }, 
+  {
+   "channel": "SAF-Africa", 
+   "name": "SAF-LSA-afr-test"
+  }, 
+  {
+   "channel": "SAF-Africa", 
+   "name": "SAF-LSA-afr-trial"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-LSA-eur"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-LSA-eur-15m"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-LSA-eur-test"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-LSA-eur-trial"
+  }, 
+  {
+   "channel": "SAF-Global", 
+   "name": "SAF-LSA-glob-test"
+  }, 
+  {
+   "channel": "SAF-Americas", 
+   "name": "SAF-LSA-sam"
+  }, 
+  {
+   "channel": "SAF-Americas", 
+   "name": "SAF-LSA-sam-15m"
+  }, 
+  {
+   "channel": "SAF-Americas", 
+   "name": "SAF-LSA-sam-test"
+  }, 
+  {
+   "channel": "SAF-Americas", 
+   "name": "SAF-LSA-sam-trial"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "SAF-LSA-test"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-O3M-eur"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-O3M-eur-test"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-O3M-eur-trial"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "SAF-OSI"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-OSI-eur"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-OSI-eur-test"
+  }, 
+  {
+   "channel": "SAF-Europe", 
+   "name": "SAF-OSI-eur-trial"
+  }, 
+  {
+   "channel": "SAF-Global", 
+   "name": "SAF-OSI-glob"
+  }, 
+  {
+   "channel": "SAF-Global", 
+   "name": "SAF-OSI-glob-test"
+  }, 
+  {
+   "channel": "SAF-Global", 
+   "name": "SAF-OSI-glob-trial"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "SAF-OSI-test"
+  }, 
+  {
+   "channel": "Info-Channel-1", 
+   "name": "system-update-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": "training"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": "UNS-general"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": "UNS-test"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": "UNS-trial"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "vgt-africa"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 3", 
+   "name": "vgt-africa-test"
+  }, 
+  {
+   "channel": "BMD-RA-VI", 
+   "name": "wmo-ra6"
+  }, 
+  {
+   "channel": "BMD-RA-VI", 
+   "name": "wmo-ra6-ecmwf"
+  }, 
+  {
+   "channel": "BMD-RA-VI", 
+   "name": "wmo-ra6-test"
+  }, 
+  {
+   "channel": "WWW-Channel", 
+   "name": "www-eumetsat"
+  }, 
+  {
+   "channel": "WWW-Channel", 
+   "name": "www-test"
+  }, 
+  {
+   "channel": "EPS-Africa", 
+   "name": "EPS-Africa-test"
+  }, 
+  {
+   "channel": "EPS-Global", 
+   "name": "EPS-Global-test"
+  }, 
+  {
+   "channel": "EUMETSAT Data Channel 4", 
+   "name": "dmsp-ssmis"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-dcp"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-ears-ascat"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-ears-atovs"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-ears-avhrr"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-ears-ers-scat"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-ears-iasi"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-adcs-0"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-amsa-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-asca-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-asca-2"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-atov-2"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-avhr-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-gome-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-gras-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-hirs-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-iasi-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-iasi-2"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-mhs-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-saf-o3m"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-m-saf-osi"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-n-amsa-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-n-atov-2"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-n-avhr-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-n-hirs-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-eps-n-mhs-1"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-fsd"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-iodc-hri"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-mdd-nominal"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-msg-hrit"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-msg-lrit-seviri"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-msg-mpef"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-msg-rss-mpef"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-msg-rss-seviri"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-msg-saf-lsa-afr"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-msg-saf-lsa-eur"
+  }, 
+  {
+   "channel": "Info-Channel-2", 
+   "name": " ln-dailylog-msg-saf-lsa-sam"
+  }, 
+  {
+   "channel": "SAF-Global", 
+   "name": "SAF-LSA-Glob"
+  }
+ ]
+}

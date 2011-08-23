@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		
+		<title id="titlename"></title>
+		<style type="text/css" title="currentStyle">
+			@import "/static/css/rodd_page.css";
+			@import "/static/css/rodd_table.css";
+			@import "/static/themes/eumetsat-theme/jquery-ui-1.8.4.custom.css";
+		</style>
+		<!-- <script type="text/javascript" language="javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script> -->
+		<script type="text/javascript" language="javascript" src="/static/js/jquery.min.js"></script> 
+		<script type="text/javascript" language="javascript" src="/static/js/underscore-min.js"></script>
+		<script type="text/javascript" language="javascript" src="/static/js/jquery.dataTables.min.js"></script>
+		<script type="text/javascript" language="javascript" src="/static/js/FixedHeader.min.js"></script>
+		<script type="text/javascript" language="javascript" src="/static/js/rodd.js"></script>
+		<script type="text/javascript" charset="utf-8">
+		
+			$(document).ready(function() {
+			 
+			    var table_name = "Channel Info";
+            
+                //Change table title in tablename
+                $('#tblname').text(table_name);
+                $('#titlename').text(table_name);
+            
+                $.getJSON("/channels",
+                      {},
+                      function(data) {
+                         var col_names = [ "name", "multicast_address", "channel_function", "min_rate", "max_rate" ];
+                         rodd.render_table(table_name, rodd.format_data(data.channels, col_names));
+                      }
+                )
+            });
+        </script>
+    </head>
+    <body id="dt_example">
+        <div id="container">
+            <div class="flickh1">
+                <i>RODD (Repository of Dissemination Data)</i>
+            </div>
+            <wbr/>
+            <table cellspacing="0" id="SubNav">
+              <tr>
+                 <td class="dt_section">
+                    <div class="full_width big"> Your Tables: </div>
+                       <span class="flickspan"><a href="/static/view_products.html">Products Tbl</a></span>
+                       <span class="flickspan"><a href="/static/view_service_dirs.html">ServiceDirs</a></span>
+                       <span class="flickspan"><a href="/static/view_channels.html">Channels</a></span>
+                       <span class="flickspan"><a href="/families">Families</a></span>
+                       <span class="flickspan"><a href="/products_2_servdirs">Products2ServiceDirs</a></span>
+                       <span class="flickspan"><a href="/servdirs_2_families">ServiceDirs2Families</a></span>
+                </td>
+              </tr>
+            </table>
+            
+            <h1><span id="tblname">Unknown Table</span><span id="waitimg"><img src="/static/images/misc/wait18.gif" alt="waiting"/></span></h1>
+            <p>Table accessed with the RODD viewer</p>
+            
+            <div>
+               <div id="bigwaitimg" align="center"><img src="/static/images/misc/wait-extra-large.gif" alt="waiting"/></div>
+               <table cellpadding="0" cellspacing="0" border="0" class="display" id="rodd_table"></table>
+            </div>
+            
+           <div class="spacer"></div>
+      </div>
+   </body>

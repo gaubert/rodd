@@ -1,0 +1,16 @@
+{
+"files": [
+          {
+            "name": "new_file1",
+            "regexpr": "nf.bufr",
+            "dis_type": [
+              "eumetcast-info", "gts-info", "data-centre-info"
+            ],
+            "service_dir": [
+              "EPS-METOP-ASCA-L1"
+            ],
+            "type": "bufr",
+            "size": "1GB"
+          }
+        ]
+}

@@ -1,0 +1,11 @@
+{
+  "channels" : [
+     {
+       "name"              : "EPS-4",
+       "multicast_address" : "224.223.222.232:2320",
+       "min_rate"          : 122000,
+       "max_rate"          : 330000,
+       "channel_function"  : "MSG ASCA"
+     }
+  ]
+}

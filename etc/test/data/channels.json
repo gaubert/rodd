@@ -1,0 +1,34 @@
+{
+ "channels": [
+  {
+   "channel_function": "AIDA-16", 
+   "max_rate": "1", 
+   "min_rate": "400000", 
+   "multicast_address": "224.223.222.223:4711", 
+   "name": "AIDA-16"
+  } 
+  ,
+  {
+   "channel_function": "AIDA-17", 
+   "max_rate": "3", 
+   "min_rate": "400000", 
+   "multicast_address": "224.223.222.223:4711", 
+   "name": "AIDA-17"
+  } 
+  ],
+ "service_dirs": [
+  {
+   "channel": "AIDA-16", 
+   "name": "aida-2-test"
+  }, 
+  {
+   "channel": "AIDA-17", 
+   "name": "aida-3-test"
+  } 
+  ,
+  {
+   "channel": "AIDA-16", 
+   "name": "aida-4-test"
+  } 
+ ]
+}
