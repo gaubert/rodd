@@ -4,10 +4,10 @@
            <gco:CharacterString>restricted</gco:CharacterString>
         </gmd:useLimitation>
         <gmd:accessConstraints>
-           <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[....]gmxCodelists.xml#MD_RestrictionCode" codeListValue="license"/>
+           <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[...]MD_RestrictionCode" codeListValue="license"/>
         </gmd:accessConstraints>
         <gmd:useConstraints>
-           <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[....]gmxCodelists.xml#MD_RestrictionCode" codeListValue="copyright"/>
+           <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[...]MD_RestrictionCode" codeListValue="copyright"/>
         </gmd:useConstraints>
     </gmd:MD_LegalConstraints>
 </gmd:resourceConstraints>
