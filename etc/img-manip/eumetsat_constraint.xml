@@ -1,0 +1,17 @@
+<gmd:resourceConstraints>
+    <gmd:MD_LegalConstraints>
+        <gmd:useLimitation>
+           <gco:CharacterString>restricted</gco:CharacterString>
+        </gmd:useLimitation>
+        <gmd:accessConstraints>
+           <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[....]gmxCodelists.xml#MD_RestrictionCode" codeListValue="license"/>
+        </gmd:accessConstraints>
+        <gmd:useConstraints>
+           <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[....]gmxCodelists.xml#MD_RestrictionCode" codeListValue="copyright"/>
+        </gmd:useConstraints>
+    </gmd:MD_LegalConstraints>
+</gmd:resourceConstraints>
+
+with codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
+
+
