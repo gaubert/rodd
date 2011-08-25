@@ -5,10 +5,10 @@
 		<gco:CharacterString>restricted</gco:CharacterString> 
 	</gmd:useLimitation>
 	<gmd:accessConstraints>
-		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="license" /> 
+		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="license" /> 
       	</gmd:accessConstraints>
 	<gmd:useConstraints>
-		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="copyright" /> 
+		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="copyright" /> 
 	</gmd:useConstraints>
 </gmd:MD_LegalConstraints>
 </gmd:resourceConstraints>
@@ -18,10 +18,10 @@
 <gmd:resourceConstraints>
 <gmd:MD_LegalConstraints>
 	<gmd:accessConstraints>
-		<gmd:MD_RestrictionCode codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+		<gmd:MD_RestrictionCode codeList="http://www.ngdc.noaa.gov/[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
 	</gmd:accessConstraints>
 	<gmd:useConstraints>
-		<gmd:MD_RestrictionCode codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+		<gmd:MD_RestrictionCode codeList="http://www.ngdc.noaa.gov/[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
 	</gmd:useConstraints>
 	<gmd:otherConstraints>
 		<gco:CharacterString>WMO Essential</gco:CharacterString>
@@ -33,10 +33,10 @@
 <gmd:resourceConstraints>
 <gmd:MD_LegalConstraints>
 	<gmd:accessConstraints>
-		<gmd:MD_RestrictionCode codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+		<gmd:MD_RestrictionCode codeList="http://www.ngdc.noaa.gov/[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
 	</gmd:accessConstraints>
 	<gmd:useConstraints>
-		<gmd:MD_RestrictionCode codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+		<gmd:MD_RestrictionCode codeList="http://www.ngdc.noaa.gov/[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
 	</gmd:useConstraints>
 	<gmd:otherConstraints>
 		<gco:CharacterString>WMO Additional</gco:CharacterString>
@@ -57,16 +57,18 @@ This is what we have
 		<gco:CharacterString>restricted</gco:CharacterString> 
 	</gmd:useLimitation>
 	<gmd:accessConstraints>
-		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="license" /> 
+		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="license" /> 
 	</gmd:accessConstraints>
 	<gmd:useConstraints>
-		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="copyright" /> 
+		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="copyright" /> 
 	</gmd:useConstraints>
 </gmd:MD_LegalConstraints>
 </gmd:resourceConstraints>
 
 <!-- For essential => Access and usage is not restricted ? We should have only WMO Essential info 
      with the iso URL. Talking to Sally it should be copyright copyright
+
+	 with codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
 -->
 <gmd:resourceConstraints>
 <gmd:MD_LegalConstraints>
@@ -74,16 +76,16 @@ This is what we have
         <gco:CharacterString>No conditions apply</gco:CharacterString> 
     </gmd:useLimitation>
     <gmd:accessConstraints>
-        <gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="copyright" /> 
+        <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="copyright" /> 
     </gmd:accessConstraints>
     <gmd:useConstraints>
-        <gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="copyright" /> 
+        <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="copyright" /> 
     </gmd:useConstraints>
 	<gmd:accessConstraints>
-		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+	<gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
 	</gmd:accessConstraints>
 	<gmd:useConstraints>
-		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
 	</gmd:useConstraints>
 	<gmd:otherConstraints>
 		<gco:CharacterString>WMO Essential</gco:CharacterString>
@@ -100,17 +102,17 @@ This is what we have
         <gco:CharacterString>restricted</gco:CharacterString> 
     </gmd:useLimitation>
     <gmd:accessConstraints>
-        <gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="license" /> 
+        <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="copyright" /> 
     </gmd:accessConstraints>
     <gmd:useConstraints>
-        <gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="copyright" /> 
+        <gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="copyright" /> 
     </gmd:useConstraints>
-    <!-- WMO Part -->
+	<!-- WMO Part -->
 	<gmd:accessConstraints>
-		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
 	</gmd:accessConstraints>
 	<gmd:useConstraints>
-		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+		<gmd:MD_RestrictionCode codeList="http://standards.iso.org/[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
 	</gmd:useConstraints>
 	<gmd:otherConstraints>
 		<gco:CharacterString>WMO Additional</gco:CharacterString>
