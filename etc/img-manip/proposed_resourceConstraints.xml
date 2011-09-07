@@ -1,0 +1,126 @@
+<!-- This what we have -->
+<gmd:resourceConstraints>
+<gmd:MD_LegalConstraints>
+        <gmd:useLimitation>
+		<gco:CharacterString>restricted</gco:CharacterString> 
+	</gmd:useLimitation>
+	<gmd:accessConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="license" /> 
+      	</gmd:accessConstraints>
+	<gmd:useConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="copyright" /> 
+	</gmd:useConstraints>
+</gmd:MD_LegalConstraints>
+</gmd:resourceConstraints>
+
+<!-- This what IPET-MDI wants according to TED -->
+
+<gmd:resourceConstraints>
+<gmd:MD_LegalConstraints>
+	<gmd:accessConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+	</gmd:accessConstraints>
+	<gmd:useConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+	</gmd:useConstraints>
+	<gmd:otherConstraints>
+		<gco:CharacterString>WMO Essential</gco:CharacterString>
+	</gmd:otherConstraints>
+</gmd:MD_LegalConstraints>
+</gmd:resourceConstraints>
+
+
+<gmd:resourceConstraints>
+<gmd:MD_LegalConstraints>
+	<gmd:accessConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+	</gmd:accessConstraints>
+	<gmd:useConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+	</gmd:useConstraints>
+	<gmd:otherConstraints>
+		<gco:CharacterString>WMO Additional</gco:CharacterString>
+	</gmd:otherConstraints>
+</gmd:MD_LegalConstraints>
+</gmd:resourceConstraints>
+
+<!-- Now here is what Michael advises -->
+
+EUMETSAT product with both worlds
+
+For Essential => Access is available to anybody and usage to anybody so it strange to have a restricted uselimitation 
+
+This is what we have 
+<gmd:resourceConstraints>
+<gmd:MD_LegalConstraints>
+	<gmd:useLimitation>
+		<gco:CharacterString>restricted</gco:CharacterString> 
+	</gmd:useLimitation>
+	<gmd:accessConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="license" /> 
+	</gmd:accessConstraints>
+	<gmd:useConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="copyright" /> 
+	</gmd:useConstraints>
+</gmd:MD_LegalConstraints>
+</gmd:resourceConstraints>
+
+<!-- For essential => Access and usage is not restricted ? We should have only WMO Essential info 
+     with the iso URL. Talking to Sally it should be copyright copyright
+
+	 with codeList="http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode"
+-->
+<gmd:resourceConstraints>
+<gmd:MD_LegalConstraints>
+    <gmd:useLimitation>
+        <gco:CharacterString>No conditions apply</gco:CharacterString> 
+    </gmd:useLimitation>
+    <gmd:accessConstraints>
+        <gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="copyright" /> 
+    </gmd:accessConstraints>
+    <gmd:useConstraints>
+        <gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="copyright" /> 
+    </gmd:useConstraints>
+	<gmd:accessConstraints>
+	<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+	</gmd:accessConstraints>
+	<gmd:useConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+	</gmd:useConstraints>
+	<gmd:otherConstraints>
+		<gco:CharacterString>WMO Essential</gco:CharacterString>
+	</gmd:otherConstraints>
+</gmd:MD_LegalConstraints>
+</gmd:resourceConstraints>
+
+<!-- for Additional it is subject to EUMETSAT Licensing so we can have both -->
+
+<gmd:resourceConstraints>
+<gmd:MD_LegalConstraints>
+    <!-- Eumetsat Part -->
+    <gmd:useLimitation>
+        <gco:CharacterString>restricted</gco:CharacterString> 
+    </gmd:useLimitation>
+    <gmd:accessConstraints>
+        <gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="copyright" /> 
+    </gmd:accessConstraints>
+    <gmd:useConstraints>
+        <gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="copyright" /> 
+    </gmd:useConstraints>
+	<!-- WMO Part -->
+	<gmd:accessConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+	</gmd:accessConstraints>
+	<gmd:useConstraints>
+		<gmd:MD_RestrictionCode codeList="[..]#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
+	</gmd:useConstraints>
+	<gmd:otherConstraints>
+		<gco:CharacterString>WMO Additional</gco:CharacterString>
+	</gmd:otherConstraints>
+</gmd:MD_LegalConstraints>
+</gmd:resourceConstraints>
+
+
+
+
+
