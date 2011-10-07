@@ -109,13 +109,24 @@ class AnnouncementMonitor:
                 print("announcement working:[%s]\n" %(the_date))
                 latest_ann_date = get_datetime_from_GEMSDate(the_date)
                 
-                self.check_condition(latest_ann_date, self.dt)
+                self.check_condition(latest_ann_date)
                 
             cpt += 1
             if cpt == 30:
                 break 
             
-    def check_condition(self, latest, previous):
+            
+    def check_condition(self, latest):
+        """ Check that the latest announcement did not happen before TIME_BET_ANN secs"""
+        
+        current_time = datetime.datetime.now()
+        
+        delta = current_time - latest
+        
+        if delta.seconds >= AnnouncementMonitor.TIME_BET_ANN:
+            print("ALARM: No announcement received for more than %s (in h:m:s.ms) %s\n" %(AnnouncementMonitor.TIME_BET_ANN, delta))
+        
+    def old_check_condition(self, latest, previous):
         """ 
             Check that the time between the latest announcement and
             the previous one are no less than TIME_BET_ANN      
@@ -124,7 +135,8 @@ class AnnouncementMonitor:
         if previous:
             delta = latest - previous
             
-            print("delta in seconds = %d\n" % (delta.seconds))
+            if delta.seconds >= AnnouncementMonitor.TIME_BET_ANN:
+                print("Alarm, alarm: Time since the last announcement is too long (in sec) %s\n" %(delta))
         
         
 
