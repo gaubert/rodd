@@ -1,17 +1,41 @@
+#!/usr/bin/python
+
 '''
-Created on 7 Oct 2011
+Created on 10 Oct 2011
 
 @author: guillaume.aubert@eumetsat.int
 '''
 import string
 import datetime
+import time
 import os
 import sys
+
+def get_now_time_as_str():
+    """ return now time as a string"""
+    
+    a_date = datetime.datetime.now()
+    
+    if hasattr(datetime, 'strftime'):
+        #python 2.6
+        strftime = datetime.datetime.strftime
+    else:
+        #python 2.4 equivalent
+        strftime = lambda date_string, format: datetime.datetime(*(time.strftime(date_string, format)[0:6]))
+        
+    return strftime(a_date, '%Y-%m-%dT%H:%M:%S')
 
 def get_datetime_from_GEMSDate(a_str):
     """ transform a GEMS Date string into a Datetime """
     
-    return datetime.datetime.strptime(a_str,'%Y-%m-%d %H:%M:%S')
+    if hasattr(datetime, 'strptime'):
+        #python 2.6
+        strptime = datetime.datetime.strptime
+    else:
+        #python 2.4 equivalent
+        strptime = lambda date_string, format: datetime.datetime(*(time.strptime(date_string, format)[0:6]))
+    
+    return strptime(a_str,'%Y-%m-%d %H:%M:%S')
 
 class BackwardsReader:
     
@@ -70,13 +94,21 @@ class AnnouncementMonitor:
     def check(self): 
         """ check """     
         
-        # look into send.log
-        self.check_file("%s/send.log" % (self.send_file_dir) )
+        send_log  = "%s/send.log" % (self.send_file_dir)
         
-        print("Look into %s\n" % ("%s/send.log.1" % (self.send_file_dir)) )
+        send_log1 = "%s/send.log.1" % (self.send_file_dir)
+        
+        if not os.path.exists(send_log):
+            print("%s is not present. Do nothing" % (send_log))
+            return
+            
+        # look into send.log
+        print("Look into %s\n" % (send_log))
+        self.check_file(send_log)
         
         # look into send.log.1 as it has the anouncement not been found
-        self.check_file("%s/send.log.1" % (self.send_file_dir) )
+        print("Look into %s\n" % (send_log1))
+        self.check_file(send_log1)
         
         print("Very Stange could not find any announcement in send.log and send.log.1. Do Nothing")
         
@@ -103,10 +135,10 @@ class AnnouncementMonitor:
                     # problem, condition reached no announcment since last 3 minutes 
                     if self.check_condition_reached(latest_ann_date):
                         # exit on error
-                        print("Exit on error")
+                        print("Trigger Alarm")
                         sys.exit(2)
                     else:
-                        print("everything is fine")
+                        print("Everything is fine")
                         sys.exit(0)
             else:
                 # no more lines to read
@@ -122,7 +154,7 @@ class AnnouncementMonitor:
         delta = current_time - latest
         
         if delta.seconds >= AnnouncementMonitor.TIME_BET_ANN:
-            print("ALARM: No announcement received for more than %s sec. Last announcment received in (h:m:s.ms) %s\n" % (AnnouncementMonitor.TIME_BET_ANN, delta) )
+            print("ALARM: No announcement received for more than %s sec. Last announcement received in (h:m:s.ms) %s\n" % (AnnouncementMonitor.TIME_BET_ANN, delta) )
             return True
         
         return False
@@ -131,10 +163,12 @@ class AnnouncementMonitor:
 
 if __name__ == '__main__':
     
+    print("------------------------ Start checkings %s.\n" % ( datetime.datetime.now() ))
+       
     monitor = AnnouncementMonitor(".")
     
     monitor.check()
-    
+     
     sys.exit(0)
     
    
