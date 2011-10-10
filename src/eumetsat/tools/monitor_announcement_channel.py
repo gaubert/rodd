@@ -6,17 +6,7 @@ Created on 7 Oct 2011
 import string
 import datetime
 import os
-
-def get_datetime_from_ISO8601(aISOStr):
-    """ transform a ISO 8601 string into a Datetime """
-
-    # if there is a no T, there is no time component add it T00:00:00 to the date
-    if not aISOStr.find('T'):
-        the_str = '%sT00:00:00'
-    else:
-        the_str = aISOStr
-    
-    return datetime.datetime.strptime(the_str,'%Y-%m-%dT%H:%M:%S')
+import sys
 
 def get_datetime_from_GEMSDate(a_str):
     """ transform a GEMS Date string into a Datetime """
@@ -42,8 +32,8 @@ class BackwardsReader:
     # strip the last item if it's empty...  a byproduct of the last line having
     # a newline at the end of it
     if not self.data[-1]:
-      # self.data.pop()
-      self.data = self.data[:-1]
+        # self.data.pop()
+        self.data = self.data[:-1]
       
   def readline(self):
     """ readline """
@@ -72,51 +62,59 @@ class AnnouncementMonitor:
     LATEST_ANN_PATH = ".latest_announcement"
     TIME_BET_ANN    = 300
     
-    def __init__(self, send_file):
+    def __init__(self, send_file_dir):
         """ constructor """
         
-        self.send_file = send_file
-        self.reader    = BackwardsReader(send_file)
-        self.dt        = None
+        self.send_file_dir = send_file_dir
         
-        self._read_latest_announcement_date()
+    def check(self): 
+        """ check """     
         
-    
-    def _read_latest_announcement_date(self):
-        """ read the latest time there was an announcement """
+        # look into send.log
+        self.check_file("%s/send.log" % (self.send_file_dir) )
         
-        if os.path.exists(AnnouncementMonitor.LATEST_ANN_PATH):
-            ann_file = open(AnnouncementMonitor.LATEST_ANN_PATH)
+        print("Look into %s\n" % ("%s/send.log.1" % (self.send_file_dir)) )
         
-            # read first line
-            line = ann_file.readline()
-            
-            self.dt = get_datetime_from_ISO8601(line.strip())
+        # look into send.log.1 as it has the anouncement not been found
+        self.check_file("%s/send.log.1" % (self.send_file_dir) )
         
-    def check(self):
-        """ check that announcement is ok """
-        continue_reading = True
-        cpt = 0
+        print("Very Stange could not find any announcement in send.log and send.log.1. Do Nothing")
         
+    def check_file(self, file_to_read):
+        """ check that announcement is ok in given file """
+        
+        print("Check in to %s\n" % (file_to_read))
+        
+        reader      = BackwardsReader(file_to_read)
         str_to_find = "announced"
         
-        while continue_reading:
-            line = self.reader.readline()
-            found = line.find(str_to_find) 
-            if found != -1:
-                # do not parse the date but stupidely take a substring
-                the_date = line[4:23]
-                print("announcement working:[%s]\n" %(the_date))
-                latest_ann_date = get_datetime_from_GEMSDate(the_date)
-                
-                self.check_condition(latest_ann_date)
-                
-            cpt += 1
-            if cpt == 30:
-                break 
+        while True:
+            line = reader.readline()
+            #print("line = %s\n" %(line))
+            
+            if line:
+                found = line.find(str_to_find) 
+                if found != -1:
+                    # do not parse the date but stupidely take a substring
+                    the_date = line[4:23]
+                    print("latest announcement:[%s]\n" %(the_date))
+                    latest_ann_date = get_datetime_from_GEMSDate(the_date)
+                    
+                    # problem, condition reached no announcment since last 3 minutes 
+                    if self.check_condition_reached(latest_ann_date):
+                        # exit on error
+                        print("Exit on error")
+                        sys.exit(2)
+                    else:
+                        print("everything is fine")
+                        sys.exit(0)
+            else:
+                # no more lines to read
+                print("no more lines to read in %s\n" % (file_to_read))
+                break
             
             
-    def check_condition(self, latest):
+    def check_condition_reached(self, latest):
         """ Check that the latest announcement did not happen before TIME_BET_ANN secs"""
         
         current_time = datetime.datetime.now()
@@ -124,27 +122,20 @@ class AnnouncementMonitor:
         delta = current_time - latest
         
         if delta.seconds >= AnnouncementMonitor.TIME_BET_ANN:
-            print("ALARM: No announcement received for more than %s (in h:m:s.ms) %s\n" %(AnnouncementMonitor.TIME_BET_ANN, delta))
+            print("ALARM: No announcement received for more than %s sec. Last announcment received in (h:m:s.ms) %s\n" % (AnnouncementMonitor.TIME_BET_ANN, delta) )
+            return True
         
-    def old_check_condition(self, latest, previous):
-        """ 
-            Check that the time between the latest announcement and
-            the previous one are no less than TIME_BET_ANN      
-        """
-        
-        if previous:
-            delta = latest - previous
-            
-            if delta.seconds >= AnnouncementMonitor.TIME_BET_ANN:
-                print("Alarm, alarm: Time since the last announcement is too long (in sec) %s\n" %(delta))
+        return False
         
         
 
 if __name__ == '__main__':
     
-    monitor = AnnouncementMonitor("./send.log")
+    monitor = AnnouncementMonitor(".")
     
     monitor.check()
+    
+    sys.exit(0)
     
    
     
