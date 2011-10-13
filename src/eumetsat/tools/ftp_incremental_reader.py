@@ -5,10 +5,34 @@ Created on Sep 7, 2011
 '''
 import os
 from ftplib import FTP
-import json
+import simplejson as json
 import datetime
 
-MAX_BLOCK_SIZE = 1024 *1024 # 1MB
+MAX_BLOCK_SIZE  = 1024 *1024 # 1MB
+RECONNECT_EVERY = 30
+
+def makedirs(a_path):
+    """
+       make all dirs that do not exists i the path.
+       If all dirs alrealdy exists return without any errors
+    
+        Args:
+           a_path: path of dirs to create
+           
+        Returns:
+          Nothing
+           
+        Except:
+          OSError if the dirs cannot be created for some reasons, 
+    """
+    
+    if os.path.isdir(a_path):
+        # it already exists so return
+        return
+    elif os.path.isfile(a_path):
+        raise OSError("a file with the same name as the desired dir, '%s', already exists." % (a_path))
+
+    os.makedirs(a_path)
 
 class Logger(object):
     
@@ -246,7 +270,9 @@ class Synchronizer(object):
         
         self._downloader.list(cb_func = file_list.add_element, dir = None)
         
-        dir ="/tmp/ecmwf/"
+        dir ="/tmp/ecmwf/%s/" % (latest)
+        
+        makedirs(dir)
         
         nb_of_download = len(file_list)
                 
@@ -268,7 +294,7 @@ class Synchronizer(object):
             
             self._log.info("================ %d more files to download ================" % (nb_of_download))
             
-            if (nb_of_download % 50) == 0:
+            if (nb_of_download % RECONNECT_EVERY) == 0:
                 # due to some connection port issues reconnect every 100 transfers
                 # reset connection
                 self._log.info("======= RECONNECT ======")
@@ -338,7 +364,7 @@ class ECMWFFtpDownloader(object):
 
 if __name__ == '__main__':
     
-    downloader = ECMWFFtpDownloader('guillaume.aubert', '', 'data-portal.ecmwf.int')
+    downloader = ECMWFFtpDownloader('guillaume.aubert', '5hJ9PA', 'data-portal.ecmwf.int')
     
     downloader.connect()
     
