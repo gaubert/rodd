@@ -43,17 +43,20 @@ class XferlogIndexer(object):
         for line in a_lines:
             print(self._parse_line(line))
             
-    def _convert_date_to_date_time(a_date):
+    def _convert_date_to_date_time(self, a_date):
         """
            xferlog date to datetime
         """
         return datetime.datetime.strptime(a_date, '%a %b %d %H:%M:%S %Y')
     
-    def _remove_tmp(filename):
+    def _remove_tmp(self, filename):
         """
           remove tmp in the filename if there is one
         """
-        if filename.contains(".tmp"):
+        if filename[-4:] == '.tmp':
+            return filename[:-4]
+        else:
+            return filename
             
     
     def _parse_line(self, a_line):
@@ -66,10 +69,10 @@ class XferlogIndexer(object):
         if matched:
             return {
                        'app' : 'proftpd',
-                       'time': XferlogIndexer._convert_date_to_date_time(matched.group('date')),
+                       'time': self._convert_date_to_date_time(matched.group('date')),
                        'lev' : 'info',
                        'full_msg' : a_line,
-                       'file' : XferlogIndexer._remove_tmp(matched.group('filename')),
+                       'file' : self._remove_tmp(matched.group('filename')),
                        'file_size' : matched.group('filesize'),
                        'transfer_time' : matched.group('transfer_time'),
                        
