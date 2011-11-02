@@ -71,10 +71,10 @@ class XferlogIndexer(object):
                        'app' : 'proftpd',
                        'time': self._convert_date_to_date_time(matched.group('date')),
                        'lev' : 'info',
-                       'full_msg' : a_line,
                        'file' : self._remove_tmp(matched.group('filename')),
                        'file_size' : matched.group('filesize'),
                        'transfer_time' : matched.group('transfer_time'),
+                       'full_msg' : a_line,
                        
                      } 
         else:
@@ -84,9 +84,9 @@ class XferlogIndexer(object):
 if __name__ == '__main__':
     
     xferlog_test_path  = '/homespace/gaubert/logs/tests/xferlog_test'
-    xferlog_path  = '/homespace/gaubert/logs/tests/xferlog'
-    xferlog_path1 = '/homespace/gaubert/logs/tests/xferlog'
-    xferlog_path2 = '/homespace/gaubert/logs/tests/xferlog'
+    xferlog_path       = '/homespace/gaubert/logs/tests/xferlog'
+    xferlog_path1      = '/homespace/gaubert/logs/tests/xferlog'
+    xferlog_path2      = '/homespace/gaubert/logs/tests/xferlog'
     
     
     indexer = XferlogIndexer()
