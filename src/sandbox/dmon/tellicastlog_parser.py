@@ -47,8 +47,7 @@ class TellicastLogParser(object):
         """
         if a_lines:
             self._lines = a_lines
-        
-        #self._gen = self._create_parser_gen()
+            self._gen   = self._create_parser_gen()
         
         
     def _create_parser_gen(self):
@@ -67,7 +66,8 @@ class TellicastLogParser(object):
             where the previous one was and it will not create a new one.
             To create a you one, you have to pass the io_prog again. 
         """
-        self._gen = self._create_parser_gen()
+        if not self._gen:
+            self._gen = self._create_parser_gen()
         
         return self
     
@@ -193,7 +193,6 @@ if __name__ == '__main__':
     for file in files: 
         print("FILE START **********************************************\n\n\n")
         parser.set_lines_to_parse(file)
-        
         for token in parser:
             print(token)
         
