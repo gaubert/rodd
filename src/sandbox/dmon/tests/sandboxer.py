@@ -29,6 +29,21 @@ XFERLOG_DATE_RE           = re.compile(XFERLOG_DATE_PATTERN)
 XFERLOG_TIME_PATTERN = r'(?P<day>(0[1-9]|[12][0-9]|3[01]|[1-9])) (?P<time>([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]))'
 XFERLOG_TIME_RE      = re.compile(XFERLOG_TIME_PATTERN)
 
+#DIRMON_PATTERN_ADDING     = r'Adding file \'(?P<file>.*)\' to job \'(?P<job>.*)\', last modified: .*, size: (?P<size>\d+)'
+DIRMON_PATTERN_ADDING     = r'Adding file \'(?P<file>.*)\' to job \'(?P<job>.*)\', last modified: .*, size: (?P<size>\d+)'
+DIRMON_MSG_RE             = re.compile(DIRMON_PATTERN_ADDING)
+
+DIRMON_ADDING_PATTERN     = r'Adding file \'(?P<file>.*)\' to job \'(?P<job>.*)\', last modified: .*, size: (?P<size>\d+)'
+DIRMON_MSG_ADDING_RE             = re.compile(DIRMON_PATTERN_ADDING)
+
+#Job activated: File "/home/eumetsat/data/jobs/incoming/retim-4051-55316-2011-10-27-04-25-47-092.job" was successfully generated.
+DIRMON_JOB_GENERATED_PATTERN = r'Job activated: File "(?P<job>.*)" was successfully generated\.'
+DIRMON_MSG_GENERATED_RE      = re.compile(DIRMON_JOB_GENERATED_PATTERN)
+
+#Releasing resources for job "retim-173-39723-2011-10-27-04-25-23-208" found in directory "/home/eumetsat/data/jobs/done".
+DIRMON_JOB_RELEASED_PATTERN = r'Releasing resources for job "(?P<job>.*)" found in directory ".*"\.'
+DIRMON_JOB_RELEASED_RE      = re.compile(DIRMON_JOB_RELEASED_PATTERN)
+
 def parse_xferlog_date(a_date_str):
     """
        parse xferlog date
@@ -51,12 +66,20 @@ def parse_xferlog(a_date_str):
         print("filename = %s\n" %(matched.group('filename')))
     else:
         print("unmatched")
+        
+def parse_dirmon_message(a_dirmon_msg):
 
-
+    matched = DIRMON_JOB_RELEASED_RE.match(a_dirmon_msg)
+    if matched:
+        print("matched")
+    else:
+        print("unmatched")
+        
 
 if __name__ == '__main__':
 
     #parse_xferlog_date('Thu Oct 27 04:25:26 2011 0 10.10.10.176 2061 /home/eumetsat/data/retim/groups/retim-4211/a300042526LFPW00232111.20110927042506_P4211PT8AAF_RAFARAPID.2061.b.tmp b _ i r eumetsat ftp 0 * c')
-    d = datetime.datetime.strptime('Oct 27 04:26:01 2011', '%b %d %H:%M:%S %Y')
-    print d
+    #d = datetime.datetime.strptime('Oct 27 04:26:01 2011', '%b %d %H:%M:%S %Y')
+    #print d
     #parse_xferlog(xferlog_line1)
+    parse_dirmon_message('Releasing resources for job "retim-173-39723-2011-10-27-04-25-23-208" found in directory "/home/eumetsat/data/jobs/done".')

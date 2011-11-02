@@ -11,13 +11,28 @@ import time_utils as common_time
 TELLICASTLOG_LVL          = r'(?P<lvl>(ERR||MSG|VRB|WRN))'
 TELLICASTLOG_DATE         = r'(?P<datetime>(?P<date>(?P<year>(18|19|[2-5][0-9])\d\d)[-/.](?P<month>(0[1-9]|1[012]|[1-9]))[-/.](?P<day>(0[1-9]|[12][0-9]|3[01]|[1-9])))([tT ]?(?P<time>([0-1][0-9]|2[0-3]|[0-9])([:]?([0-5][0-9]|[0-9]))?([:]([0-5][0-9]|[0-9]))?([.]([0-9])+)?))?)'
 TELLICASTLOG_MSG          = r'(?P<msg>.*)'
-#r'(?P<date> (?P<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dev) (?P<day>(0[1-9]|[12][0-9]|3[01]|[1-9])) (?P<time>([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])) )'
+
 TELLICASTLOG_PATTERN      = TELLICASTLOG_LVL + r':' + TELLICASTLOG_DATE + r':' + TELLICASTLOG_MSG
 
 TELLICASTLOG_HEADER_PATTERN = r'Lvl:Date[ ]*Time[ ]*\(UTC\)[ ]*:Message'
 
 TELLICASTLOG_RE           = re.compile(TELLICASTLOG_PATTERN)
 TELLICASTLOG_HEADER_RE    = re.compile(TELLICASTLOG_HEADER_PATTERN)
+
+#DIRMON PATTERNS for the different dirmon events
+DIRMON_ADDING_MSG_PATTERN = r'Adding file \'(?P<file>.*)\' to job \'(?P<job>.*)\', last modified: .*, size: (?P<size>\d+)'
+DIRMON_MSG_ADDING_RE      = re.compile(DIRMON_ADDING_MSG_PATTERN)
+
+DIRMON_JOB_ACTIVATED_PATTERN = r'Job activated: File "(?P<job>.*)" was successfully generated.'
+DIRMON_JOB_ACTIVATED_RE      = re.compile(DIRMON_JOB_ACTIVATED_PATTERN)
+
+DIRMON_JOB_RELEASED_PATTERN = r'Releasing resources for job "(?P<job>.*)" found in directory ".*"\.'
+DIRMON_JOB_RELEASED_RE      = re.compile(DIRMON_JOB_RELEASED_PATTERN)
+
+DIRMON_PATTERNS = { 'adding'     : DIRMON_MSG_ADDING_RE , 
+                    'activating' : DIRMON_JOB_ACTIVATED_RE,
+                    'releasing'  : DIRMON_JOB_RELEASED_RE,
+                  }
 
 class InvalidTellicastlogFormatError(Exception):
     """ Invalid IMS Date Error exception """
@@ -54,10 +69,57 @@ class TellicastLogParser(object):
         """
           Create the parser generator
         """
+        type = None
         for line in self._lines:
-            result = self._parse_line(line) 
+            
+            if not type:
+                type = self._guess_tellicast_app(line)
+            
+            result = self._parse_line(line, type) 
+            
             if result:
+                if type == "dirmon":
+                    extra_result = self._parse_dir_mon_msg(result['msg'])
+                    
+                    result.update(extra_result)
+                
                 yield result
+                
+    def _parse_dir_mon_msg(self,a_msg):
+        """
+           Parse dirmon msg
+        """
+        for (key,val) in DIRMON_PATTERNS.iteritems():
+            matched = val.match(a_msg)
+            if matched:
+                if key == "adding":
+                    return { "file" : matched.group('file'),
+                             "job"  : matched.group('job'),
+                             "job_status" : "created", 
+                           }
+                elif key == "activating":
+                    return { "job"  : matched.group('job'),
+                             "job_status" : "activated", 
+                           }
+                elif key == "releasing":
+                    return {
+                             "job" :  matched.group('job'),
+                             "job_status" : "released", 
+                           }
+                else:
+                    #security against bugs
+                    return {}
+        
+        return {}
+                    
+        
+        
+    
+    def _guess_tellicast_app(self, line):
+        """
+           guess what application
+        """
+        return "dirmon"
     
     def __iter__(self):
         """ 
@@ -142,7 +204,7 @@ class TellicastLogParser(object):
         return datetime.datetime(the_year, the_month, the_day,  the_h, the_min, the_sec, the_microsec, tzinfo = common_time.UTC_TZ)
    
        
-    def _parse_line(self, a_line):
+    def _parse_line(self, a_line, a_app):
         """ 
           parse the line
         """
@@ -153,7 +215,7 @@ class TellicastLogParser(object):
         
         if matched:
             return {
-                    'app' : 'tc-send',
+                    'app' : a_app,
                     'time': self._tellicastdatetime_to_datetime(matched.group('datetime'), \
                                                                 matched.group('year'), \
                                                                 matched.group('month'), \
@@ -187,8 +249,8 @@ if __name__ == '__main__':
     parser = TellicastLogParser()
     
     #files = [open(sendlog_path), open(sendlog_path1), open(sendlog_path2)]
-    files = [open(sendlog_test_path)]
-    #files = [open(dirmonlog_path)]
+    #files = [open(sendlog_test_path)]
+    files = [open(dirmonlog_path)]
     
     for file in files: 
         print("FILE START **********************************************\n\n\n")
