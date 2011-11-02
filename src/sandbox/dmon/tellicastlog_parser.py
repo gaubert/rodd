@@ -62,23 +62,35 @@ TCSEND_PATTERNS = {
 
 #tc-recv patterns
 #Received announcement for channel `MFREURG16', address 224.223.222.116:2116 (subscribed)
-TCRECV_ANNOUNCEMENT     = r'Received announcement for channel [`|\'](?P<channel>.*)[`|\'], address .* (subscribed)'
+TCRECV_ANNOUNCEMENT     = r'Received announcement for channel [`|\'](?P<channel>.*)[`|\'], address .* \(subscribed\)'
 TCRECV_ANNOUNCEMENT_RE  = re.compile(TCRECV_ANNOUNCEMENT)
 
-TCRECV_CONNECTING       = r'Connecting to data channel [`|\'](?P<channel>.*)[`|\'], address .* (invited)'
+TCRECV_CONNECTING       = r'Connecting to data channel [`|\'](?P<channel>.*)[`|\'], address \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,6} \(invited\)'
 TCRECV_CONNECTING_RE    = re.compile(TCRECV_CONNECTING)
 
-
-TCRECV_CONNECTED        = r'Connected to data channel [`|\'](?P<channel>.*)[`|\'], address .* (invited)'
+TCRECV_CONNECTED        = r'Connected to data channel [`|\'](?P<channel>.*)[`|\'], address \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,6} \(invited\)'
 TCRECV_CONNECTED_RE     = re.compile(TCRECV_CONNECTED)
 
 TCRECV_RECEIVED         = r'Received file .* on channel [`|\'](?P<channel>.*)[`|\']'
 TCRECV_RECEIVED_RE      = re.compile(TCRECV_RECEIVED)
 
+TCRECV_DELIVERED         = r'Delivered file [`|\'](?P<file>.*)[`|\'] id (?P<id>.*) from channel [`|\'](?P<channel>.*)[`|\']'
+TCRECV_DELIVERED_RE      = re.compile(TCRECV_DELIVERED)
+
+TCRECV_DELIVERED_ALL     = r'Delivered all \d{1,5} files of filelist (?P<id>.*) from channel [`|\'](?P<channel>.*)[`|\']'
+TCRECV_DELIVERED_ALL_RE  = re.compile(TCRECV_DELIVERED_ALL)
+
+TCRECV_DISCONNECTED      = r'Disconnect from data channel [`|\'](?P<channel>.*)[`|\'], address \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,6} completed \(finished\)'
+TCRECV_DISCONNECTED_RE   = re.compile(TCRECV_DISCONNECTED)
+
 TCRECV_PATTERNS = {
                     'announcement' :  TCRECV_ANNOUNCEMENT_RE,
                     'connecting'   :  TCRECV_CONNECTING_RE,
+                    'connected'    :   TCRECV_CONNECTED_RE,
                     'received_file':  TCRECV_RECEIVED_RE,
+                    'delivered'    :  TCRECV_DELIVERED_RE,
+                    'delivered_all':  TCRECV_DELIVERED_ALL_RE,
+                    'disconnected' :  TCRECV_DISCONNECTED_RE,
                   }
 
 class InvalidTellicastlogFormatError(Exception):
@@ -128,6 +140,9 @@ class TellicastLogParser(object):
                 elif self._app_type == "tc-send":
                     extra_result = self._parse_tcsend_msg(result['msg'])
                     result.update(extra_result)
+                elif self._app_type == "tc-recv":
+                    extra_result = self._parse_tcrecv_msg(result['msg'])
+                    result.update(extra_result)
                 
                 yield result
                 
@@ -140,25 +155,35 @@ class TellicastLogParser(object):
             if matched:
                 if key == "announcement":
                     return { "channel"     : matched.group('channel'),
-                             "chan_status" : "received_ann", 
+                             "chan_status" : "announcement", 
                            }
                 elif key == "connecting":
                     return { "channel"      : matched.group('channel'),
                              "chan_status"  : "connecting", 
                            }
+                elif key == "connected":
+                    return { "channel"      : matched.group('channel'),
+                             "chan_status"  : "connected", 
+                           }
                 elif key == "received_file":
                     return { "channel"     : matched.group('channel'),
-                             "chan_status" : "received", 
+                             "chan_status" : "received_file", 
                            }
                     #file delivered
-                elif key == "job_finished":
-                    return { "job"  : matched.group('job'),
+                elif key == "delivered":
+                    return { "file"       : matched.group('file'),
                              "channel"    : matched.group('channel'),
-                             "job_status" : "finished", 
+                             "file_id"    : matched.group('id'),
+                             "chan_status" : "delivered_file", 
                            }
-                elif key == "chan_closed":
-                    return { "channel" : matched.group('channel'),
-                             "chan_status" : "closed", 
+                elif key == "delivered_all":
+                    return { "channel"     : matched.group('channel'),
+                              "filelist"   : matched.group('id'),
+                             "chan_status" : "delivered_all", 
+                           }
+                elif key == "disconnected":
+                    return { "channel"     : matched.group('channel'),
+                             "chan_status" : "disconnected", 
                            }
                 else:
                     #security against bugs
@@ -353,18 +378,30 @@ if __name__ == '__main__':
     dirmonlog_path1      = '/homespace/gaubert/logs/tests/dirmon.log.1'
     dirmonlog_path2      = '/homespace/gaubert/logs/tests/dirmon.log.2'
     
+    recvlog_path         = '/homespace/gaubert/logs/tests/recv.log'
+    
     
     s_parser = TellicastLogParser('tc-send')
     d_parser = TellicastLogParser('dirmon')
+    r_parser = TellicastLogParser('tc-recv')
     
     #files = [open(sendlog_path), open(sendlog_path1), open(sendlog_path2)]
-    #files = [open(sendlog_test_path)]
+    #files = [oa_linespen(sendlog_test_path)]
     send_files   = [open(sendlog_path), open(sendlog_path1)]
     dirmon_files = [open(dirmonlog_path), open(dirmonlog_path1)]
+    recv_files   = [open(recvlog_path)]
     
     tokens = { 'dirmon' : [],
                'tc-send' : []}
     
+    for file in recv_files:
+        print("FILE START **********************************************\n\n\n")
+        r_parser.set_lines_to_parse(file)
+        for token in r_parser:
+            
+            print(token['chan_status'] if token.get('chan_status', None) else token)
+    
+    """
     for file in send_files: 
         print("FILE START **********************************************\n\n\n")
         s_parser.set_lines_to_parse(file)
@@ -376,9 +413,10 @@ if __name__ == '__main__':
         d_parser.set_lines_to_parse(file)
         for token in d_parser:
             tokens['dirmon'].append(token)
+    """
            
     print("Sleeping\n")        
-    time.sleep(60)
+    #time.sleep(60)
         
        
         
