@@ -24,7 +24,7 @@ class InvalidXferlogFormatError(Exception):
     def __init__(self, a_msg):
         super(InvalidXferlogFormatError, self).__init__(a_msg)
 
-class XferlogIndexer(object):
+class XferlogParser(object):
     '''
     Receive an xferlog line and create a json document following a predefined structure
     '''
@@ -33,11 +33,54 @@ class XferlogIndexer(object):
         '''
         Constructor
         '''
+        self._gen   = None
+        self._lines = None
+        
+    def set_lines_to_parse(self, a_lines=None):
+        """
+           Set an iterable
+        """
+        if a_lines:
+            self._lines = a_lines
+        
+    def _create_parser_gen(self):
+        """
+          Create the parser generator
+        """
+        for line in self._lines:
+            result = self._parse_line(line) 
+            if result:
+                yield result
     
+    def __iter__(self):
+        """ 
+            iterator from the begining of the stream.
+            If you call twice this method the second iterator will continue to iterate from 
+            where the previous one was and it will not create a new one.
+            To create a you one, you have to pass the io_prog again. 
+        """
+        self._gen = self._create_parser_gen()
+        
+        return self
+    
+    def next(self):
+        """
+           Return the next token
+            
+           Returns:
+               return next found token 
+        """
+        
+        # if no generator have been created first do it and call next
+        if self._gen == None:
+            self._gen = self._create_parser_gen()
+        
+        return self._gen.next() #pylint: disable-msg=E1103
     
     def read(self, a_lines):
         '''
            read a set of xferlog lines and create a json structure for each of them
+           a_lines: An iterable containing lines
         '''
         
         for line in a_lines:
@@ -89,11 +132,13 @@ if __name__ == '__main__':
     xferlog_path2      = '/homespace/gaubert/logs/tests/xferlog'
     
     
-    indexer = XferlogIndexer()
+    parser = XferlogParser()
     
     files = [open(xferlog_path), open(xferlog_path1), open(xferlog_path2)]
     files = [open(xferlog_test_path)]
     
     for file in files: 
-       print("FILE START **********************************************\n\n\n")
-       indexer.read(file)
+        print("FILE START **********************************************\n\n\n")
+        parser.set_lines_to_parse(file)
+        for token in parser:
+            print(token)
