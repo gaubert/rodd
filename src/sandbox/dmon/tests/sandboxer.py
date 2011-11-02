@@ -44,6 +44,9 @@ DIRMON_MSG_GENERATED_RE      = re.compile(DIRMON_JOB_GENERATED_PATTERN)
 DIRMON_JOB_RELEASED_PATTERN = r'Releasing resources for job "(?P<job>.*)" found in directory ".*"\.'
 DIRMON_JOB_RELEASED_RE      = re.compile(DIRMON_JOB_RELEASED_PATTERN)
 
+DIRMON_JOB_RELEASED_PATTERN = r'Releasing resources for job "(?P<job>.*)" found in directory ".*"\.'
+DIRMON_JOB_RELEASED_RE      = re.compile(DIRMON_JOB_RELEASED_PATTERN)
+
 def parse_xferlog_date(a_date_str):
     """
        parse xferlog date
@@ -68,6 +71,14 @@ def parse_xferlog(a_date_str):
         print("unmatched")
         
 def parse_dirmon_message(a_dirmon_msg):
+
+    matched = DIRMON_JOB_RELEASED_RE.match(a_dirmon_msg)
+    if matched:
+        print("matched")
+    else:
+        print("unmatched")
+
+def parse_tcsend_message(a_tcsend_msg):
 
     matched = DIRMON_JOB_RELEASED_RE.match(a_dirmon_msg)
     if matched:

@@ -5,7 +5,9 @@ Created on Nov 2, 2011
 '''
 import re
 import datetime
+import time
 import time_utils as common_time
+
 
 
 TELLICASTLOG_LVL          = r'(?P<lvl>(ERR||MSG|VRB|WRN))'
@@ -34,6 +36,51 @@ DIRMON_PATTERNS = { 'adding'     : DIRMON_MSG_ADDING_RE ,
                     'releasing'  : DIRMON_JOB_RELEASED_RE,
                   }
 
+# tc-send patterns
+TCSEND_CHAN_ANNOUNCED    = r'Channel "(?P<channel>.*)" announced'
+TCSEND_CHAN_ANNOUNCED_RE = re.compile(TCSEND_CHAN_ANNOUNCED)
+
+TCSEND_JOB_ANNOUNCED     = r'Content for job "(?P<job>.*)" on channel "(?P<channel>.*)" is announced\.'
+TCSEND_JOB_ANNOUNCED_RE  = re.compile(TCSEND_JOB_ANNOUNCED)
+
+TCSEND_JOB_ACTIVATED     = r'Job "(?P<job>.*)" on channel "(?P<channel>.*)" activated\.'
+TCSEND_JOB_ACTIVATED_RE  = re.compile(TCSEND_JOB_ACTIVATED)
+
+TCSEND_JOB_FINISHED      = r'FileBroadcast job "(?P<job>.*)" on channel "(?P<channel>.*)" done'
+TCSEND_JOB_FINISHED_RE   = re.compile(TCSEND_JOB_FINISHED)
+
+TCSEND_CHAN_CLOSED      = r'Closing channel "(?P<channel>.*)"\.'
+TCSEND_CHAN_CLOSED_RE   = re.compile(TCSEND_JOB_FINISHED)
+
+TCSEND_PATTERNS = {
+                    'chan_announced'  : TCSEND_CHAN_ANNOUNCED_RE,
+                    'job_announced'   : TCSEND_JOB_ANNOUNCED_RE,
+                    'job_activated'   : TCSEND_JOB_ACTIVATED_RE,
+                    'job_finished'    : TCSEND_JOB_FINISHED_RE,
+                    'chan_closed'     : TCSEND_CHAN_CLOSED_RE,
+                  }
+
+#tc-recv patterns
+#Received announcement for channel `MFREURG16', address 224.223.222.116:2116 (subscribed)
+TCRECV_ANNOUNCEMENT     = r'Received announcement for channel [`|\'](?P<channel>.*)[`|\'], address .* (subscribed)'
+TCRECV_ANNOUNCEMENT_RE  = re.compile(TCRECV_ANNOUNCEMENT)
+
+TCRECV_CONNECTING       = r'Connecting to data channel [`|\'](?P<channel>.*)[`|\'], address .* (invited)'
+TCRECV_CONNECTING_RE    = re.compile(TCRECV_CONNECTING)
+
+
+TCRECV_CONNECTED        = r'Connected to data channel [`|\'](?P<channel>.*)[`|\'], address .* (invited)'
+TCRECV_CONNECTED_RE     = re.compile(TCRECV_CONNECTED)
+
+TCRECV_RECEIVED         = r'Received file .* on channel [`|\'](?P<channel>.*)[`|\']'
+TCRECV_RECEIVED_RE      = re.compile(TCRECV_RECEIVED)
+
+TCRECV_PATTERNS = {
+                    'announcement' :  TCRECV_ANNOUNCEMENT_RE,
+                    'connecting'   :  TCRECV_CONNECTING_RE,
+                    'received_file':  TCRECV_RECEIVED_RE,
+                  }
+
 class InvalidTellicastlogFormatError(Exception):
     """ Invalid IMS Date Error exception """
     def __init__(self, a_msg):
@@ -49,12 +96,13 @@ class TellicastLogParser(object):
     TellicastLogParser
     '''
 
-    def __init__(self):
+    def __init__(self, a_app_type='dirmon'):
         '''
         constructor
         '''
-        self._gen   = None
-        self._lines = None
+        self._gen        = None
+        self._lines      = None
+        self._app_type   = a_app_type
         
     def set_lines_to_parse(self, a_lines=None):
         """
@@ -63,33 +111,66 @@ class TellicastLogParser(object):
         if a_lines:
             self._lines = a_lines
             self._gen   = self._create_parser_gen()
-        
-        
+            
+  
     def _create_parser_gen(self):
         """
           Create the parser generator
         """
-        type = None
         for line in self._lines:
-            
-            if not type:
-                type = self._guess_tellicast_app(line)
-            
-            result = self._parse_line(line, type) 
+                    
+            result = self._parse_line(line) 
             
             if result:
-                if type == "dirmon":
-                    extra_result = self._parse_dir_mon_msg(result['msg'])
-                    
+                if self._app_type == "dirmon":
+                    extra_result = self._parse_dirmon_msg(result['msg'])
+                    result.update(extra_result)
+                elif self._app_type == "tc-send":
+                    extra_result = self._parse_tcsend_msg(result['msg'])
                     result.update(extra_result)
                 
                 yield result
                 
-    def _parse_dir_mon_msg(self,a_msg):
+    def _parse_tcrecv_msg(self, a_msg):
+        """
+           Parse tcrecv msg
+        """
+        for (key, val) in TCRECV_PATTERNS.iteritems():
+            matched = val.match(a_msg)
+            if matched:
+                if key == "announcement":
+                    return { "channel"     : matched.group('channel'),
+                             "chan_status" : "received_ann", 
+                           }
+                elif key == "connecting":
+                    return { "channel"      : matched.group('channel'),
+                             "chan_status"  : "connecting", 
+                           }
+                elif key == "received_file":
+                    return { "channel"     : matched.group('channel'),
+                             "chan_status" : "received", 
+                           }
+                    #file delivered
+                elif key == "job_finished":
+                    return { "job"  : matched.group('job'),
+                             "channel"    : matched.group('channel'),
+                             "job_status" : "finished", 
+                           }
+                elif key == "chan_closed":
+                    return { "channel" : matched.group('channel'),
+                             "chan_status" : "closed", 
+                           }
+                else:
+                    #security against bugs
+                    return {}
+        
+        return {}
+                
+    def _parse_dirmon_msg(self, a_msg):
         """
            Parse dirmon msg
         """
-        for (key,val) in DIRMON_PATTERNS.iteritems():
+        for (key, val) in DIRMON_PATTERNS.iteritems():
             matched = val.match(a_msg)
             if matched:
                 if key == "adding":
@@ -111,15 +192,42 @@ class TellicastLogParser(object):
                     return {}
         
         return {}
-                    
-        
-        
     
-    def _guess_tellicast_app(self, line):
+    def _parse_tcsend_msg(self, a_msg):
         """
-           guess what application
+           Parse tcsend msg
         """
-        return "dirmon"
+        for (key, val) in TCSEND_PATTERNS.iteritems():
+            matched = val.match(a_msg)
+            if matched:
+                if key == "chan_announced":
+                    return { "channel" : matched.group('channel'),
+                             "chan_status" : "announced", 
+                           }
+                elif key == "job_announced":
+                    return { "job"  : matched.group('job'),
+                             "channel"    : matched.group('channel'),
+                             "job_status" : "announced", 
+                           }
+                elif key == "job_activated":
+                    return { "job"  : matched.group('job'),
+                             "channel"    : matched.group('channel'),
+                             "job_status" : "activated", 
+                           }
+                elif key == "job_finished":
+                    return { "job"  : matched.group('job'),
+                             "channel"    : matched.group('channel'),
+                             "job_status" : "finished", 
+                           }
+                elif key == "chan_closed":
+                    return { "channel" : matched.group('channel'),
+                             "chan_status" : "closed", 
+                           }
+                else:
+                    #security against bugs
+                    return {}
+        
+        return {}
     
     def __iter__(self):
         """ 
@@ -204,7 +312,7 @@ class TellicastLogParser(object):
         return datetime.datetime(the_year, the_month, the_day,  the_h, the_min, the_sec, the_microsec, tzinfo = common_time.UTC_TZ)
    
        
-    def _parse_line(self, a_line, a_app):
+    def _parse_line(self, a_line):
         """ 
           parse the line
         """
@@ -215,7 +323,7 @@ class TellicastLogParser(object):
         
         if matched:
             return {
-                    'app' : a_app,
+                    'app' : self._app_type,
                     'time': self._tellicastdatetime_to_datetime(matched.group('datetime'), \
                                                                 matched.group('year'), \
                                                                 matched.group('month'), \
@@ -246,17 +354,31 @@ if __name__ == '__main__':
     dirmonlog_path2      = '/homespace/gaubert/logs/tests/dirmon.log.2'
     
     
-    parser = TellicastLogParser()
+    s_parser = TellicastLogParser('tc-send')
+    d_parser = TellicastLogParser('dirmon')
     
     #files = [open(sendlog_path), open(sendlog_path1), open(sendlog_path2)]
     #files = [open(sendlog_test_path)]
-    files = [open(dirmonlog_path)]
+    send_files   = [open(sendlog_path), open(sendlog_path1)]
+    dirmon_files = [open(dirmonlog_path), open(dirmonlog_path1)]
     
-    for file in files: 
+    tokens = { 'dirmon' : [],
+               'tc-send' : []}
+    
+    for file in send_files: 
         print("FILE START **********************************************\n\n\n")
-        parser.set_lines_to_parse(file)
-        for token in parser:
-            print(token)
+        s_parser.set_lines_to_parse(file)
+        for token in s_parser:
+            tokens['tc-send'].append(token)
+    
+    for file in dirmon_files: 
+        print("FILE START **********************************************\n\n\n")
+        d_parser.set_lines_to_parse(file)
+        for token in d_parser:
+            tokens['dirmon'].append(token)
+           
+    print("Sleeping\n")        
+    time.sleep(60)
         
        
         
