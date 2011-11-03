@@ -85,6 +85,12 @@ class XferlogParser(object):
         
         for line in a_lines:
             print(self._parse_line(line))
+    
+    def parse_one_line(self, a_line):
+        """
+           Parse a unique line
+        """
+        return self._parse_line(a_line)
             
     def _convert_date_to_date_time(self, a_date):
         """
@@ -117,7 +123,7 @@ class XferlogParser(object):
                        'file' : self._remove_tmp(matched.group('filename')),
                        'file_size' : matched.group('filesize'),
                        'transfer_time' : matched.group('transfer_time'),
-                       'full_msg' : a_line,
+                       #'full_msg' : a_line,
                        
                      } 
         else:

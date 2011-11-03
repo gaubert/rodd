@@ -123,6 +123,25 @@ class TellicastLogParser(object):
         if a_lines:
             self._lines = a_lines
             self._gen   = self._create_parser_gen()
+    
+    def parse_one_line(self, a_line):
+        """
+           Parse one unique line
+        """
+        result = self._parse_line(a_line) 
+            
+        if result:
+            if self._app_type == "dirmon":
+                extra_result = self._parse_dirmon_msg(result['msg'])
+                result.update(extra_result)
+            elif self._app_type == "tc-send":
+                extra_result = self._parse_tcsend_msg(result['msg'])
+                result.update(extra_result)
+            elif self._app_type == "tc-recv":
+                extra_result = self._parse_tcrecv_msg(result['msg'])
+                result.update(extra_result)
+        
+        return result
             
   
     def _create_parser_gen(self):
@@ -356,7 +375,7 @@ class TellicastLogParser(object):
                                                                 matched.group('time')),
                     'lev' : matched.group('lvl'),
                     'msg' : matched.group('msg'),
-                    'full_msg' : a_line,
+                    #'full_msg' : a_line,
                     
                    }
         else:
