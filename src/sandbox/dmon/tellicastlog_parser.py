@@ -50,7 +50,7 @@ TCSEND_JOB_FINISHED      = r'FileBroadcast job "(?P<job>.*)" on channel "(?P<cha
 TCSEND_JOB_FINISHED_RE   = re.compile(TCSEND_JOB_FINISHED)
 
 TCSEND_CHAN_CLOSED      = r'Closing channel "(?P<channel>.*)"\.'
-TCSEND_CHAN_CLOSED_RE   = re.compile(TCSEND_JOB_FINISHED)
+TCSEND_CHAN_CLOSED_RE   = re.compile(TCSEND_CHAN_CLOSED)
 
 TCSEND_PATTERNS = {
                     'chan_announced'  : TCSEND_CHAN_ANNOUNCED_RE,
@@ -413,20 +413,23 @@ if __name__ == '__main__':
     tokens = { 'dirmon' : [],
                'tc-send' : []}
     
-    for file in recv_files:
+    """for file in recv_files:
         print("FILE START **********************************************\n\n\n")
         r_parser.set_lines_to_parse(file)
         for token in r_parser:
             
             print(token['chan_status'] if token.get('chan_status', None) else token)
-    
     """
+    
+    
     for file in send_files: 
         print("FILE START **********************************************\n\n\n")
         s_parser.set_lines_to_parse(file)
         for token in s_parser:
+            print(token)
             tokens['tc-send'].append(token)
     
+    """
     for file in dirmon_files: 
         print("FILE START **********************************************\n\n\n")
         d_parser.set_lines_to_parse(file)

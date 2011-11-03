@@ -19,5 +19,5 @@ def play_file(source_f, dest_f, a_sleep_time):
 if __name__ == '__main__':
     
     source_f = open('/homespace/gaubert/logs/tests/send.log')
-    dest_f   = open('/tmp/dest.log','w+')
+    dest_f   = open('/tmp/send.log','w+')
     play_file(source_f, dest_f, 0.5)
