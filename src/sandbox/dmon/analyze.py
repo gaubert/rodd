@@ -89,30 +89,38 @@ def analyze():
             #add file
             res = [result['file'], datetime_to_str(result['time']), None , None, None, None]
             
-            to_print.insert(0, res)
+            to_print.append(res)
             
-            file_index[result['file']] = res
+            file_index[result['file']] = len(to_print) - 1
             #print table
             print_table(to_print)
             
         elif type == 'dirmon':
             result = d_parser.parse_one_line(line)
             if result.get('job_status', None) == 'created':
-                info = file_index.get(result['file'], None)
-                if info:
+                pos = file_index.get(result['file'], -1)
+                if pos >= 0:
                     # update info with queued status
-                    info =  [info[0], info[1], datetime_to_str(result['time']), None, None, None]                         
+                    info =  to_print.pop(pos)
+                    info = [info[0], info[1], datetime_to_str(result['time']), None, None, None]
+                                           
+                    #update indexes
+                    file_index[result['file']] = pos
+                    job_index[result['job']]   = pos 
+                    
+                    #overwrite to print
+                    to_print.insert(0, info)
+                                         
                 else:
+                    
                     # add it in the table
-                    info = [result['file'], None , datetime_to_str(result['time']), None, None, None] 
-                                    
-                #update indexes
-                file_index[result['file']] = info
-                job_index[result['job']]   = info
-                #job_index[result['job']]   = result['file']
-                
-                #append line in list of lines to be printed
-                to_print.insert(0, info)
+                    info = [result['file'], None , datetime_to_str(result['time']), None, None, None]
+                    
+                    to_print.insert(0, info)
+                    #update indexes
+                    file_index[result['file']] = len(to_print) - 1
+                    job_index[result['job']]   = len(to_print) - 1
+                    
                 #print table
                 print_table(to_print)
                 
