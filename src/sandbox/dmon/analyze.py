@@ -31,14 +31,17 @@ def print_table(a_lines_to_print):
         filename = a_to_print[0]
         if filename:
             filename = os.path.basename(filename)
-            if len(filename) > 20:
-                filename = filename[:20]
+            
+            #will not fail if name < 20
+            filename = filename[:20]
         else:
             filename = "-"
         
         jobname = a_to_print[3]
-        if jobname and len(jobname) > 20:
-            jobname = jobname[:20]
+        if jobname:
+            #will not fail if name < 20
+            jobelems = jobname.split('-')
+            jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
         else:
             jobname = "-"
         
@@ -69,14 +72,27 @@ def analyze():
     x_parser = xferlog_parser.XferlogParser()
     d_parser = tellicastlog_parser.TellicastLogParser('dirmon')
     
-    #iter = multitail.MultiFileTailer.tail([file_send, file_xferlog, file_dirmon])
+    iter = multitail.MultiFileTailer.tail([file_send, file_xferlog, file_dirmon])
     
-    to_print   = []
+    to_print    = []
+    waiting_job = {}
     file_index = {}
     job_index  = {}
     
-    iter = [("Thu Oct 27 04:25:28 2011 0 10.10.10.176 37737 /home/eumetsat/data/wmora6/groups/wmo-ra6/MYFILE b _ i r eumetsat ftp 0 * c",'/tmp/xferlog'),\
-             ("VRB:2011-10-27 03:59:40.995:Adding file '/home/eumetsat/data/wmora6/groups/wmo-ra6/MYFILE' to job 'MYJOB-01', last modified: 2011-10-27 03:59:34, size: 26423",'/tmp/dirmon.log')]
+    """iter = [("Thu Oct 27 04:25:28 2011 0 10.10.10.176 37737 /home/eumetsat/data/wmora6/groups/wmo-ra6/MYFILE b _ i r eumetsat ftp 0 * c",'/tmp/xferlog'),\
+            ("Thu Oct 27 04:25:28 2011 0 10.10.10.176 37737 /home/eumetsat/data/wmora6/groups/wmo-ra6/MYFILE2 b _ i r eumetsat ftp 0 * c",'/tmp/xferlog'),\
+             ("VRB:2011-10-27 03:59:40.995:Adding file '/home/eumetsat/data/wmora6/groups/wmo-ra6/MYFILE' to job 'MYJOB-01', last modified: 2011-10-27 03:59:34, size: 26423",'/tmp/dirmon.log'),\
+             ('VRB:2011-10-26 21:02:36.439:Content for job "MYJOB-01" on channel "MFRAFRG6" is announced.',"/tmp/send.log"),\
+             ("VRB:2011-10-27 03:59:40.995:Adding file '/home/eumetsat/data/wmora6/groups/wmo-ra6/MYFILE2' to job 'MYJOB-02', last modified: 2011-10-27 03:59:34, size: 26423",'/tmp/dirmon.log'),\
+             ('MSG:2011-10-26 21:02:37.147:FileBroadcast job "MYJOB-01" on channel "MFRAFRG6" done',"/tmp/send.log"),\
+             ("Thu Oct 27 04:25:28 2011 0 10.10.10.176 37737 /home/eumetsat/data/wmora6/groups/wmo-ra6/MYFILE3 b _ i r eumetsat ftp 0 * c",'/tmp/xferlog'),\
+             ('VRB:2011-10-26 21:02:36.439:Content for job "MYJOB-03" on channel "MFRAFRG6" is announced.',"/tmp/send.log"),\
+             ("VRB:2011-10-27 03:59:40.995:Adding file '/home/eumetsat/data/wmora6/groups/wmo-ra6/MYFILE3' to job 'MYJOB-03', last modified: 2011-10-27 03:59:34, size: 26423",'/tmp/dirmon.log'),\
+             ('MSG:2011-10-26 21:02:37.147:FileBroadcast job "MYJOB-03" on channel "MFRAFRG6" done',"/tmp/send.log"),\
+             ('VRB:2011-10-26 21:02:36.439:Content for job "MYJOB-02" on channel "MFRAFRG6" is announced.',"/tmp/send.log"),
+             ('MSG:2011-10-26 21:02:37.147:FileBroadcast job "MYJOB-02" on channel "MFRAFRG6" done',"/tmp/send.log"),\
+           ]
+    """
     
     for (line, filename) in iter:
         #print("filename %s, line %s \n" %(filename, line))
@@ -91,7 +107,9 @@ def analyze():
             
             to_print.append(res)
             
+            # store poistion in the list
             file_index[result['file']] = len(to_print) - 1
+            
             #print table
             print_table(to_print)
             
@@ -100,23 +118,36 @@ def analyze():
             if result.get('job_status', None) == 'created':
                 pos = file_index.get(result['file'], -1)
                 if pos >= 0:
+                    
                     # update info with queued status
-                    info =  to_print.pop(pos)
-                    info = [info[0], info[1], datetime_to_str(result['time']), None, None, None]
-                                           
+                    info =  to_print[pos]
+                    
+                    #check if there is already a job within waiting list
+                    job_info = waiting_job.get(result['job'], None)
+                    
+                    #if job reconcile both info
+                    if job_info:
+                        info = [info[0], info[1], datetime_to_str(result['time']), job_info[3], job_info[4], job_info[5]]
+                        del waiting_job[result['job']]
+                    else:
+                        info = [info[0], info[1], datetime_to_str(result['time']), None, None, None]
+                          
+                    # update to_print list              
+                    to_print[pos] = info
+                      
                     #update indexes
                     file_index[result['file']] = pos
-                    job_index[result['job']]   = pos 
-                    
-                    #overwrite to print
-                    to_print.insert(0, info)
+                    job_index[result['job']]   = pos
                                          
                 else:
                     
-                    # add it in the table
-                    info = [result['file'], None , datetime_to_str(result['time']), None, None, None]
+                    #no file created so it means that the xferlog message has not been received
                     
-                    to_print.insert(0, info)
+                    # add it in the table
+                    info = [result['file'], None , datetime_to_str(result['time']), result['job'], None, None]
+                    
+                    to_print.append(info)
+                    
                     #update indexes
                     file_index[result['file']] = len(to_print) - 1
                     job_index[result['job']]   = len(to_print) - 1
@@ -130,34 +161,60 @@ def analyze():
             # look for job_status == job_announced
             if result.get('job_status') == 'announced':
                 #try to find the job in the index 
-                file_info = job_index.get(result.get('job',None))
-                if file_info:
+                pos = job_index.get(result.get('job', None))
+                if pos >= 0:
+                    
+                    #get the line in the file_index
+                    info = to_print[pos]
+                    
                     # update info with announced status and job name
-                    file_info  = [file_info[0], file_info[1], file_info[2], result.get('job', None), datetime_to_str(result['time']), None]
+                    info  = [info[0], info[1], info[2], result.get('job', None), datetime_to_str(result['time']), None]
+                    
+                    to_print[pos]=info
+                    
+                    #update indexes
+                    file_index[info[0]] = pos
+                    job_index[result['job']]   = pos
                     
                 else:
+                    
+                    #no dirmon message received so add job in waiting list of jobs for the moment
+                    
                     # add a line in the to print table
-                    file_info = [None, None, None, result.get('job', None), datetime_to_str(result['time']), None]
-                    job_index[result.get('job', None)] = file_info
+                    info = [None, None, None, result.get('job', None), datetime_to_str(result['time']), None]
+                    
+                    waiting_job[result['job']] = info
                 
-                #append line in list of lines to be printed
-                to_print.insert(0, file_info)
                 #print table
                 print_table(to_print)
+                
             elif result.get('job_status') == 'finished':
                 #try to find the job in the index 
-                file_info = job_index.get(result.get('job',None))
-                if file_info:
+                pos = job_index.get(result.get('job',None))
+                
+                if pos >= 0:
+                    info = to_print[pos]
+                    
                     # update info with announced status and job name
-                    file_info  = [file_info[0], file_info[1], file_info[2], file_info[3], file_info[4], datetime_to_str(result['time'])]
+                    info  = [info[0], info[1], info[2], info[3], info[4], datetime_to_str(result['time'])]  
+                    
+                    to_print[pos] = info
+                    
+                    #update indexes
+                    job_index[result['job']]   = len(to_print) - 1
                     
                 else:
-                    # add a line in the to print table
-                    file_info = [None, None, None, result.get('job', None), None, datetime_to_str(result['time'])]
-                    job_index[result.get('job', None)] = file_info
+                    
+                    j_info = waiting_job.get(result['job'], None)
+                    
+                    if j_info:
+                        j_info[5] = datetime_to_str(result['time'])
+                        waiting_job[result['job']] = j_info
+                    else:
+                        # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                        info = [None, None, None, result.get('job', None), None, datetime_to_str(result['time'])]
+                        waiting_job[result['job']] = info
                 
-                #append line in list of lines to be printed
-                to_print.insert(0, file_info)
                 #print table
                 print_table(to_print)
     
