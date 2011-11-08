@@ -4,6 +4,7 @@ Created on Nov 2, 2011
 @author: guillaume.aubert@eumetsat.int
 '''
 import datetime
+import re
 
 ZERO = datetime.timedelta(0) 
 
@@ -48,12 +49,34 @@ def simpledate_to_gemsdate(a_simpledate):
     the_date = datetime.datetime.strptime(a_simpledate, '%Y-%m-%d %H:%M:%S')
     return the_date.strftime("%y.%j.%H.%M.%S")
 
+GEMSDATE   = "GEMSDATE"
+SIMPLEDATE = "SIMPLEDATE"
+
+DATE_FORMATS_LIST = [ 'gems: yy.dayofyear.HH.MM.SS', 'simple: yyyy-mm-dd HH:MM:SS' ]
+
+#simplistic regular expression to recognise the date format
+GEMSDATE_RE   = re.compile("\d\d\.\d\d\d\.\d\d\.\d\d\.\d\d")
+SIMPLEDATE_RE = re.compile("\d\d\d\d-\d\d\-\d\d\ \d\d:\d\d:\d\d")
+
 def gemsdate_to_simpledate(a_gemsdate):
     """
        transform a gemsdate into a simple date
     """
     d = gemsdate_to_datetime(a_gemsdate)
     return d.strftime('%Y-%m-%d %H:%M:%S')
+
+def guess_date_format(a_date):
+    """
+       Find the used string date format
+       GEMSDATE or SIMPLEDATE
+    """
+    if GEMSDATE_RE.match(a_date):
+        return GEMSDATE
+    elif SIMPLEDATE_RE.match(a_date):
+        return SIMPLEDATE
+    else:
+        raise Exception("%s is not in a know date format %s" % (a_date, DATE_FORMATS_LIST))
+    
 
 if __name__ == '__main__':
     
@@ -64,4 +87,10 @@ if __name__ == '__main__':
     print(simpledate_to_gemsdate("2011-11-04 15:02:03"))
     
     print(gemsdate_to_simpledate(simpledate_to_gemsdate("2011-11-04 15:02:03")))
+    
+    print(guess_date_format("2011-11-04 15:02:03"))
+    
+    print(guess_date_format("11.308.15.02.03"))
+    
+    print(guess_date_format("117.308.15.02.03"))
 
