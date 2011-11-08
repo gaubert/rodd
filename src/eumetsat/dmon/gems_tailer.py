@@ -7,17 +7,34 @@ import datetime
 import time_utils as tu
 import time
 import gems_feeder
+import string
+
+
+class GEMSColPrinter(object):
+    """
+       Printer events in columns
+    """
+    
+    @classmethod
+    def print_line(cls, a_line_dict):
+        """
+           print a gems line
+        """
+        
+        time = string.center(tu.gemsdate_to_simpledate(a_line_dict['time']), 10)
+        lvl  = string.center(a_line_dict['lvl'], 5)
+        msg  = string.ljust(a_line_dict['msg'], 80)
+        
+        print('%s  %s  %s\n' %(time, lvl, msg))
+        
+        
 
 class GEMSTailer(object):
     '''
-       
+       Do like a Tail over GEMS events
     '''
-
-
-    def __init__(selfparams):
-        '''
-          Listen to new events on GEMS
-        '''
+    def __init__(self, params):
+        pass
     
     def tail(self):
         '''
@@ -38,10 +55,10 @@ class GEMSTailer(object):
             last_line = None
             for line in feeder:
                 last_line = line
-                print last_line
+                GEMSColPrinter.print_line(last_line)
             
             if not last_line:
-                print("sleep")
+                #print("sleep")
                 time.sleep(10)
                 #increase time window
                 end_time   = datetime.datetime.utcnow()
@@ -59,12 +76,6 @@ class GEMSTailer(object):
                                            facility   = ['DVB_EUR_UPLINK'])
             
             
-            
-        
-      
-
-
-
 if __name__ == '__main__':
 
     tailer = GEMSTailer()

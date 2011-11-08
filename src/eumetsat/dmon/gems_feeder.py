@@ -201,37 +201,6 @@ class GEMSExtractor(object):
             self._gen = self._get_gems_data_gen()
         
         return self._gen.next() #pylint: disable-msg=E1103
-
-
-        
-def get_text_value_from_node(a_node):     
-    return   " ".join(t.nodeValue for t in a_node.childNodes if t.nodeType == t.TEXT_NODE)
-
-
-
-          
-if __name__ == '__main__':
-    
-    gems_extractor = GEMSExtractor(start_time = "2011-10-12 15:11:00", end_time = "2011-10-12 15:14:00", severity = ["A","W","I"], facility = ['DVB_EUR_UPLINK'])
-    
-    cpt = 1
-    for line in gems_extractor:
-        if cpt < 10:
-            print("%d,%s" %(cpt, line) )
-        cpt += 1
-    
-    
-    gems_extractor = GEMSExtractor(start_time = "11.308.15.02.03", end_time = "11.308.15.12.03", severity = ["A","W","I"], facility = ['DVB_EUR_UPLINK'])
-    
-    #gems_extractor.set_url_to_parse(GEMSExtractor.DATA_URL)
-    
-    cpt = 1
-    for line in gems_extractor:
-        if cpt < 5:
-            print("%d,%s" %(cpt, line) )
-        cpt += 1
-    
-        
     
     
     
