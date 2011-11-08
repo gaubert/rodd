@@ -131,6 +131,8 @@ class GEMSExtractor(object):
                                                                 severities, facilities, \
                                                                 hosts, processes, \
                                                                 search, GEMSExtractor.MAX_NB_ELEMENTS)
+        
+        print("request =%s\n" %(request))
       
         return request   
     
