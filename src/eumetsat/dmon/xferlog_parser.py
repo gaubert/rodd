@@ -9,12 +9,12 @@ import datetime
 #regular Expression to parse the xferlogs
 XFERLOG_DATE_PATTERN = r'(?P<date>(?P<wday>Mon|Tue|Wed|Thu|Fri|Sat|Sun) (?P<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dev) (?P<day>(0[1-9]|[12][0-9]|3[01]|[1-9])) (?P<time>([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])) (?P<year>(18|19|[2-5][0-9])\d\d))'
 XFERLOG_TRANSFERTIME = r'(?P<transfer_time>\d+)'
-XFERLOG_HOST         = r'(?P<host>\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b)'
+XFERLOG_HOST         = r'(?P<host>(::ffff:)?\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b)'
 XFERLOG_FILESIZE     = r'(?P<filesize>\S+)'
 XFERLOG_FILENAME     = r'(?P<filename>\S+)'
 XFERLOG_REST         = r'(?P<transfer_type>\S+) (?P<special_action_flag>\S+) (?P<direction>\S+) (?P<access_mode>\S+) (?P<username>\S+) (?P<service_name>\S+) (?P<authentication_method>\S+) (?P<authenticated_user_id>\S+) (?P<completion_status>\S+)'
 
-XFERLOG_PATTERN      = XFERLOG_DATE_PATTERN + r' ' + XFERLOG_TRANSFERTIME + r' ' + XFERLOG_HOST + r' ' + XFERLOG_FILESIZE + r' ' + XFERLOG_FILENAME + r' ' + XFERLOG_REST
+XFERLOG_PATTERN      = r'.*(xferlog:)+.*' + XFERLOG_DATE_PATTERN + r' ' + XFERLOG_TRANSFERTIME + r' ' + XFERLOG_HOST + r' ' + XFERLOG_FILESIZE + r' ' + XFERLOG_FILENAME + r' ' + XFERLOG_REST
 
 XFERLOG_RE           = re.compile(XFERLOG_PATTERN)
 

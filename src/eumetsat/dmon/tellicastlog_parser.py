@@ -373,7 +373,7 @@ class TellicastLogParser(object):
                                                                 matched.group('month'), \
                                                                 matched.group('day'), \
                                                                 matched.group('time')),
-                    'lev' : matched.group('lvl'),
+                    'lvl' : matched.group('lvl'),
                     'msg' : matched.group('msg'),
                     #'full_msg' : a_line,
                     

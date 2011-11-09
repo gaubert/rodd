@@ -8,12 +8,18 @@ import urllib
 
 import requests
 from BeautifulSoup import BeautifulSoup
+
 import time_utils
+import log_utils
 
 class GEMSHTMLParser(object):
     '''
        Parse a GMES page and return the GEMS log events
     '''
+    
+    log = log_utils.LoggerFactory.get_logger('GEMSHTMLParser')
+    
+    
     @classmethod
     def get_GEMS_events(cls, content):
         '''
@@ -65,6 +71,8 @@ class GEMSExtractor(object):
     '''
        Extract Event from GEMS
     '''
+    log = log_utils.LoggerFactory.get_logger('GEMSExtractor')
+    
     #used to get a JSESSIONID
     START_URL  = 'http://omasif/GEMS/HistoryFilterRetry.jsp?startTime=11.308.15.02.03&endTime=11.308.15.12.03&severity=A&severity=W&severity=I&facility=DVB_EUR_UPLINK'
     
@@ -83,7 +91,7 @@ class GEMSExtractor(object):
         self._gen     = None
         
         self._url = self.parse_GEMS_request(**kwargs)
-        print("request_url\n%s\n" % (self._url))
+        GEMSExtractor.log.debug("request_url\n%s\n" % (self._url))
         
     def parse_GEMS_request(self, **kwargs):
         """
@@ -132,7 +140,7 @@ class GEMSExtractor(object):
                                                                 hosts, processes, \
                                                                 search, GEMSExtractor.MAX_NB_ELEMENTS)
         
-        print("request =%s\n" %(request))
+        GEMSExtractor.log.debug("request =%s\n" %(request))
       
         return request   
     
@@ -153,19 +161,20 @@ class GEMSExtractor(object):
         """
           Create the parser generator
         """
-        print("get session id form gems\n")
+        GEMSExtractor.log.debug("get session id form gems\n")
+        
         self._get_session_id()
         
-        print("request GEMS logs\n")
+        GEMSExtractor.log.debug("request GEMS logs\n")
         
         url = self._url
         
         while url:
         
-            print("###### HTTP REQUEST ######\n")
+            GEMSExtractor.log.debug("###### HTTP REQUEST ######\n")
             req = requests.get(url, cookies = self._cookies)
             
-            print("###### PARSING ######\n")
+            GEMSExtractor.log.debug("###### PARSING ######\n")
             next_url   = GEMSHTMLParser.get_next_url(req.content)
             
             gems_lines = GEMSHTMLParser.get_GEMS_events(req.content)
