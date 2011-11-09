@@ -120,9 +120,9 @@ class DissInfoPrinter(object):
         #for the moment remove micro seconds
         pos  = a_line_dict['time'].rfind('.')
         
-        time = string.center(tu.gemsdate_to_simpledate(a_line_dict['time'][:pos]), 19)
-        lvl  = string.center(a_line_dict['lvl'], 3)
-        msg  = string.ljust(a_line_dict['msg'], 80)
+        time = tu.gemsdate_to_simpledate(a_line_dict['time'][:pos]).center(19)
+        lvl  = a_line_dict['lvl'].center(3)
+        msg  = a_line_dict['msg'].center(80)
         
         print('%s %s %s\n' %(time, lvl, msg))
         
