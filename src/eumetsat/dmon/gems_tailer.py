@@ -71,15 +71,15 @@ class GEMSColPrinter(object):
             GEMSColPrinter.log.info(get_string_to_print(a_line_dict['lvl'], message))
             
         elif app_type == 'gems':
-            GEMSColPrinter._simple_print_line(get_string_to_print('W', a_line_dict['msg']))
+            GEMSColPrinter._simple_print_line(a_line_dict)
         elif app_type == 'tc-send':
             result = S_PARSER.parse_one_line(a_line_dict['msg'])  
             
             message ='%s %s %s' % (result['time'] , \
                                    result['lvl']  , \
-                                   result['msg'])
+                                   result['msg'][:130].ljust(130))
             
-            GEMSColPrinter._simple_print_line(get_string_to_print(result['lvl'], message))
+            GEMSColPrinter.log.info(get_string_to_print(a_line_dict['lvl'], message))
             
     
     @classmethod
@@ -93,18 +93,18 @@ class GEMSColPrinter(object):
         pos  = a_line_dict['time'].rfind('.')
             
         the_time = tu.gemsdate_to_simpledate(a_line_dict['time'][:pos]).center(19)
-        lvl  = a_line_dict['lvl'].center(3)
+        lvl  = a_line_dict['lvl']
         
         #cut filenames longer than 80 chars
-        if len(a_line_dict['msg']) > 130:
-            message = a_line_dict['msg'][:127] + '...'
+        if len(a_line_dict['msg']) > 139:
+            message = a_line_dict['msg'][:136] + '...'
         else:
-            message = a_line_dict['msg'][:130]
+            message = a_line_dict['msg'][:139]
             
-        msg  = message.ljust(130)
+        msg  = message.ljust(139)
             
         #print('%s %s %s\n' %(time, lvl, msg))
-        GEMSColPrinter.log.info('%s %s %s' %(the_time, lvl, msg))
+        GEMSColPrinter.log.info(get_string_to_print(a_line_dict['lvl'],'%s %s %s' %(the_time, lvl, msg)))
         
 class DissInfoPrinter(object):
     """
