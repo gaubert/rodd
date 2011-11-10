@@ -11,19 +11,9 @@ import time
 import os
 import sys
 
-def get_now_time_as_str():
-    """ return now time as a string"""
-    
-    a_date = datetime.datetime.now()
-    
-    if hasattr(datetime, 'strftime'):
-        #python 2.6
-        strftime = datetime.datetime.strftime
-    else:
-        #python 2.4 equivalent
-        strftime = lambda date_string, format: datetime.datetime(*(time.strftime(date_string, format)[0:6]))
-        
-    return strftime(a_date, '%Y-%m-%dT%H:%M:%S')
+def get_local_time_as_str():
+    """ get local time as string """
+    return time.strftime('%Y-%m-%d %H:%M:%S')
 
 def get_datetime_from_GEMSDate(a_str):
     """ transform a GEMS Date string into a Datetime """
@@ -99,23 +89,23 @@ class AnnouncementMonitor:
         send_log1 = "%s/send.log.1" % (self.send_file_dir)
         
         if not os.path.exists(send_log):
-            print("%s is not present. Do nothing" % (send_log))
+            print >> sys.stderr, "WRN: %s is not present. Do nothing" % (send_log)
             return
             
         # look into send.log
-        print("Look into %s\n" % (send_log))
+        print("INF: Look into %s\n" % (send_log))
         self.check_file(send_log)
         
         # look into send.log.1 as it has the anouncement not been found
-        print("Look into %s\n" % (send_log1))
+        print("INF: Look into %s\n" % (send_log1))
         self.check_file(send_log1)
         
-        print("Very Stange could not find any announcement in send.log and send.log.1. Do Nothing")
+        print >> sys.stderr, "WRN: Very Stange could not find any announcement in send.log and send.log.1. Do Nothing"
         
     def check_file(self, file_to_read):
         """ check that announcement is ok in given file """
         
-        print("Check in to %s\n" % (file_to_read))
+        #print("Check in to %s\n" % (file_to_read))
         
         reader      = BackwardsReader(file_to_read)
         str_to_find = "announced"
@@ -129,20 +119,20 @@ class AnnouncementMonitor:
                 if found != -1:
                     # do not parse the date but stupidely take a substring
                     the_date = line[4:23]
-                    print("latest announcement:[%s]\n" %(the_date))
+                    print("INF: latest announcement:[%s]\n" %(the_date))
                     latest_ann_date = get_datetime_from_GEMSDate(the_date)
                     
                     # problem, condition reached no announcment since last 3 minutes 
                     if self.check_condition_reached(latest_ann_date):
                         # exit on error
-                        print("Trigger Alarm")
+                        print >> sys.stderr , "ERR: Trigger Alarm"
                         sys.exit(2)
                     else:
-                        print("Everything is fine")
+                        print("INF: Everything is fine")
                         sys.exit(0)
             else:
                 # no more lines to read
-                print("no more lines to read in %s\n" % (file_to_read))
+                #print("no more lines to read in %s\n" % (file_to_read))
                 break
             
             
@@ -154,7 +144,7 @@ class AnnouncementMonitor:
         delta = current_time - latest
         
         if delta.seconds >= AnnouncementMonitor.TIME_BET_ANN:
-            print("ALARM: No announcement received for more than %s sec. Last announcement received in (h:m:s.ms) %s\n" % (AnnouncementMonitor.TIME_BET_ANN, delta) )
+            print >> sys.stderr, "ERR [loc time:%s]: No announcement received for more than %s sec. Last announcement received in (h:m:s.ms) %s\n" % (get_local_time_as_str(), AnnouncementMonitor.TIME_BET_ANN, delta) 
             return True
         
         return False
@@ -163,7 +153,7 @@ class AnnouncementMonitor:
 
 if __name__ == '__main__':
     
-    print("------------------------ Start checkings %s.\n" % ( datetime.datetime.now() ))
+    print("INF: ------------------------ Start checkings %s.\n" % ( datetime.datetime.now() ))
        
     monitor = AnnouncementMonitor(".")
     
