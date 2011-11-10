@@ -74,7 +74,7 @@ class BackwardsReader:
 class AnnouncementMonitor:
     
     LATEST_ANN_PATH = ".latest_announcement"
-    TIME_BET_ANN    = 300
+    TIME_BET_ANN    = 120
     
     def __init__(self, send_file_dir):
         """ constructor """
