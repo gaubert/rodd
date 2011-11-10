@@ -8,13 +8,15 @@ import datetime
 import time
 import time_utils as common_time
 
-
+# potential gems header that is added (dirmon.log: Entry detected: or send.log:  Entry detected: or recv.log:  Entry detected:)
+# needs to be eaten by the regular expression
+TELLICASTLOG_GEMS_HEADER  = r'\s*(send.log:|dirmon.log:|recv.log:)?.*'
 
 TELLICASTLOG_LVL          = r'(?P<lvl>(ERR||MSG|VRB|WRN))'
 TELLICASTLOG_DATE         = r'(?P<datetime>(?P<date>(?P<year>(18|19|[2-5][0-9])\d\d)[-/.](?P<month>(0[1-9]|1[012]|[1-9]))[-/.](?P<day>(0[1-9]|[12][0-9]|3[01]|[1-9])))([tT ]?(?P<time>([0-1][0-9]|2[0-3]|[0-9])([:]?([0-5][0-9]|[0-9]))?([:]([0-5][0-9]|[0-9]))?([.]([0-9])+)?))?)'
 TELLICASTLOG_MSG          = r'(?P<msg>.*)'
 
-TELLICASTLOG_PATTERN      = TELLICASTLOG_LVL + r':' + TELLICASTLOG_DATE + r':' + TELLICASTLOG_MSG
+TELLICASTLOG_PATTERN      = TELLICASTLOG_GEMS_HEADER + TELLICASTLOG_LVL + r':' + TELLICASTLOG_DATE + r':' + TELLICASTLOG_MSG
 
 TELLICASTLOG_HEADER_PATTERN = r'Lvl:Date[ ]*Time[ ]*\(UTC\)[ ]*:Message'
 
@@ -382,7 +384,7 @@ class TellicastLogParser(object):
             header_matched = TELLICASTLOG_HEADER_RE.match(a_line)
             
             if not header_matched:
-                raise InvalidTellicastlogFormatError("Invalid Tellicast log format for %s\n" %(a_line))
+                raise InvalidTellicastlogFormatError("Invalid Tellicast log format for [%s]\n" %(a_line))
            
             return
         
@@ -413,29 +415,18 @@ if __name__ == '__main__':
     tokens = { 'dirmon' : [],
                'tc-send' : []}
     
-    """for file in recv_files:
-        print("FILE START **********************************************\n\n\n")
-        r_parser.set_lines_to_parse(file)
-        for token in r_parser:
-            
-            print(token['chan_status'] if token.get('chan_status', None) else token)
-    """
+    the_file = ['send.log: Entry detected: MSG:2011-11-10 08:30:00.006:Scheduled restart time reached: Initiating child restart']
     
-    
+    result = s_parser.parse_one_line('send.log: Entry detected: MSG:2011-11-10 08:30:00.006:Scheduled restart time reached: Initiating child restart')
+    print(result)
+    '''
     for file in send_files: 
         print("FILE START **********************************************\n\n\n")
         s_parser.set_lines_to_parse(file)
         for token in s_parser:
             print(token)
             tokens['tc-send'].append(token)
-    
-    """
-    for file in dirmon_files: 
-        print("FILE START **********************************************\n\n\n")
-        d_parser.set_lines_to_parse(file)
-        for token in d_parser:
-            tokens['dirmon'].append(token)
-    """
+    '''
            
     print("Sleeping\n")        
     #time.sleep(60)
