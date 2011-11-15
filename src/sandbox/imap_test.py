@@ -15,7 +15,7 @@ ssl = True
 server = IMAPClient(HOST, use_uid=True, ssl=ssl)
 server.login(USERNAME, PASSWORD)
 
-print("Capabilities %s\n" %(server.capabilities()))
+capabilities = server.capabilities()
 
 print("list folders = %s\n" %(server.list_folders()))
    
@@ -28,9 +28,9 @@ print "%d messages that aren't deleted" % len(messages)
    
 print
 print "Messages:"
-response = server.fetch(messages, ['FLAGS', 'RFC822.SIZE'])
+response = server.fetch(messages, ['FLAGS', 'RFC822.SIZE', 'RFC822'])
 for msgid, data in response.iteritems():
-    print '   ID %d: %d bytes, flags=%s' % (msgid, data['RFC822.SIZE'], data['FLAGS'])
+    print '   ID %d: %d bytes, flags=%s, data=%s' % (msgid, data['RFC822.SIZE'], data['FLAGS'], data['RFC822'])
 
 if __name__ == '__main__':
     pass
