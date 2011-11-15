@@ -5,16 +5,19 @@ Created on Nov 8, 2011
 '''
 import datetime
 import time
+import sys
 
-import time_utils as tu
-import log_utils
+#syntax coloring for terminal
+import colorama
+
+import eumetsat.dmon.common.time_utils as tu
+import eumetsat.dmon.common.log_utils  as log_utils
+import eumetsat.dmon.common.diss_parsing_utils as diss_parsing_utils
+import eumetsat.dmon.common.utils as utils
+
 import gems_feeder
-import diss_parsing_utils
 import xferlog_parser
 import tellicastlog_parser
-
-import colorama
-from eumetsat.dmon import time_utils
 
 X_PARSER = xferlog_parser.XferlogParser()
 S_PARSER = tellicastlog_parser.TellicastLogParser('tc-send')
@@ -69,7 +72,7 @@ class GEMSColPrinter(object):
             if len(filename) > 80:
                 filename = filename[:77] + '...'
              
-            message = '%s %s %s %s (%s) uplinked in %s in %s sec' %(time_utils.datetime_to_compactdate(result['time']), \
+            message = '%s %s %s %s (%s) uplinked in %s in %s sec' %(tu.datetime_to_compactdate(result['time']), \
                                                                                'ftpserv'.ljust(7),
                                                                                a_line_dict['lvl'], \
                                                                                filename.ljust(80), \
@@ -84,7 +87,7 @@ class GEMSColPrinter(object):
         elif app_type == 'tc-send':
             result = S_PARSER.parse_one_line(a_line_dict['msg'])  
             
-            message ='%s %s %s %s' % (time_utils.datetime_to_compactdate(result['time']) , \
+            message ='%s %s %s %s' % (tu.datetime_to_compactdate(result['time']) , \
                                    'tcsend'.ljust(7), \
                                    a_line_dict['lvl']  , \
                                    result['msg'][:130].ljust(130))
@@ -185,15 +188,28 @@ class GEMSTailer(object):
 def bootstrap_run():
     """ temporary bootstrap """
     
-    #log in stdout
-    log_utils.LoggerFactory.setup_simple_stdout_handler() 
+    try:
+        #log in stdout
+        log_utils.LoggerFactory.setup_simple_stdout_handler() 
+        
+        tailer = GEMSTailer()
+        
+        tailer.tail()
+        
+        sys.exit(1)
     
-    tailer = GEMSTailer()
+    except KeyboardInterrupt:
+        #CTRL^C pressed so silently quit
+        sys.exit(0)
+    except Exception, e:
+        # report error and proceed
+        error_str = utils.get_exception_traceback(e)
+        
+        log = log_utils.LoggerFactory.get_logger('bootstrap_run')
+        
+        log.error("Received error %s. traceback = %s\nPlease contact your administrator." %(e, error_str))
+        
+        sys.exit(1)
     
-    tailer.tail()
-    
-    sys.exit(1)
-
-
 if __name__ == '__main__':
     bootstrap_run()

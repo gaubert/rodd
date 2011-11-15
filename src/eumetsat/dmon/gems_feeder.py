@@ -9,8 +9,8 @@ import urllib
 import requests
 from BeautifulSoup import BeautifulSoup
 
-import time_utils
-import log_utils
+import eumetsat.dmon.common.time_utils as time_utils
+import eumetsat.dmon.common.log_utils  as log_utils
 
 class GEMSHTMLParser(object):
     '''

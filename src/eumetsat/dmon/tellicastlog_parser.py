@@ -6,7 +6,7 @@ Created on Nov 2, 2011
 import re
 import datetime
 import time
-import time_utils as common_time
+import eumetsat.dmon.common.time_utils as common_time
 
 # potential gems header that is added (dirmon.log: Entry detected: or send.log:  Entry detected: or recv.log:  Entry detected:)
 # needs to be eaten by the regular expression
