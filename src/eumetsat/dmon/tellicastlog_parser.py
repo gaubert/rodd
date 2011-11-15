@@ -301,7 +301,7 @@ class TellicastLogParser(object):
         
         return self._gen.next() #pylint: disable-msg=E1103
             
-    def _tellicastdatetime_to_datetime(self, a_date_str, a_year, a_month, a_day, a_time):
+    def _tellicastdatetime_to_datetime(self, a_date_str, a_year, a_month, a_day, a_time): #pylint: disable-msg=R0913
         """ Return datetime from the tellicast dates
             
             Args: a_date_str : a tellicast formatted date string
@@ -321,13 +321,11 @@ class TellicastLogParser(object):
             
         if a_time:
             the_microsec = 0
-            
             # if we have milliseconds
             pos = a_time.find('.')
             if pos >= 0:
-                fracsec = a_time[pos:]
                 the_time = a_time[:pos]
-                the_microsec = int(float(fracsec)*1e6)
+                the_microsec = int(float(a_time[pos:])*1e6)
             else:
                 the_microsec = 0
                 
@@ -348,7 +346,7 @@ class TellicastLogParser(object):
                 the_min = int(time_list[1])
                 the_sec = int(time_list[2])
             else:
-                raise InvalidDateError("The time part of the date %s is not following the Tellicast date format" %(a_date_str))
+                raise InvalidDateError("The time part of the date %s is not following the Tellicast date format"  % (a_date_str))
         else:
             the_h        = 0
             the_min      = 0

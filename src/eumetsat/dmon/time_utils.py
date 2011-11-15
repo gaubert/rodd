@@ -27,27 +27,49 @@ class UTC(datetime.tzinfo):
 # pylint: enable-msg=W0613    
 UTC_TZ = UTC()
 
+GEMSDATE_PATTERN    = "%y.%j.%H.%M.%S"
+SIMPLEDATE_PATTERN  = '%Y-%m-%d %H:%M:%S'
+COMPACTDATE_PATTERN = '%Y%m%d %H:%M:%S'
 
 def gemsdate_to_datetime(a_gemsdate):
     """
        Convert a gems date to a python datetime
        The GEMS Date format: yy.dayofyear.hh.mm.ss
     """
-    return datetime.datetime.strptime(a_gemsdate, "%y.%j.%H.%M.%S")
+    return datetime.datetime.strptime(a_gemsdate, GEMSDATE_PATTERN)
 
 def datetime_to_gemsdate(a_datetime):
     """
        Convert datetime to GEMS Date string
     """
-    return a_datetime.strftime("%y.%j.%H.%M.%S")
+    return a_datetime.strftime(GEMSDATE_PATTERN)
+
+def datetime_to_simpledate(a_datetime):
+    """
+       Convert datetime to simple date
+    """
+    return a_datetime.strftime(SIMPLEDATE_PATTERN)
+
+def datetime_to_compactdate(a_datetime):
+    """
+       Convert datetime to simple date
+    """
+    return a_datetime.strftime(COMPACTDATE_PATTERN)
 
 def simpledate_to_gemsdate(a_simpledate):
     """
        Transform a simple date into a GEMS date
        simple date format: yyyy-mm-dd HH:MM:SS
     """
-    the_date = datetime.datetime.strptime(a_simpledate, '%Y-%m-%d %H:%M:%S')
-    return the_date.strftime("%y.%j.%H.%M.%S")
+    the_date = datetime.datetime.strptime(a_simpledate, SIMPLEDATE_PATTERN)
+    return the_date.strftime(GEMSDATE_PATTERN)
+
+def gemsdate_to_simpledate(a_gemsdate):
+    """
+       transform a gemsdate into a simple date
+    """
+    d = gemsdate_to_datetime(a_gemsdate)
+    return d.strftime(SIMPLEDATE_PATTERN)
 
 GEMSDATE   = "GEMSDATE"
 SIMPLEDATE = "SIMPLEDATE"
@@ -57,13 +79,6 @@ DATE_FORMATS_LIST = [ 'gems: yy.dayofyear.HH.MM.SS', 'simple: yyyy-mm-dd HH:MM:S
 #simplistic regular expression to recognise the date format
 GEMSDATE_RE   = re.compile("\d\d\.\d\d\d\.\d\d\.\d\d\.\d\d")
 SIMPLEDATE_RE = re.compile("\d\d\d\d-\d\d\-\d\d\ \d\d:\d\d:\d\d")
-
-def gemsdate_to_simpledate(a_gemsdate):
-    """
-       transform a gemsdate into a simple date
-    """
-    d = gemsdate_to_datetime(a_gemsdate)
-    return d.strftime('%Y-%m-%d %H:%M:%S')
 
 def guess_date_format(a_date):
     """

@@ -14,9 +14,17 @@ import xferlog_parser
 import tellicastlog_parser
 
 import colorama
+from eumetsat.dmon import time_utils
 
 X_PARSER = xferlog_parser.XferlogParser()
 S_PARSER = tellicastlog_parser.TellicastLogParser('tc-send')
+
+'''
+   add gems.logging parser
+   2011-11-10 09:16:21 W GEMS.logging: Entry detected: [11/11/10 09:15:29.813] WARN: de.eumetsat.GEMS.doftp.FtpHandler@4213a1b2 - could not transfer file [DVB_EU...
+   2011-11-10 09:16:21 W GEMS.logging: Entry detected: [11/11/10 09:15:29.813] WARN: de.eumetsat.GEMS.doftp.FtpHandler@4213a1b2 - TransferHandler:putFile(): java...
+   2011-11-10 09:16:21 W GEMS.logging: Entry detected: [11/11/10 09:15:29.814] WARN: FtpException: Putfilelist.doProcess FtpException: java.io.IOException: Agent...
+'''
 
 
 def print_in_green(a_str):
@@ -61,7 +69,8 @@ class GEMSColPrinter(object):
             if len(filename) > 80:
                 filename = filename[:77] + '...'
              
-            message = '%s %s %s (%s) uplinked in %s in %s sec' %(result['time'], \
+            message = '%s %s %s %s (%s) uplinked in %s in %s sec' %(time_utils.datetime_to_compactdate(result['time']), \
+                                                                               'ftpserv'.ljust(7),
                                                                                a_line_dict['lvl'], \
                                                                                filename.ljust(80), \
                                                                                diss_parsing_utils.get_human_readable_bytes(result['file_size']).ljust(9), \
@@ -75,8 +84,9 @@ class GEMSColPrinter(object):
         elif app_type == 'tc-send':
             result = S_PARSER.parse_one_line(a_line_dict['msg'])  
             
-            message ='%s %s %s' % (result['time'] , \
-                                   result['lvl']  , \
+            message ='%s %s %s %s' % (time_utils.datetime_to_compactdate(result['time']) , \
+                                   'tcsend'.ljust(7), \
+                                   a_line_dict['lvl']  , \
                                    result['msg'][:130].ljust(130))
             
             GEMSColPrinter.log.info(get_string_to_print(a_line_dict['lvl'], message))
@@ -104,7 +114,7 @@ class GEMSColPrinter(object):
         msg  = message.ljust(139)
             
         #print('%s %s %s\n' %(time, lvl, msg))
-        GEMSColPrinter.log.info(get_string_to_print(a_line_dict['lvl'],'%s %s %s' %(the_time, lvl, msg)))
+        GEMSColPrinter.log.info(get_string_to_print(a_line_dict['lvl'],'%s %s %s %s' %(the_time, ' '.ljust(7), lvl, msg)))
         
 class DissInfoPrinter(object):
     """
@@ -172,11 +182,18 @@ class GEMSTailer(object):
                                                severity   = ["A","W","I"], \
                                                facility   = ['DVB_EUR_UPLINK'])
             
-            
-if __name__ == '__main__':
+def bootstrap_run():
+    """ temporary bootstrap """
     
-    log_utils.LoggerFactory.setup_simple_stderr_handler() 
-   
+    #log in stdout
+    log_utils.LoggerFactory.setup_simple_stdout_handler() 
+    
     tailer = GEMSTailer()
     
     tailer.tail()
+    
+    sys.exit(1)
+
+
+if __name__ == '__main__':
+    bootstrap_run()
