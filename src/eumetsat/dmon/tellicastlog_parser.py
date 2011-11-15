@@ -5,7 +5,6 @@ Created on Nov 2, 2011
 '''
 import re
 import datetime
-import time
 import eumetsat.dmon.common.time_utils as common_time
 
 # potential gems header that is added (dirmon.log: Entry detected: or send.log:  Entry detected: or recv.log:  Entry detected:)
@@ -417,17 +416,6 @@ if __name__ == '__main__':
     
     result = s_parser.parse_one_line('send.log: Entry detected: MSG:2011-11-10 08:30:00.006:Scheduled restart time reached: Initiating child restart')
     print(result)
-    '''
-    for file in send_files: 
-        print("FILE START **********************************************\n\n\n")
-        s_parser.set_lines_to_parse(file)
-        for token in s_parser:
-            print(token)
-            tokens['tc-send'].append(token)
-    '''
-           
-    print("Sleeping\n")        
-    #time.sleep(60)
         
        
         
