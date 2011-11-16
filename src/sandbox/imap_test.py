@@ -11,6 +11,14 @@ PORT = 993
 USERNAME = ''
 PASSWORD = ''
 ssl = True
+
+def read_password_file(a_path):
+    """
+       Read log:pass from a file in my home
+    """
+    f = open(a_path)
+    line = f.readline()
+    (login, passwd) = line.split(":")
    
 server = IMAPClient(HOST, use_uid=True, ssl=ssl)
 server.login(USERNAME, PASSWORD)
