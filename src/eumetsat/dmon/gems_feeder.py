@@ -144,9 +144,8 @@ class GEMSExtractor(object):
         
         req = requests.get(url, cookies = cookies)
         
-        print(GEMSHTMLParser.get_GEMS_facilities(req.content))
-        
-        return
+        return GEMSHTMLParser.get_GEMS_facilities(req.content)
+       
         
     def parse_GEMS_request(self, **kwargs):
         """

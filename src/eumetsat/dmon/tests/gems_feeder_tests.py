@@ -20,7 +20,10 @@ class TestGEMSFeeder(unittest.TestCase):
         """
            Get facilities
         """
-        gems_feeder.GEMSExtractor.get_all_GEMS_facilities()
+        facilities = gems_feeder.GEMSExtractor.get_all_GEMS_facilities()
+        
+        self.assertEquals(facilities[0], 'COMMS')
+        self.assertEquals(len(facilities), 97)
     
     def ztest_search(self):
         """
