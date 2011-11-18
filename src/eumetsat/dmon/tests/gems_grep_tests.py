@@ -20,7 +20,19 @@ class TestGEMSGrep(unittest.TestCase):
     def setUp(self):
         pass
     
-    def test_default_facilities(self):
+    def test_grep_tc_send_in_uplink_facility(self):
+        """
+           Test simple grep
+        """
+        sys.argv = ['/homespace/gaubert/ecli-workspace/rodd/src/eumetsat/dmon/gems_grep.py', \
+                     '--from', '2011-11-17T06:00:00',
+                     '--until', '2011-11-17T15:00:00',
+                     '--facilities', 'DVB_EUR_UPLINK'
+                   ]
+        
+        gems_grep_mod.bootstrap_run()
+    
+    def ztest_default_facilities(self):
         """
            test default facilities
         """
@@ -35,7 +47,7 @@ class TestGEMSGrep(unittest.TestCase):
         
         self.assertEquals([u'COMMS'], facilities)
         
-    def test_all_facilities(self):
+    def ztest_all_facilities(self):
         """
            test all facilities
         """
@@ -53,7 +65,7 @@ class TestGEMSGrep(unittest.TestCase):
         self.assertEquals('MASIF-OPE-INT', facilities[42])
         self.assertEquals(len(facilities), 97)
         
-    def test_fac_facilities(self):
+    def ztest_fac_facilities(self):
         """
            test default facilities
         """
@@ -69,7 +81,7 @@ class TestGEMSGrep(unittest.TestCase):
         
         self.assertEquals(['COMMS', 'DVB_EUR_UPLINK'], facilities)
     
-    def test_valid_dates(self):
+    def ztest_valid_dates(self):
         """
            test valid dates
         """
@@ -89,7 +101,7 @@ class TestGEMSGrep(unittest.TestCase):
         
         self.assertEquals(duntil, time_utils.convert_date_str_to_datetime("2011-05-04T14:40:00"))
         
-    def test_from_anterior_to_until(self):
+    def ztest_from_anterior_to_until(self):
         """
            test valid dates
         """
@@ -107,7 +119,7 @@ class TestGEMSGrep(unittest.TestCase):
         except Exception, exce:
             self.assertEquals(exce.message, 'from date (2011-06-03T14:30:00) cannot be posterior to until date (2011-05-04T14:40:00)')
         
-    def test_default_date(self):
+    def ztest_default_date(self):
         '''
            Test that the default dates are put
         '''

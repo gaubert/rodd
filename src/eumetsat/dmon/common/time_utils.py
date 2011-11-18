@@ -8,6 +8,8 @@ import re
 
 ZERO = datetime.timedelta(0) 
 
+DATETIME_TYPE = type(datetime.datetime.now())
+
 # A UTC class.    
 class UTC(datetime.tzinfo):    
     """UTC Timezone"""    
@@ -38,10 +40,11 @@ GEMSDATE   = "GEMSDATE"
 SIMPLEDATE = "SIMPLEDATE"
 STDDATE    = "STDDATE"
 
+#11.321.08.30.45.454
 #simplistic regular expression to recognise the date format
-GEMSDATE_RE   = re.compile("\d\d\.\d\d\d\.\d\d\.\d\d\.\d\d")
-SIMPLEDATE_RE = re.compile("\d\d\d\d-\d\d\-\d\d\ \d\d:\d\d:\d\d")
-STDDATE_RE    = re.compile("\d\d\d\d-\d\d\-\d\d\T\d\d:\d\d:\d\d")
+GEMSDATE_RE   = re.compile("\d\d\.\d\d\d\.\d\d\.\d\d\.\d\d(?P<millisec>(\.\d{0,3})?)")
+SIMPLEDATE_RE = re.compile("\d\d\d\d-\d\d\-\d\d\ \d\d:\d\d:\d\d(\.\d{0,3})?")
+STDDATE_RE    = re.compile("\d\d\d\d-\d\d\-\d\d\T\d\d:\d\d:\d\d(\.\d{0,3})?")
 
 SUPPORTED_DATE_FORMATS_LIST = [ 'gems: yy.dayofyear.HH.MM.SS', 'simple: yyyy-mm-dd HH:MM:SS', 'standard: yyyy-mm-ddTHH:MM:SS' ]
 
@@ -104,7 +107,10 @@ def guess_date_format(a_date):
        GEMSDATE or SIMPLEDATE
     """
     for type, regexpr in GUESS_DATE_MAP.items():
-        if regexpr.match(a_date):
+        matched = regexpr.match(a_date)
+        if matched:
+            gi = matched.groupdict()
+            print(gi)
             return type
     
     # no type found so raise an exception
@@ -117,7 +123,7 @@ def convert_date_str_to_datetime(a_date_str):
     """
     date_pattern = PATTERN_DATE_MAP.get(guess_date_format(a_date_str), None)
     
-    if date_pattern:
+    if date_pattern:        
         return datetime.datetime.strptime(a_date_str, date_pattern)
     else:
         raise Exception("No date pattern found for %s\n" %(a_date_str))

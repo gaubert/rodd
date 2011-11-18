@@ -10,6 +10,7 @@ from eumetsat.dmon.common.cmdline_utils  import CmdLineParser
 
 import eumetsat.dmon.gems_feeder as gems_feeder
 
+
 HELP_USAGE = """ nms_client [options] request files or request
                                      
 Arguments: a list of request files or an inline request."""
@@ -189,6 +190,24 @@ class GEMSGrep(object):
         
         return (dfrom, duntil)
     
+    def run(self, args):
+        """
+           Run the grep with the given args 
+        """
+        dfrom, duntil =  self._process_dates(args)
+    
+        facilities    =  self._process_facilities(args)
+        
+        extractor     =  gems_feeder.GEMSExtractor(start_time = dfrom, end_time = duntil, facility = facilities, search ='tc-send')
+        
+        for data_dict in extractor:
+            
+            fac  = data_dict['facility']
+            dt = time_utils.convert_date_str_to_datetime(data_dict['time'])
+            time = time_utils.datetime_to_compactdate(dt)
+            msg  = data_dict['msg']
+            
+            print('%s %s %s' %(fac, time , msg))
     
 def bootstrap_run():
     """ temporary bootstrap """
@@ -197,11 +216,7 @@ def bootstrap_run():
     
     args = gems_grep.parse_args()
     
-    dfrom, duntil =  gems_grep._process_dates(args)
-    
-    facilities    =  gems_grep._process_facilities(args)
-    
-    
+    gems_grep.run(args)
    
     
 if __name__ == '__main__':
@@ -211,3 +226,5 @@ if __name__ == '__main__':
     print(sys.argv)
     
     bootstrap_run()
+    
+    sys.exit(0)

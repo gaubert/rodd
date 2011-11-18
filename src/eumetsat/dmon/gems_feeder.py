@@ -154,21 +154,34 @@ class GEMSExtractor(object):
         #look for start_time
         s_time = kwargs.get('start_time', '')
         #convert to GEMS time if it is a simple date
-        if time_utils.guess_date_format(s_time) == time_utils.SIMPLEDATE:
-            s_time = time_utils.simpledate_to_gemsdate(s_time)
+        
+        if type(s_time) == time_utils.DATETIME_TYPE:
+            s_time = time_utils.datetime_to_gemsdate(s_time)
+        else:
+            #convert string datetime to gems datetime
+            s_time = time_utils.simpledate_to_gemsdate(convert_date_str_to_datetime(s_time))
            
         e_time = kwargs.get('end_time', '')
-        #convert to GEMS time if it is a simple date
-        if time_utils.guess_date_format(e_time) == time_utils.SIMPLEDATE:
-            e_time = time_utils.simpledate_to_gemsdate(e_time)
+        
+        if type(e_time) == time_utils.DATETIME_TYPE:
+            e_time = time_utils.datetime_to_gemsdate(e_time)
+        else:
+            #convert string datetime to gems datetime
+            e_time = time_utils.simpledate_to_gemsdate(convert_date_str_to_datetime(e_time))
         
         start_time = 'startTime=%s' % (s_time)
         end_time   = '&endTime=%s' % (e_time)
         
         severities = ''
-        for severity in kwargs.get('severity', []):
-            if severity in ['I', 'A', 'W']:
-                severities = ''.join([severities, '&severity=%s' % (severity)])
+        str_severities = kwargs.get('severity', None)
+        if str_severities:
+            for severity in str_severities:
+                if severity in ['I', 'A', 'W']:
+                    severities = ''.join([severities, '&severity=%s' % (severity)])
+        else:
+            #default equals all severities
+            #maybe it should be moved in other object
+            severities = '&severity=I&severity=A&severity=W'
 
         facilities = ''
         for facility in kwargs.get('facility', []):
