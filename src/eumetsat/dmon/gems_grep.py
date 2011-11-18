@@ -6,9 +6,9 @@ Created on Oct 13, 2011
 
 import datetime
 import eumetsat.dmon.common.time_utils as time_utils
-
-
 from eumetsat.dmon.common.cmdline_utils  import CmdLineParser
+
+import eumetsat.dmon.gems_feeder as gems_feeder
 
 HELP_USAGE = """ nms_client [options] request files or request
                                      
@@ -35,6 +35,8 @@ will create 548_20091224-01h12m23s.data
 #> nms_client shi-1.req shi-2.req -f "{req_id}_{req_fileprefix}.data"
 will create 549_shi-1.data and 550_shi-2.data
 """
+
+ALL_KWD = 'ALL'
 
 class GEMSGrep(object):
     
@@ -63,7 +65,7 @@ class GEMSGrep(object):
         
         parser.add_option("-n", "--facilities", \
                           help="List of facilities (DVB_EUR_UPLINK, DVB_CBAND_SAM)",\
-                          dest="facilities", default="ALL")
+                          dest="facilities", default=None)
         
         parser.add_option("-m", "--hosts", \
                           help="filter by hosts if necessary",\
@@ -124,16 +126,34 @@ class GEMSGrep(object):
         
         return parsed_args
     
+    def _parse_facilities(self, str_facilities):
+        """
+           create list of facilities 
+        """
+        return [fac.strip() for fac in str_facilities.split(",")]
+        
+    
     def _process_facilities(self, args):
         """
            Check the facilities
         """
         str_facilities = args.get("facilities", None)
         
+        facilities = []
+        
         if not str_facilities:
             #for the moment use this default but a default list 
             #should be built from the GEMS facilities list
-            str_facilities = 
+            #keep only the first facilities as default at the moment
+            facilities = [ gems_feeder.GEMSExtractor.get_all_GEMS_facilities()[0] ]
+        else:
+            #ask for a search in all facilities (dangerous ?)
+            if str_facilities == ALL_KWD:
+                facilities = gems_feeder.GEMSExtractor.get_all_GEMS_facilities()
+            else:
+                facilities = self._parse_facilities(str_facilities)
+            
+        return facilities
         
 
     def _process_dates(self, args):
@@ -179,7 +199,7 @@ def bootstrap_run():
     
     dfrom, duntil =  gems_grep._process_dates(args)
     
-    facilities    = 
+    facilities    =  gems_grep._process_facilities(args)
     
     
    

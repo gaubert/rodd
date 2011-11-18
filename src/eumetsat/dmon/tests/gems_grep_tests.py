@@ -20,6 +20,55 @@ class TestGEMSGrep(unittest.TestCase):
     def setUp(self):
         pass
     
+    def test_default_facilities(self):
+        """
+           test default facilities
+        """
+        sys.argv = ['/homespace/gaubert/ecli-workspace/rodd/src/eumetsat/dmon/gems_grep.py', \
+                   ]
+    
+        gems_grep = gems_grep_mod.GEMSGrep()
+    
+        args = gems_grep.parse_args()
+        
+        facilities = gems_grep._process_facilities(args)
+        
+        self.assertEquals([u'COMMS'], facilities)
+        
+    def test_all_facilities(self):
+        """
+           test all facilities
+        """
+        sys.argv = ['/homespace/gaubert/ecli-workspace/rodd/src/eumetsat/dmon/gems_grep.py', \
+                    '--facilities', 'ALL'
+                   ]
+    
+        gems_grep = gems_grep_mod.GEMSGrep()
+    
+        args = gems_grep.parse_args()
+        
+        facilities = gems_grep._process_facilities(args)
+        
+        self.assertEquals('COMMS', facilities[0])
+        self.assertEquals('MASIF-OPE-INT', facilities[42])
+        self.assertEquals(len(facilities), 97)
+        
+    def test_fac_facilities(self):
+        """
+           test default facilities
+        """
+        sys.argv = ['/homespace/gaubert/ecli-workspace/rodd/src/eumetsat/dmon/gems_grep.py', \
+                    '--facilities', 'COMMS, DVB_EUR_UPLINK'
+                   ]
+    
+        gems_grep = gems_grep_mod.GEMSGrep()
+    
+        args = gems_grep.parse_args()
+        
+        facilities = gems_grep._process_facilities(args)
+        
+        self.assertEquals(['COMMS', 'DVB_EUR_UPLINK'], facilities)
+    
     def test_valid_dates(self):
         """
            test valid dates
