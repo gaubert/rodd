@@ -27,9 +27,36 @@ class UTC(datetime.tzinfo):
 # pylint: enable-msg=W0613    
 UTC_TZ = UTC()
 
+# cpnversion elements
+
 GEMSDATE_PATTERN    = "%y.%j.%H.%M.%S"
 SIMPLEDATE_PATTERN  = '%Y-%m-%d %H:%M:%S'
+STDDATE_PATTERN     = '%Y-%m-%dT%H:%M:%S'
 COMPACTDATE_PATTERN = '%Y%m%d %H:%M:%S'
+
+GEMSDATE   = "GEMSDATE"
+SIMPLEDATE = "SIMPLEDATE"
+STDDATE    = "STDDATE"
+
+#simplistic regular expression to recognise the date format
+GEMSDATE_RE   = re.compile("\d\d\.\d\d\d\.\d\d\.\d\d\.\d\d")
+SIMPLEDATE_RE = re.compile("\d\d\d\d-\d\d\-\d\d\ \d\d:\d\d:\d\d")
+STDDATE_RE    = re.compile("\d\d\d\d-\d\d\-\d\d\T\d\d:\d\d:\d\d")
+
+SUPPORTED_DATE_FORMATS_LIST = [ 'gems: yy.dayofyear.HH.MM.SS', 'simple: yyyy-mm-dd HH:MM:SS', 'standard: yyyy-mm-ddTHH:MM:SS' ]
+
+#factory map for the conversion
+GUESS_DATE_MAP = { 
+                   GEMSDATE    : GEMSDATE_RE ,\
+                   SIMPLEDATE  : SIMPLEDATE_RE,\
+                   STDDATE     : STDDATE_RE
+                 }
+
+PATTERN_DATE_MAP = {
+                    GEMSDATE    : GEMSDATE_PATTERN , \
+                    SIMPLEDATE  : SIMPLEDATE_PATTERN, \
+                    STDDATE     : STDDATE_PATTERN
+                   }
 
 def gemsdate_to_datetime(a_gemsdate):
     """
@@ -71,27 +98,29 @@ def gemsdate_to_simpledate(a_gemsdate):
     d = gemsdate_to_datetime(a_gemsdate)
     return d.strftime(SIMPLEDATE_PATTERN)
 
-GEMSDATE   = "GEMSDATE"
-SIMPLEDATE = "SIMPLEDATE"
-
-DATE_FORMATS_LIST = [ 'gems: yy.dayofyear.HH.MM.SS', 'simple: yyyy-mm-dd HH:MM:SS' ]
-
-#simplistic regular expression to recognise the date format
-GEMSDATE_RE   = re.compile("\d\d\.\d\d\d\.\d\d\.\d\d\.\d\d")
-SIMPLEDATE_RE = re.compile("\d\d\d\d-\d\d\-\d\d\ \d\d:\d\d:\d\d")
-
 def guess_date_format(a_date):
     """
        Find the used string date format
        GEMSDATE or SIMPLEDATE
     """
-    if GEMSDATE_RE.match(a_date):
-        return GEMSDATE
-    elif SIMPLEDATE_RE.match(a_date):
-        return SIMPLEDATE
-    else:
-        raise Exception("%s is not in a know date format %s" % (a_date, DATE_FORMATS_LIST))
+    for type, regexpr in GUESS_DATE_MAP.items():
+        if regexpr.match(a_date):
+            return type
     
+    # no type found so raise an exception
+    raise Exception("%s is not in a know date format %s" % (a_date, SUPPORTED_DATE_FORMATS_LIST))
+
+    
+def convert_date_str_to_datetime(a_date_str):
+    """
+       If the date format is part of one of the supported format. Convert it to datetime
+    """
+    date_pattern = PATTERN_DATE_MAP.get(guess_date_format(a_date_str), None)
+    
+    if date_pattern:
+        return datetime.datetime.strptime(a_date_str, date_pattern)
+    else:
+        raise Exception("No date pattern found for %s\n" %(a_date_str))
 
 if __name__ == '__main__':
     

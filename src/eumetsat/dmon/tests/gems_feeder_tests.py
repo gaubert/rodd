@@ -16,7 +16,13 @@ class TestGEMSFeeder(unittest.TestCase):
     def setUp(self):
         pass
     
-    def test_search(self):
+    def test_get_facilities(self):
+        """
+           Get facilities
+        """
+        gems_feeder.GEMSExtractor.get_all_GEMS_facilities()
+    
+    def ztest_search(self):
         """
            test the search keywords
         """

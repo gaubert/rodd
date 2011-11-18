@@ -66,6 +66,29 @@ class GEMSHTMLParser(object):
                 return (val if name == 'href' else None)
         
         return
+    
+    @classmethod
+    def get_GEMS_facilities(cls, content):
+        """
+           Return the list of gems facilities
+        """
+        results = []
+        
+        data_table = BeautifulSoup(content).find('table', width='100%')
+        
+        if data_table:
+            rows = data_table.findAll('tr')
+            
+            if rows:
+                #skip first 2 rows that define column headers and co
+                for row in rows[2:]:
+                    cols = row.findAll('td')
+                    if len(cols) == 8:
+                        facility = cols[1].string
+                        results.append(facility)
+                 
+        return results   
+                
 
 class GEMSExtractor(object):
     '''
@@ -75,6 +98,8 @@ class GEMSExtractor(object):
     
     #used to get a JSESSIONID
     START_URL  = 'http://omasif/GEMS/HistoryFilterRetry.jsp?startTime=11.308.15.02.03&endTime=11.308.15.12.03&severity=A&severity=W&severity=I&facility=DVB_EUR_UPLINK'
+    
+    FAC_URL    = 'http://omasif/GEMS/index2.jsp'
     
     URL_PREFIX   = 'http://omasif/GEMS/'
     D_URL_PREFIX = 'HistoryFilterController.jsp?'
@@ -92,6 +117,36 @@ class GEMSExtractor(object):
         
         self._url = self.parse_GEMS_request(**kwargs)
         GEMSExtractor.log.debug("request_url\n%s\n" % (self._url))
+    
+    @classmethod
+    def _get_session_id(cls):
+        """
+          get the session id that is necessary to get to browse GEMS
+        """
+        req = requests.get(GEMSExtractor.START_URL)
+        return req.cookies
+        
+    @classmethod
+    def get_all_GEMS_facilities(cls):
+        """
+           Get all the GEMS facilities available
+        """
+        GEMSExtractor.log.debug("request GEMS session id\n")
+        
+        #get session id
+        cookies = GEMSExtractor._get_session_id()
+        
+        GEMSExtractor.log.debug("request GEMS facilities\n")
+        
+        url = GEMSExtractor.FAC_URL
+        
+        GEMSExtractor.log.debug("###### HTTP REQUEST ######\n")
+        
+        req = requests.get(url, cookies = cookies)
+        
+        print(GEMSHTMLParser.get_GEMS_facilities(req.content))
+        
+        return
         
     def parse_GEMS_request(self, **kwargs):
         """
@@ -143,13 +198,6 @@ class GEMSExtractor(object):
         GEMSExtractor.log.debug("request =%s\n" %(request))
       
         return request   
-    
-    def _get_session_id(self):
-        """
-          get the session id that is necessary to get to browse GEMS
-        """
-        req = requests.get(GEMSExtractor.START_URL)
-        self._cookies = req.cookies
         
     def set_url_to_parse(self, a_url):
         '''
@@ -163,7 +211,7 @@ class GEMSExtractor(object):
         """
         GEMSExtractor.log.debug("get session id form gems\n")
         
-        self._get_session_id()
+        self._cookies = self._get_session_id()
         
         GEMSExtractor.log.debug("request GEMS logs\n")
         
