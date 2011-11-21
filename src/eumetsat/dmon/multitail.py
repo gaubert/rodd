@@ -65,7 +65,7 @@ class MultiFileTailer(object):
                                 line = line[:-1]
         
                         trailing = False
-                        yield (line, a_file.name)
+                        yield (line, os.path.basename(a_file.name))
                     else:
                         trailing = True
                         a_file.seek(where)
