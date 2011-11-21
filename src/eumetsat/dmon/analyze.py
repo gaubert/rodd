@@ -4,19 +4,22 @@ Created on Nov 3, 2011
 @author: gaubert
 '''
 
-import multitail
-import tellicastlog_parser
-import xferlog_parser
 import os
 import string
 import datetime
 import sys
 import re
 
+import multitail
+import tellicastlog_parser
+import xferlog_parser
+
+import eumetsat.dmon.common.mem_db as mem_db
+
 def datetime_to_str(a_datetime):
     return a_datetime.strftime('%Y-%m-%dT%Hh%Mm%Ss')
 
-def print_table(a_lines_to_print):
+def print_table(a_db):
     """
       print a table
     """
@@ -26,10 +29,10 @@ def print_table(a_lines_to_print):
     
     print(header)
     
-    for a_to_print in a_lines_to_print:
+    for record in a_db:
         
         #reduce filename and jobname size to 20
-        filename = a_to_print[0]
+        filename = record['filename']
         if filename:
             filename = os.path.basename(filename)
             
@@ -38,19 +41,31 @@ def print_table(a_lines_to_print):
         else:
             filename = "-"
         
-        jobname = a_to_print[3]
+        jobname = record['jobname']
         if jobname:
             #will not fail if name < 20
-            jobelems = jobname.split('-')
+            pos      = jobname.rfind(".")
+            jobelems = jobname[:pos].split('-')
             jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
         else:
             jobname = "-"
         
-        uplinked = a_to_print[1] if a_to_print[1] else "-"
-        queued   = a_to_print[2] if a_to_print[2] else "-"
+        uplinked = record.get('uplinked', None)
+        if not uplinked:
+            uplinked = "-"
+            
+        queued   = record.get('queued', None)
+        if not queued:
+            queued = "-"
         
-        annouc   = a_to_print[4] if a_to_print[4] else "-"
-        finished = a_to_print[5] if a_to_print[5] else "-"
+        annouc   = record.get('announced', None)
+        if not annouc:
+            annouc = "-"
+            
+        finished = record.get('finished', None)
+        if not finished:
+            finished = "-"
+        
         print(template % (string.center(filename,20), string.center(uplinked,20),\
                           string.center(queued, 20),string.center(jobname, 20), \
                           string.center(annouc, 20), string.center(finished, 20)))
@@ -73,8 +88,13 @@ def analyze_from_aggregated_file():
     mapper = {'xferlog'   : 'xferlog',
               'send.log'  : 'tc-send',
               'dirmon.log' : 'dirmon'}
+    
+    # create database
+    db = mem_db.Base('analysis')
+     # create new base with field names (set mode = open) to overwrite db on next run
+    db.create('filename','uplinked','queued','jobname','announced','finished',mode = 'open')
      
-    to_print    = []
+
     waiting_job = {}
     file_index = {}
     job_index  = {}
@@ -93,121 +113,85 @@ def analyze_from_aggregated_file():
             if the_type == 'xferlog':
                 result = x_parser.parse_one_line(line)
                 
-                #add file
-                res = [result['file'], datetime_to_str(result['time']), None , None, None, None]
-                
-                to_print.append(res)
-                
-                # store poistion in the list
-                file_index[result['file']] = len(to_print) - 1
+                #add file in db
+                db.insert(filename = result['file'],uplinked = datetime_to_str(result['time']))
                 
                 #print table
-                print_table(to_print)
+                print_table(db)
                 
             elif the_type == 'dirmon':
                 result = d_parser.parse_one_line(line)
+                
+                if 'LFPW00031849' in result.get('file', ''):
+                    print("breakpoint")
+                
                 if result.get('job_status', None) == 'created':
-                    pos = file_index.get(result['file'], -1)
-                    if pos >= 0:
+                    
+                    r_fname = db(filename = result['file'])
+                    if r_fname:
                         
-                        # update info with queued status
-                        info =  to_print[pos]
-                        
-                        #check if there is already a job within waiting list
-                        job_info = waiting_job.get(result['job'], None)
+                        r_job = db(jobname = result['job'])
                         
                         #if job reconcile both info
-                        if job_info:
-                            info = [info[0], info[1], datetime_to_str(result['time']), job_info[3], job_info[4], job_info[5]]
-                            del waiting_job[result['job']]
+                        if r_job:
+                            
+                            #update filename info
+                            db.update(r_fname[0], queued = datetime_to_str(result['time']), jobname = r_job[0]['jobname'], announced = r_job[0]['announced'], finished = r_job[0]['finished'])  
+                            
+                            #delete job record
+                            db.delete(r_job[0])
+                            
                         else:
-                            info = [info[0], info[1], datetime_to_str(result['time']), None, None, None]
-                              
-                        # update to_print list              
-                        to_print[pos] = info
-                          
-                        #update indexes
-                        file_index[result['file']] = pos
-                        job_index[result['job']]   = pos
-                                             
+                            #no other record with job name, update record
+                            db.update(r_fname[0], jobname = result['job'], queued = datetime_to_str(result['time']))                
                     else:
                         
                         #no file created so it means that the xferlog message has not been received
-                        
                         # add it in the table
-                        info = [result['file'], None , datetime_to_str(result['time']), result['job'], None, None]
-                        
-                        to_print.append(info)
-                        
-                        #update indexes
-                        file_index[result['file']] = len(to_print) - 1
-                        job_index[result['job']]   = len(to_print) - 1
+                        db.insert(filename=result['file'], jobname = result['job'], queued = datetime_to_str(result['time']))
                         
                     #print table
-                    print_table(to_print)
+                    print_table(db)
                     
             elif the_type == 'tc-send':
                 result = s_parser.parse_one_line(line)
                 
+                if 'retim-4021-25613-2011-11-21-13-14-19-787.job' in result.get('job',''):
+                    print("breakpoint [%s]" % result.get('job',''))
+                    for r in db:
+                        print("%s\n" %(r))
+                        if r['jobname'] == 'retim-4021-25613-2011-11-21-13-14-19-787.job':
+                            print("%s\n" %(r))
+                
                 # look for job_status == job_announced
                 if result.get('job_status') == 'announced':
-                    #try to find the job in the index 
-                    pos = job_index.get(result.get('job', None))
-                    if pos >= 0:
-                        
-                        #get the line in the file_index
-                        info = to_print[pos]
-                        
-                        # update info with announced status and job name
-                        info  = [info[0], info[1], info[2], result.get('job', None), datetime_to_str(result['time']), None]
-                        
-                        to_print[pos]=info
-                        
-                        #update indexes
-                        file_index[info[0]] = pos
-                        job_index[result['job']]   = pos
-                        
+                    
+                    r_jname = db(jobname = result.get('job', None))
+                    if r_jname:
+                        #found a job so update this line in db
+                        db.update(r_jname[0], jobname = result.get('job', None), announced = datetime_to_str(result['time']))                        
                     else:
                         
                         #no dirmon message received so add job in waiting list of jobs for the moment
                         
                         # add a line in the to print table
-                        info = [None, None, None, result.get('job', None), datetime_to_str(result['time']), None]
-                        
-                        waiting_job[result['job']] = info
+                        db.insert(jobname = result.get('job', None), announced = datetime_to_str(result['time']))
                     
                     #print table
-                    print_table(to_print)
+                    print_table(db)
                     
                 elif result.get('job_status') == 'finished':
-                    #try to find the job in the index 
-                    pos = job_index.get(result.get('job',None))
                     
-                    if pos >= 0:
-                        info = to_print[pos]
-                        
-                        # update info with announced status and job name
-                        info  = [info[0], info[1], info[2], info[3], info[4], datetime_to_str(result['time'])]  
-                        
-                        to_print[pos] = info
-                        
-                        #update indexes
-                        job_index[result['job']]   = len(to_print) - 1
-                        
+                    r_jname = db(jobname = result.get('job', None))
+                    if r_jname:
+                        # update info with finished time
+                        db.update(r_jname[0], finished = datetime_to_str(result['time']))    
                     else:
-                        
-                        j_info = waiting_job.get(result['job'], None)
-                        
-                        if j_info:
-                            j_info[5] = datetime_to_str(result['time'])
-                            waiting_job[result['job']] = j_info
-                        else:
-                            # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
-                            info = [None, None, None, result.get('job', None), None, datetime_to_str(result['time'])]
-                            waiting_job[result['job']] = info
+                        # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                        db.insert(jobname = result.get('job', None), finished = datetime_to_str(result['time']))
                     
                     #print table
-                    print_table(to_print)
+                    print_table(db)
     
 
 def analyze_from_multiple_files():
