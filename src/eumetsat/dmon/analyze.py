@@ -15,29 +15,27 @@ import tellicastlog_parser
 import xferlog_parser
 
 import eumetsat.dmon.common.mem_db as mem_db
-
-def datetime_to_str(a_datetime):
-    return a_datetime.strftime('%Y-%m-%dT%Hh%Mm%Ss')
+import eumetsat.dmon.common.time_utils as time_utils
 
 def print_table(a_db):
     """
       print a table
     """
-    header_l = "-----------------------------------------------------------------------------------------------------------------------------"
-    header   = "    filename        |     uplinked       |       queued       |       jobname      |     announced      |      finished      |"
+    header_l = "------------------------------------------------------------------------------------------------------------------------------------------------"
+    header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    announced    |     finished    |"
     template = "%s|%s|%s|%s|%s|%s|"
     
     print(header)
     
     for record in a_db:
         
-        #reduce filename and jobname size to 20
+        #reduce filename and jobname size to 50
         filename = record['filename']
         if filename:
             filename = os.path.basename(filename)
             
-            #will not fail if name < 20
-            filename = filename[:20]
+            #will not fail if name < 50
+            filename = filename[:50]
         else:
             filename = "-"
         
@@ -52,27 +50,53 @@ def print_table(a_db):
         uplinked = record.get('uplinked', None)
         if not uplinked:
             uplinked = "-"
+        else:
+            uplinked = time_utils.datetime_to_compactdate(uplinked)
             
         queued   = record.get('queued', None)
         if not queued:
             queued = "-"
+        else:
+            queued = time_utils.datetime_to_compactdate(queued)
         
         annouc   = record.get('announced', None)
         if not annouc:
             annouc = "-"
+        else:
+            annouc = time_utils.datetime_to_compactdate(annouc)
             
         finished = record.get('finished', None)
         if not finished:
             finished = "-"
+        else:
+            finished = time_utils.datetime_to_compactdate(finished)
         
-        print(template % (string.center(filename,20), string.center(uplinked,20),\
-                          string.center(queued, 20),string.center(jobname, 20), \
-                          string.center(annouc, 20), string.center(finished, 20)))
+        print(template % (string.center(filename,50), string.center(uplinked,17),\
+                          string.center(queued, 17),string.center(jobname, 20), \
+                          string.center(annouc, 17), string.center(finished, 17)))
     
     print(header_l)
     
 process_expr = "\(('|\")(?P<line>.*)('|\"),\s('|\")(?P<filename>.*)('|\")\)" 
 expr_re = re.compile(process_expr)
+
+def get_dwd_record(db, result, dirmon_dir):
+    """
+       Manage the particular case of DWD records
+    """  
+    #define type dirmon_dir -> ftp user
+    if dirmon_dir == 'wmo-ra6':
+        type = 'wmora6'
+    else:
+        type = 'dwd'
+    
+    records = db(filename = result['file'])
+    
+    for rec in records:
+        if rec['metadata'].get('ftp_user') == type:
+            return [rec]
+    
+    return []
     
 def analyze_from_aggregated_file():
     """
@@ -91,7 +115,7 @@ def analyze_from_aggregated_file():
     # create database
     db = mem_db.Base('analysis')
      # create new base with field names (set mode = open) to overwrite db on next run
-    db.create('filename','uplinked','queued','jobname','announced','finished',mode = 'open')
+    db.create('filename','uplinked','queued','jobname','announced','finished','metadata', mode = 'open')
      
 
     waiting_job = {}
@@ -113,7 +137,7 @@ def analyze_from_aggregated_file():
                 result = x_parser.parse_one_line(line)
                 
                 #add file in db
-                db.insert(filename = result['file'],uplinked = datetime_to_str(result['time']))
+                db.insert(filename = result['file'],uplinked = result['time'], metadata = result['metadata'])
                 
                 #print table
                 print_table(db)
@@ -121,48 +145,45 @@ def analyze_from_aggregated_file():
             elif the_type == 'dirmon':
                 result = d_parser.parse_one_line(line)
                 
-                #if 'LFPW00031849' in result.get('file', ''):
-                #    print("breakpoint")
-                    
-                #print("dirmon = %s\n" %(result))
-                
                 if result.get('job_status', None) == 'created':
                     
-                    r_fname = db(filename = result['file'])
-                    if r_fname:
+                    dirmon_dir = result['metadata']['dirmon_dir']
+                    #special case for DWD (should hopefully disappear in the future
+                    if dirmon_dir == 'wmo-ra6' or dirmon_dir.startswith('DWD'):
+                        records = get_dwd_record(db, result, dirmon_dir)
+                                    
+                    else:       
+                    
+                        records = db(filename = result['file'])
                         
-                        r_job = db(jobname = result['job'])
-                        
-                        #if job reconcile both info
-                        if r_job:
-                            
-                            #update filename info
-                            db.update(r_fname[0], queued = datetime_to_str(result['time']), jobname = r_job[0]['jobname'], announced = r_job[0]['announced'], finished = r_job[0]['finished'])  
-                            
-                            #delete job record
-                            db.delete(r_job[0])
-                            
-                        else:
-                            #no other record with job name, update record
-                            db.update(r_fname[0], jobname = result['job'], queued = datetime_to_str(result['time']))                
-                    else:
-                        
+                    if len(records) == 0:
                         #no file created so it means that the xferlog message has not been received
                         # add it in the table
-                        db.insert(filename=result['file'], jobname = result['job'], queued = datetime_to_str(result['time']))
-                        
+                        db.insert(filename=result['file'], jobname = result['job'], queued = result['time'], metadata = result['metadata'])
+                    else:
+                      
+                        for rec in records:
+                                                                                        
+                            r_job = db(jobname = result['job'])
+                            
+                            #if job reconcile both info
+                            if r_job:
+                                
+                                #update filename info
+                                db.update(rec, queued = result['time'], jobname = r_job[0]['jobname'], announced = r_job[0]['announced'], finished = r_job[0]['finished'])  
+                                
+                                #delete job record
+                                db.delete(r_job[0])
+                                
+                            else:
+                                #no other record with job name, update record
+                                db.update(rec, jobname = result['job'], queued = result['time'])                
+                                 
                     #print table
                     print_table(db)
                     
             elif the_type == 'tc-send':
                 result = s_parser.parse_one_line(line)
-                
-                if 'retim-4021-25613-2011-11-21-13-14-19-787.job' in result.get('job',''):
-                    print("breakpoint [%s]" % result.get('job',''))
-                    for r in db:
-                        print("%s\n" %(r))
-                        if r['jobname'] == 'retim-4021-25613-2011-11-21-13-14-19-787.job':
-                            print("%s\n" %(r))
                 
                 # look for job_status == job_announced
                 if result.get('job_status') == 'announced':
@@ -170,13 +191,13 @@ def analyze_from_aggregated_file():
                     r_jname = db(jobname = result.get('job', None))
                     if r_jname:
                         #found a job so update this line in db
-                        db.update(r_jname[0], jobname = result.get('job', None), announced = datetime_to_str(result['time']))                        
+                        db.update(r_jname[0], jobname = result.get('job', None), announced = result['time'])                        
                     else:
                         
                         #no dirmon message received so add job in waiting list of jobs for the moment
                         
                         # add a line in the to print table
-                        db.insert(jobname = result.get('job', None), announced = datetime_to_str(result['time']))
+                        db.insert(jobname = result.get('job', None), announced = result['time'])
                     
                     #print table
                     print_table(db)
@@ -186,10 +207,10 @@ def analyze_from_aggregated_file():
                     r_jname = db(jobname = result.get('job', None))
                     if r_jname:
                         # update info with finished time
-                        db.update(r_jname[0], finished = datetime_to_str(result['time']))    
+                        db.update(r_jname[0], finished = result['time'])    
                     else:
                         # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
-                        db.insert(jobname = result.get('job', None), finished = datetime_to_str(result['time']))
+                        db.insert(jobname = result.get('job', None), finished = result['time'])
                     
                     #print table
                     print_table(db)

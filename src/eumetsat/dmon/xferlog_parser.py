@@ -113,27 +113,28 @@ class XferlogParser(object):
            If it is a DWD file name remove the prefix (ninjo_, ra6_)
         """
         if filename.startswith('ninjo_') or filename.startswith('ra6_'):
-            return filename[filename.find("_")+1:]
+            return filename[filename.find("_")+1:], {'type':'dwd'}
         else:
-            return filename
+            return filename, {'type':'others'}
     
     def _clean_filename(self, filename):
         """
           remove tmp in the filename if there is one
+          Need to return some metadata because of DWD particular management
         """
         
         #get basename remove dir (dir could be kept as it is a relevant info)
         dir_name, the_basename = os.path.split(filename)
         
-        the_basename = self._clean_dwd_filename(the_basename)
+        the_basename, the_metadata = self._clean_dwd_filename(the_basename)
         
         #remove suffix
         name, ext = os.path.splitext(the_basename)
         
         if ext.lower() in ['.tmp','.temp']:
-            return (dir_name, name)
+            return (dir_name, name, the_metadata)
         else:
-            return (dir_name, the_basename)
+            return (dir_name, the_basename, the_metadata )
             
     def _parse_line(self, a_line):
         """ 
@@ -144,14 +145,17 @@ class XferlogParser(object):
         
         if matched:
             
-            the_dir, the_filename = self._clean_filename(matched.group('filename'))
+            the_dir, the_filename, the_metadata = self._clean_filename(matched.group('filename'))
+            
+            #add user in metadata
+            the_metadata.update({ 'ftp_user' : matched.group('username') , 'ftp_dir' : the_dir })
             
             return {
                        'app' : 'proftpd',
                        'time': self._convert_date_to_date_time(matched.group('date')),
                        'lev' : 'info',
                        'file': the_filename,
-                       'dir' : the_dir, 
+                       'metadata' : the_metadata,
                        'file_size' : matched.group('filesize'),
                        'transfer_time' : matched.group('transfer_time'),
                        #'full_msg' : a_line,

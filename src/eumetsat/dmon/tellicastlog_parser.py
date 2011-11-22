@@ -219,6 +219,13 @@ class TellicastLogParser(object):
         job = os.path.basename(a_job)
         pos = job.rfind('.')
         return job[:pos] if pos != -1 else job
+    
+    def _clean_filename(self, filename):
+        """
+           split directories from basename
+           return (dir, basename)
+        """
+        return os.path.split(filename)
         
                 
     def _parse_dirmon_msg(self, a_msg):
@@ -229,7 +236,9 @@ class TellicastLogParser(object):
             matched = val.match(a_msg)
             if matched:
                 if key == "adding":
-                    return { "file" : matched.group('file'),
+                    dir_name, the_basename = self._clean_filename(matched.group('file'))
+                    return { "file" : the_basename,
+                             "metadata"  : { 'dirmon_dir' : os.path.basename(dir_name) },
                              "job"  : self._clean_jobname(matched.group('job')),
                              "job_status" : "created", 
                            }
