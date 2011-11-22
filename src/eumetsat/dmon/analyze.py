@@ -21,9 +21,9 @@ def print_table(a_db):
     """
       print a table
     """
-    header_l = "------------------------------------------------------------------------------------------------------------------------------------------------"
-    header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    announced    |     finished    |"
-    template = "%s|%s|%s|%s|%s|%s|"
+    header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+    header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |"
+    template = "%s|%s|%s|%s|%s|%s|%s|"
     
     print(header)
     
@@ -65,6 +65,12 @@ def print_table(a_db):
         else:
             annouc = time_utils.datetime_to_compactdate(annouc)
             
+        blocked   = record.get('blocked', None)
+        if not blocked:
+            blocked = "-"
+        else:
+            blocked = time_utils.datetime_to_compactdate(blocked)
+            
         finished = record.get('finished', None)
         if not finished:
             finished = "-"
@@ -73,7 +79,8 @@ def print_table(a_db):
         
         print(template % (string.center(filename,50), string.center(uplinked,17),\
                           string.center(queued, 17),string.center(jobname, 20), \
-                          string.center(annouc, 17), string.center(finished, 17)))
+                          string.center(blocked, 17),  string.center(annouc, 17),\
+                          string.center(finished, 17)))
     
     print(header_l)
     
@@ -97,6 +104,101 @@ def get_dwd_record(db, result, dirmon_dir):
             return [rec]
     
     return []
+
+def analyze_and_print(line, filename):
+    """
+       Analysis from the line and filename
+    """
+    
+    the_type = mapper[filename]
+            
+    if the_type == 'xferlog':
+        result = x_parser.parse_one_line(line)
+        
+        #add file in db
+        db.insert(filename = result['file'],uplinked = result['time'], metadata = result['metadata'])
+        
+    elif the_type == 'dirmon':
+        result = d_parser.parse_one_line(line)
+        
+        if result.get('job_status', None) == 'created':
+            
+            dirmon_dir = result['metadata']['dirmon_dir']
+            #special case for DWD (should hopefully disappear in the future
+            if dirmon_dir == 'wmo-ra6' or dirmon_dir.startswith('DWD'):
+                records = get_dwd_record(db, result, dirmon_dir)
+                            
+            else:       
+            
+                records = db(filename = result['file'])
+                
+            if len(records) == 0:
+                #no file created so it means that the xferlog message has not been received
+                # add it in the table
+                db.insert(filename=result['file'], jobname = result['job'], queued = result['time'], metadata = result['metadata'])
+            else:
+                for rec in records:
+                                                                                
+                    r_job = db(jobname = result['job'])
+                    
+                    #if job reconcile both info
+                    if r_job:
+                        
+                        #update filename info
+                        db.update(rec, queued = result['time'], jobname = r_job[0]['jobname'], announced = r_job[0]['announced'], finished = r_job[0]['finished'])  
+                        
+                        #delete job record
+                        db.delete(r_job[0])
+                        
+                    else:
+                        #no other record with job name, update record
+                        db.update(rec, jobname = result['job'], queued = result['time'])                
+            
+    elif the_type == 'tc-send':
+        result = s_parser.parse_one_line(line)
+        
+        # look for job_status == job_announced
+        if result.get('job_status') == 'announced':
+            
+            # get all records concerned by this job
+            records = db(jobname = result.get('job', None))
+            
+            if len(records) == 0:
+                # add a line in the to print table
+                db.insert(jobname = result.get('job', None), announced = result['time'])
+            else:
+                for rec in records:
+                   #found a job so update this line in db
+                   db.update(rec, jobname = result.get('job', None), announced = result['time']) 
+                   
+        elif result.get('job_status') == 'blocked':
+            
+            #get all records concerned by this job
+            records = db(jobname = result.get('job', None))
+            
+            if len(records) == 0:
+                # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                db.insert(jobname = result.get('job', None), blocked = result['time'])
+            else:
+                for rec in records:
+                    # update info with finished time
+                    db.update(rec, blocked = result['time']) 
+        elif result.get('job_status') == 'finished':
+
+            #get all records concerned by this job
+            records = db(jobname = result.get('job', None))
+            
+            if len(records) == 0:
+                # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                db.insert(jobname = result.get('job', None), finished = result['time'])
+            else:
+                for rec in records:
+                    # update info with finished time
+                    db.update(rec, finished = result['time'])    
+            
+            
+    #print table
+    print_table(db)
     
 def analyze_from_aggregated_file():
     """
@@ -115,7 +217,10 @@ def analyze_from_aggregated_file():
     # create database
     db = mem_db.Base('analysis')
      # create new base with field names (set mode = open) to overwrite db on next run
-    db.create('filename','uplinked','queued','jobname','announced','finished','metadata', mode = 'open')
+    db.create('filename', 'uplinked', \
+              'queued', 'jobname', \
+              'announced','blocked', \
+              'finished','metadata', mode = 'open')
      
 
     waiting_job = {}
@@ -126,8 +231,7 @@ def analyze_from_aggregated_file():
         #process only tuples (other lines should be ignored)
         matched = expr_re.match(elem)
         if matched:
-            #print("filename %s, line %s \n" %(filename, line))
-            
+             
             line     = matched.group('line')
             filename = matched.group('filename')
             
@@ -138,9 +242,6 @@ def analyze_from_aggregated_file():
                 
                 #add file in db
                 db.insert(filename = result['file'],uplinked = result['time'], metadata = result['metadata'])
-                
-                #print table
-                print_table(db)
                 
             elif the_type == 'dirmon':
                 result = d_parser.parse_one_line(line)
@@ -161,7 +262,6 @@ def analyze_from_aggregated_file():
                         # add it in the table
                         db.insert(filename=result['file'], jobname = result['job'], queued = result['time'], metadata = result['metadata'])
                     else:
-                      
                         for rec in records:
                                                                                         
                             r_job = db(jobname = result['job'])
@@ -178,9 +278,6 @@ def analyze_from_aggregated_file():
                             else:
                                 #no other record with job name, update record
                                 db.update(rec, jobname = result['job'], queued = result['time'])                
-                                 
-                    #print table
-                    print_table(db)
                     
             elif the_type == 'tc-send':
                 result = s_parser.parse_one_line(line)
@@ -188,32 +285,45 @@ def analyze_from_aggregated_file():
                 # look for job_status == job_announced
                 if result.get('job_status') == 'announced':
                     
-                    r_jname = db(jobname = result.get('job', None))
-                    if r_jname:
-                        #found a job so update this line in db
-                        db.update(r_jname[0], jobname = result.get('job', None), announced = result['time'])                        
-                    else:
-                        
-                        #no dirmon message received so add job in waiting list of jobs for the moment
-                        
+                    # get all records concerned by this job
+                    records = db(jobname = result.get('job', None))
+                    
+                    if len(records) == 0:
                         # add a line in the to print table
                         db.insert(jobname = result.get('job', None), announced = result['time'])
-                    
-                    #print table
-                    print_table(db)
-                    
-                elif result.get('job_status') == 'finished':
-                    
-                    r_jname = db(jobname = result.get('job', None))
-                    if r_jname:
-                        # update info with finished time
-                        db.update(r_jname[0], finished = result['time'])    
                     else:
+                        for rec in records:
+                           #found a job so update this line in db
+                           db.update(rec, jobname = result.get('job', None), announced = result['time']) 
+                           
+                elif result.get('job_status') == 'blocked':
+                    
+                    #get all records concerned by this job
+                    records = db(jobname = result.get('job', None))
+                    
+                    if len(records) == 0:
+                        # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                        db.insert(jobname = result.get('job', None), blocked = result['time'])
+                    else:
+                        for rec in records:
+                            # update info with finished time
+                            db.update(rec, blocked = result['time']) 
+                elif result.get('job_status') == 'finished':
+
+                    #get all records concerned by this job
+                    records = db(jobname = result.get('job', None))
+                    
+                    if len(records) == 0:
                         # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
                         db.insert(jobname = result.get('job', None), finished = result['time'])
+                    else:
+                        for rec in records:
+                            # update info with finished time
+                            db.update(rec, finished = result['time'])    
                     
-                    #print table
-                    print_table(db)
+                    
+            #print table
+            print_table(db)
     
 
 def analyze_from_multiple_files():

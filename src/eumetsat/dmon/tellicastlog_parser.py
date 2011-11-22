@@ -48,6 +48,9 @@ TCSEND_JOB_ANNOUNCED_RE  = re.compile(TCSEND_JOB_ANNOUNCED)
 TCSEND_JOB_ACTIVATED     = r'Job "(?P<job>.*)" on channel "(?P<channel>.*)" activated\.'
 TCSEND_JOB_ACTIVATED_RE  = re.compile(TCSEND_JOB_ACTIVATED)
 
+TCSEND_JOB_BLOCKED     = r'Job "(?P<job>.*)" blocked: Waiting for channel "(?P<channel>.*)"'
+TCSEND_JOB_BLOCKED_RE  = re.compile(TCSEND_JOB_BLOCKED)
+
 TCSEND_JOB_FINISHED      = r'FileBroadcast job "(?P<job>.*)" on channel "(?P<channel>.*)" done'
 TCSEND_JOB_FINISHED_RE   = re.compile(TCSEND_JOB_FINISHED)
 
@@ -58,6 +61,7 @@ TCSEND_PATTERNS = {
                     'chan_announced'  : TCSEND_CHAN_ANNOUNCED_RE,
                     'job_announced'   : TCSEND_JOB_ANNOUNCED_RE,
                     'job_activated'   : TCSEND_JOB_ACTIVATED_RE,
+                    'job_blocked'     : TCSEND_JOB_BLOCKED_RE,
                     'job_finished'    : TCSEND_JOB_FINISHED_RE,
                     'chan_closed'     : TCSEND_CHAN_CLOSED_RE,
                   }
@@ -281,6 +285,11 @@ class TellicastLogParser(object):
                     return { "job"  : self._clean_jobname(matched.group('job')),
                              "channel"    : matched.group('channel'),
                              "job_status" : "activated", 
+                           }
+                elif key == "job_blocked":
+                    return { "job"  : self._clean_jobname(matched.group('job')),
+                             "channel"    : matched.group('channel'),
+                             "job_status" : "blocked", 
                            }
                 elif key == "job_finished":
                     return { "job"  : self._clean_jobname(matched.group('job')),
