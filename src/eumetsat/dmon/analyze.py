@@ -17,152 +17,267 @@ import xferlog_parser
 import eumetsat.dmon.common.mem_db as mem_db
 import eumetsat.dmon.common.time_utils as time_utils
 
-def print_table(a_db):
-    """
-      print a table
-    """
-    header_Active   = "--Active----------------------------------------------------------------------------------------------------------------------------------------------------------\n"
-    header_Finished = "--Finished--------------------------------------------------------------------------------------------------------------------------------------------------------\n"
+import curses
+import time
+
+class CurseDisplay(object):
+    '''
+       A simple text display
+    '''
+    def __init__(self):
+        """
+           constructor
+        """
+        self._screen = curses.initscr()
+        curses.cbreak()
+        curses.noecho()
+        self._screen.keypad(1)
     
-    header          = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |\n"
+    def print_screen(self, a_db):
+        """
+        """
+        self._screen.clear()
+        self._screen.border(0)
+        
+        #set x and y
+        x = 2
+        y = 2
+        
+        header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |"
+        template = "%s|%s|%s|%s|%s|%s|%s|"
+        
+        print(header)
+        
+        for record in a_db:
+            
+            #reduce filename and jobname size to 50
+            filename = record['filename']
+            if filename:
+                filename = os.path.basename(filename)
+                
+                #will not fail if name < 50
+                filename = filename[:50]
+            else:
+                filename = "-"
+            
+            jobname = record['jobname']
+            if jobname:
+                #will not fail if name < 20
+                jobelems = jobname.split('-')
+                jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
+            else:
+                jobname = "-"
+            
+            uplinked = record.get('uplinked', None)
+            if not uplinked:
+                uplinked = "-"
+            else:
+                uplinked = time_utils.datetime_to_compactdate(uplinked)
+                
+            queued   = record.get('queued', None)
+            if not queued:
+                queued = "-"
+            else:
+                queued = time_utils.datetime_to_compactdate(queued)
+            
+            annouc   = record.get('announced', None)
+            if not annouc:
+                annouc = "-"
+            else:
+                annouc = time_utils.datetime_to_compactdate(annouc)
+                
+            blocked   = record.get('blocked', None)
+            if not blocked:
+                blocked = "-"
+            else:
+                blocked = time_utils.datetime_to_compactdate(blocked)
+                
+            finished = record.get('finished', None)
+            if not finished:
+                finished = "-"
+            else:
+                finished = time_utils.datetime_to_compactdate(finished)
+            
+            print(template % (string.center(filename,50), string.center(uplinked,17),\
+                              string.center(queued, 17),string.center(jobname, 20), \
+                              string.center(blocked, 17),  string.center(annouc, 17),\
+                              string.center(finished, 17)))
+        
     
-    template = "%s|%s|%s|%s|%s|%s|%s|\n"
+        self._screen.addstr(2, 2, "Please enter a number...")
+        self._screen.addstr(4, 4, "1 - Find version of a package")
+        self._screen.addstr(5, 4, "2 - List installed packages")
+        self._screen.addstr(6, 4, "3 - Show disk space")
+        self._screen.addstr(7, 4, "q - Exit")
+        self._screen.refresh()
+        
+        #sleep 1 sec for the moment
+        time.sleep(1)
+        
     
-    active_data = header_Active   + header
-    finish_data = header_Finished + header
-    
-    for record in a_db:
+    def reset_screen(self):
+        """
+        """
+        curses.endwin()
+
+
+class TextDisplay(object):
+    '''
+       A simple text display
+    '''
+    def __init__(self):
+        """
+           constructor
+        """
+        pass
+
+    def print_screen(self, a_db):
+        """
+          print a table
+        """
+        header_Active   = "--Active----------------------------------------------------------------------------------------------------------------------------------------------------------\n"
+        header_Finished = "--Finished--------------------------------------------------------------------------------------------------------------------------------------------------------\n"
         
-        #reduce filename and jobname size to 50
-        filename = record['filename']
-        if filename:
-            filename = os.path.basename(filename)
-            
-            #will not fail if name < 50
-            filename = filename[:50]
-        else:
-            filename = "-"
+        header          = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |\n"
         
-        jobname = record['jobname']
-        if jobname:
-            #will not fail if name < 20
-            jobelems = jobname.split('-')
-            jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
-        else:
-            jobname = "-"
+        template = "%s|%s|%s|%s|%s|%s|%s|\n"
         
-        uplinked = record.get('uplinked', None)
-        if not uplinked:
-            uplinked = "-"
-        else:
-            uplinked = time_utils.datetime_to_compactdate(uplinked)
-            
-        queued   = record.get('queued', None)
-        if not queued:
-            queued = "-"
-        else:
-            queued = time_utils.datetime_to_compactdate(queued)
+        active_data = header_Active   + header
+        finish_data = header_Finished + header
         
-        annouc   = record.get('announced', None)
-        if not annouc:
-            annouc = "-"
-        else:
-            annouc = time_utils.datetime_to_compactdate(annouc)
+        for record in a_db:
             
-        blocked   = record.get('blocked', None)
-        if not blocked:
-            blocked = "-"
-        else:
-            blocked = time_utils.datetime_to_compactdate(blocked)
+            #reduce filename and jobname size to 50
+            filename = record['filename']
+            if filename:
+                filename = os.path.basename(filename)
+                
+                #will not fail if name < 50
+                filename = filename[:50]
+            else:
+                filename = "-"
             
-        finished = record.get('finished', None)
-        if not finished:
-            finished = "-"
-        else:
-            finished = time_utils.datetime_to_compactdate(finished)
+            jobname = record['jobname']
+            if jobname:
+                #will not fail if name < 20
+                jobelems = jobname.split('-')
+                jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
+            else:
+                jobname = "-"
             
-        if finished == '-':
-            active_data += template % (string.center(filename,50), string.center(uplinked,17),\
-                          string.center(queued, 17),string.center(jobname, 20), \
-                          string.center(blocked, 17),  string.center(annouc, 17),\
-                          string.center(finished, 17))
-        else:
-            finish_data += template % (string.center(filename,50), string.center(uplinked,17),\
-                          string.center(queued, 17),string.center(jobname, 20), \
-                          string.center(blocked, 17),  string.center(annouc, 17),\
-                          string.center(finished, 17))
-        
-       
-    print("%s\n%s" %(active_data, finish_data) )
+            uplinked = record.get('uplinked', None)
+            if not uplinked:
+                uplinked = "-"
+            else:
+                uplinked = time_utils.datetime_to_compactdate(uplinked)
+                
+            queued   = record.get('queued', None)
+            if not queued:
+                queued = "-"
+            else:
+                queued = time_utils.datetime_to_compactdate(queued)
+            
+            annouc   = record.get('announced', None)
+            if not annouc:
+                annouc = "-"
+            else:
+                annouc = time_utils.datetime_to_compactdate(annouc)
+                
+            blocked   = record.get('blocked', None)
+            if not blocked:
+                blocked = "-"
+            else:
+                blocked = time_utils.datetime_to_compactdate(blocked)
+                
+            finished = record.get('finished', None)
+            if not finished:
+                finished = "-"
+            else:
+                finished = time_utils.datetime_to_compactdate(finished)
+                
+            if finished == '-':
+                active_data += template % (string.center(filename,50), string.center(uplinked,17),\
+                              string.center(queued, 17),string.center(jobname, 20), \
+                              string.center(blocked, 17),  string.center(annouc, 17),\
+                              string.center(finished, 17))
+            else:
+                finish_data += template % (string.center(filename,50), string.center(uplinked,17),\
+                              string.center(queued, 17),string.center(jobname, 20), \
+                              string.center(blocked, 17),  string.center(annouc, 17),\
+                              string.center(finished, 17))
+            
+           
+        print("%s\n%s" %(active_data, finish_data) )
     
     
 
-def old_print_table(a_db):
-    """
-      print a table
-    """
-    header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-    header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |"
-    template = "%s|%s|%s|%s|%s|%s|%s|"
-    
-    print(header)
-    
-    for record in a_db:
+    def old_print_table(self, a_db):
+        """
+          print a table
+        """
+        header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |"
+        template = "%s|%s|%s|%s|%s|%s|%s|"
         
-        #reduce filename and jobname size to 50
-        filename = record['filename']
-        if filename:
-            filename = os.path.basename(filename)
+        print(header)
+        
+        for record in a_db:
             
-            #will not fail if name < 50
-            filename = filename[:50]
-        else:
-            filename = "-"
-        
-        jobname = record['jobname']
-        if jobname:
-            #will not fail if name < 20
-            jobelems = jobname.split('-')
-            jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
-        else:
-            jobname = "-"
-        
-        uplinked = record.get('uplinked', None)
-        if not uplinked:
-            uplinked = "-"
-        else:
-            uplinked = time_utils.datetime_to_compactdate(uplinked)
+            #reduce filename and jobname size to 50
+            filename = record['filename']
+            if filename:
+                filename = os.path.basename(filename)
+                
+                #will not fail if name < 50
+                filename = filename[:50]
+            else:
+                filename = "-"
             
-        queued   = record.get('queued', None)
-        if not queued:
-            queued = "-"
-        else:
-            queued = time_utils.datetime_to_compactdate(queued)
-        
-        annouc   = record.get('announced', None)
-        if not annouc:
-            annouc = "-"
-        else:
-            annouc = time_utils.datetime_to_compactdate(annouc)
+            jobname = record['jobname']
+            if jobname:
+                #will not fail if name < 20
+                jobelems = jobname.split('-')
+                jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
+            else:
+                jobname = "-"
             
-        blocked   = record.get('blocked', None)
-        if not blocked:
-            blocked = "-"
-        else:
-            blocked = time_utils.datetime_to_compactdate(blocked)
+            uplinked = record.get('uplinked', None)
+            if not uplinked:
+                uplinked = "-"
+            else:
+                uplinked = time_utils.datetime_to_compactdate(uplinked)
+                
+            queued   = record.get('queued', None)
+            if not queued:
+                queued = "-"
+            else:
+                queued = time_utils.datetime_to_compactdate(queued)
             
-        finished = record.get('finished', None)
-        if not finished:
-            finished = "-"
-        else:
-            finished = time_utils.datetime_to_compactdate(finished)
+            annouc   = record.get('announced', None)
+            if not annouc:
+                annouc = "-"
+            else:
+                annouc = time_utils.datetime_to_compactdate(annouc)
+                
+            blocked   = record.get('blocked', None)
+            if not blocked:
+                blocked = "-"
+            else:
+                blocked = time_utils.datetime_to_compactdate(blocked)
+                
+            finished = record.get('finished', None)
+            if not finished:
+                finished = "-"
+            else:
+                finished = time_utils.datetime_to_compactdate(finished)
+            
+            print(template % (string.center(filename,50), string.center(uplinked,17),\
+                              string.center(queued, 17),string.center(jobname, 20), \
+                              string.center(blocked, 17),  string.center(annouc, 17),\
+                              string.center(finished, 17)))
         
-        print(template % (string.center(filename,50), string.center(uplinked,17),\
-                          string.center(queued, 17),string.center(jobname, 20), \
-                          string.center(blocked, 17),  string.center(annouc, 17),\
-                          string.center(finished, 17)))
-    
-    print(header_l)
+        print(header_l)
     
     
 #regular expression to read aggregated info
@@ -197,7 +312,7 @@ mapper = {'xferlog'   : 'xferlog',
           'send.log'  : 'tc-send',
           'dirmon.log' : 'dirmon'}
 
-def analyze_and_print(db, line, filename):
+def analyze(db, line, filename):
     """
        Analysis from the line and filename
     """
@@ -287,10 +402,6 @@ def analyze_and_print(db, line, filename):
                 for rec in records:
                     # update info with finished time
                     db.update(rec, finished = result['time'])    
-            
-            
-    #print table
-    print_table(db)
     
 def analyze_from_aggregated_file():
     """
@@ -306,6 +417,8 @@ def analyze_from_aggregated_file():
               'announced','blocked', \
               'finished','metadata', mode = 'open')
     
+    display = TextDisplay()
+    
     
     for elem in iter:
         #process only tuples (other lines should be ignored)
@@ -315,7 +428,9 @@ def analyze_from_aggregated_file():
             line     = matched.group('line')
             filename = matched.group('filename')
             
-            analyze_and_print(db, line, filename)
+            analyze(db, line, filename)
+            
+            display.print_screen(db)
     
 
 def analyze_from_multiple_files():
@@ -338,7 +453,7 @@ def analyze_from_multiple_files():
     
     for (line, filename) in iter:
         
-        analyze_and_print(db, line, filename)
+        analyze(db, line, filename)
     
     
 if __name__ == '__main__': 
