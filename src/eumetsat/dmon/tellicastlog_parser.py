@@ -4,6 +4,7 @@ Created on Nov 2, 2011
 @author: guillaume.aubert@eumetsat.int
 '''
 import re
+import os
 import datetime
 import eumetsat.dmon.common.time_utils as common_time
 
@@ -210,6 +211,15 @@ class TellicastLogParser(object):
                     return {}
         
         return {}
+    
+    def _clean_jobname(self, a_job):
+        """
+           Clean jobname (remove path artifacts, job suffix, ...)
+        """
+        job = os.path.basename(a_job)
+        pos = job.rfind('.')
+        return job[:pos] if pos != -1 else job
+        
                 
     def _parse_dirmon_msg(self, a_msg):
         """
@@ -220,16 +230,19 @@ class TellicastLogParser(object):
             if matched:
                 if key == "adding":
                     return { "file" : matched.group('file'),
-                             "job"  : matched.group('job'),
+                             "job"  : self._clean_jobname(matched.group('job')),
                              "job_status" : "created", 
                            }
                 elif key == "activating":
-                    return { "job"  : matched.group('job'),
+                    
+                    #clean the job name as it is the file here
+                    
+                    return { "job"  : self._clean_jobname(matched.group('job')),
                              "job_status" : "activated", 
                            }
                 elif key == "releasing":
                     return {
-                             "job" :  matched.group('job'),
+                             "job" :  self._clean_jobname(matched.group('job')),
                              "job_status" : "released", 
                            }
                 else:
@@ -250,17 +263,18 @@ class TellicastLogParser(object):
                              "chan_status" : "announced", 
                            }
                 elif key == "job_announced":
-                    return { "job"  : matched.group('job'),
+                    
+                    return { "job"  : self._clean_jobname(matched.group('job')),
                              "channel"    : matched.group('channel'),
                              "job_status" : "announced", 
                            }
                 elif key == "job_activated":
-                    return { "job"  : matched.group('job'),
+                    return { "job"  : self._clean_jobname(matched.group('job')),
                              "channel"    : matched.group('channel'),
                              "job_status" : "activated", 
                            }
                 elif key == "job_finished":
-                    return { "job"  : matched.group('job'),
+                    return { "job"  : self._clean_jobname(matched.group('job')),
                              "channel"    : matched.group('channel'),
                              "job_status" : "finished", 
                            }

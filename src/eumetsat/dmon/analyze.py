@@ -44,8 +44,7 @@ def print_table(a_db):
         jobname = record['jobname']
         if jobname:
             #will not fail if name < 20
-            pos      = jobname.rfind(".")
-            jobelems = jobname[:pos].split('-')
+            jobelems = jobname.split('-')
             jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
         else:
             jobname = "-"
@@ -122,8 +121,10 @@ def analyze_from_aggregated_file():
             elif the_type == 'dirmon':
                 result = d_parser.parse_one_line(line)
                 
-                if 'LFPW00031849' in result.get('file', ''):
-                    print("breakpoint")
+                #if 'LFPW00031849' in result.get('file', ''):
+                #    print("breakpoint")
+                    
+                #print("dirmon = %s\n" %(result))
                 
                 if result.get('job_status', None) == 'created':
                     
