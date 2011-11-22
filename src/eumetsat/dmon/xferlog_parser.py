@@ -4,6 +4,7 @@ Created on Oct 27, 2011
 @author: guillaume.aubert@eumetsat.int
 '''
 import re
+import os
 import datetime
 
 #regular Expression to parse the xferlogs
@@ -106,16 +107,34 @@ class XferlogParser(object):
         """
         return datetime.datetime.strptime(a_date, '%a %b %d %H:%M:%S %Y')
     
-    def _remove_tmp(self, filename):
+    def _clean_dwd_filename(self,filename):
+        """
+           remove dwd prefix
+           If it is a DWD file name remove the prefix (ninjo_, ra6_)
+        """
+        if filename.startswith('ninjo_') or filename.startswith('ra6_'):
+            return filename[filename.find("_")+1:]
+        else:
+            return filename
+    
+    def _clean_filename(self, filename):
         """
           remove tmp in the filename if there is one
         """
-        if filename[-4:] == '.tmp':
-            return filename[:-4]
+        
+        #get basename remove dir (dir could be kept as it is a relevant info)
+        dir_name, the_basename = os.path.split(filename)
+        
+        the_basename = self._clean_dwd_filename(the_basename)
+        
+        #remove suffix
+        name, ext = os.path.splitext(the_basename)
+        
+        if ext.lower() in ['.tmp','.temp']:
+            return (dir_name, name)
         else:
-            return filename
+            return (dir_name, the_basename)
             
-    
     def _parse_line(self, a_line):
         """ 
           parse the line
@@ -124,11 +143,15 @@ class XferlogParser(object):
         matched = XFERLOG_RE.match(a_line)
         
         if matched:
+            
+            the_dir, the_filename = self._clean_filename(matched.group('filename'))
+            
             return {
                        'app' : 'proftpd',
                        'time': self._convert_date_to_date_time(matched.group('date')),
                        'lev' : 'info',
-                       'file' : self._remove_tmp(matched.group('filename')),
+                       'file': the_filename,
+                       'dir' : the_dir, 
                        'file_size' : matched.group('filesize'),
                        'transfer_time' : matched.group('transfer_time'),
                        #'full_msg' : a_line,
