@@ -203,7 +203,7 @@ def bootstrap_run():
         sys.exit(0)
     except Exception, e:
         # report error and proceed
-        error_str = utils.get_exception_traceback(e)
+        error_str = utils.get_exception_traceback()
         
         log = log_utils.LoggerFactory.get_logger('bootstrap_run')
         

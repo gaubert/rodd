@@ -285,6 +285,10 @@ class Base:
         """Direct access by record id"""
         return self.records[record_id]
     
+    def get_by_id(self,record_id, default):
+        """ like get in dictionary """
+        return self.records.get(record_id, default)
+    
     def __len__(self):
         return len(self.records)
 

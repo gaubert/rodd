@@ -16,6 +16,7 @@ import xferlog_parser
 
 import eumetsat.dmon.common.mem_db as mem_db
 import eumetsat.dmon.common.time_utils as time_utils
+import eumetsat.dmon.common.utils as utils
 
 import curses
 import time
@@ -29,89 +30,116 @@ class CurseDisplay(object):
            constructor
         """
         self._screen = curses.initscr()
-        curses.cbreak()
+        
         curses.noecho()
+        curses.cbreak()
         self._screen.keypad(1)
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
+        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLUE)
+        self._screen.bkgd(curses.color_pair(1))
+        self._screen.box()
+        self._screen.refresh()
+        
+        #get screen size
+        self._maxy, self._maxx = self._screen.getmaxyx()
+        
+        
+        
     
     def print_screen(self, a_db):
         """
         """
-        self._screen.clear()
-        self._screen.border(0)
-        
-        #set x and y
-        x = 2
-        y = 2
+        self._pad = curses.newpad(3000, 3000)
+        pad = self._pad
         
         header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
         header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |"
         template = "%s|%s|%s|%s|%s|%s|%s|"
         
-        print(header)
+        #print(header)
+        pad.addstr(1, 1, header_l)
+        pad.addstr(2, 1, header)
         
-        for record in a_db:
-            
-            #reduce filename and jobname size to 50
-            filename = record['filename']
-            if filename:
-                filename = os.path.basename(filename)
-                
-                #will not fail if name < 50
-                filename = filename[:50]
-            else:
-                filename = "-"
-            
-            jobname = record['jobname']
-            if jobname:
-                #will not fail if name < 20
-                jobelems = jobname.split('-')
-                jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
-            else:
-                jobname = "-"
-            
-            uplinked = record.get('uplinked', None)
-            if not uplinked:
-                uplinked = "-"
-            else:
-                uplinked = time_utils.datetime_to_compactdate(uplinked)
-                
-            queued   = record.get('queued', None)
-            if not queued:
-                queued = "-"
-            else:
-                queued = time_utils.datetime_to_compactdate(queued)
-            
-            annouc   = record.get('announced', None)
-            if not annouc:
-                annouc = "-"
-            else:
-                annouc = time_utils.datetime_to_compactdate(annouc)
-                
-            blocked   = record.get('blocked', None)
-            if not blocked:
-                blocked = "-"
-            else:
-                blocked = time_utils.datetime_to_compactdate(blocked)
-                
-            finished = record.get('finished', None)
-            if not finished:
-                finished = "-"
-            else:
-                finished = time_utils.datetime_to_compactdate(finished)
-            
-            print(template % (string.center(filename,50), string.center(uplinked,17),\
-                              string.center(queued, 17),string.center(jobname, 20), \
-                              string.center(blocked, 17),  string.center(annouc, 17),\
-                              string.center(finished, 17)))
+        #set x 
+        x = 3
         
-    
-        self._screen.addstr(2, 2, "Please enter a number...")
-        self._screen.addstr(4, 4, "1 - Find version of a package")
-        self._screen.addstr(5, 4, "2 - List installed packages")
-        self._screen.addstr(6, 4, "3 - Show disk space")
-        self._screen.addstr(7, 4, "q - Exit")
-        self._screen.refresh()
+        nb_recs = len(a_db)
+        printed_rec = 0
         
+        #reverse iteration from the lastest records to the oldest one
+        while nb_recs > 0 and printed_rec < 3000:  
+            
+            record = a_db.get_by_id(nb_recs-1,None)
+            
+            if record:          
+                #reduce filename and jobname size to 50
+                filename = record['filename']
+                if filename:
+                    filename = os.path.basename(filename)
+                    
+                    #will not fail if name < 50
+                    filename = filename[:50]
+                else:
+                    filename = "-"
+                
+                jobname = record['jobname']
+                if jobname:
+                    #will not fail if name < 20
+                    jobelems = jobname.split('-')
+                    jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
+                else:
+                    jobname = "-"
+                
+                uplinked = record.get('uplinked', None)
+                if not uplinked:
+                    uplinked = "-"
+                else:
+                    uplinked = time_utils.datetime_to_compactdate(uplinked)
+                    
+                queued   = record.get('queued', None)
+                if not queued:
+                    queued = "-"
+                else:
+                    queued = time_utils.datetime_to_compactdate(queued)
+                
+                annouc   = record.get('announced', None)
+                if not annouc:
+                    annouc = "-"
+                else:
+                    annouc = time_utils.datetime_to_compactdate(annouc)
+                    
+                blocked   = record.get('blocked', None)
+                if not blocked:
+                    blocked = "-"
+                else:
+                    blocked = time_utils.datetime_to_compactdate(blocked)
+                    
+                finished = record.get('finished', None)
+                if not finished:
+                    finished = "-"
+                else:
+                    finished = time_utils.datetime_to_compactdate(finished)
+                
+                s = template % (filename.center(50), uplinked.center(17),\
+                                  queued.center(17),jobname.center(20), \
+                                  blocked.center(17),  annouc.center(17),\
+                                  finished.center(17))
+                
+                pad.addstr(x, 1, s)
+                
+                #increment x to reach a new line
+                x += 1
+                
+                #inserted on records so add it
+                printed_rec += 1
+                
+            #decrement nb_recs
+            nb_recs -= 1
+            
+        
+        pad.refresh(1, 1, 1, 1, self._maxy-2, self._maxx-2)
+
         #sleep 1 sec for the moment
         time.sleep(1)
         
@@ -119,6 +147,9 @@ class CurseDisplay(object):
     def reset_screen(self):
         """
         """
+        curses.nocbreak()
+        self._screen.keypad(0)
+        curses.echo()
         curses.endwin()
 
 
@@ -209,6 +240,12 @@ class TextDisplay(object):
             
            
         print("%s\n%s" %(active_data, finish_data) )
+    
+    def reset_screen(self):
+        """
+           Do nothing
+        """
+        pass
     
     
 
@@ -375,8 +412,8 @@ def analyze(db, line, filename):
                 db.insert(jobname = result.get('job', None), announced = result['time'])
             else:
                 for rec in records:
-                   #found a job so update this line in db
-                   db.update(rec, jobname = result.get('job', None), announced = result['time']) 
+                    #found a job so update this line in db
+                    db.update(rec, jobname = result.get('job', None), announced = result['time']) 
                    
         elif result.get('job_status') == 'blocked':
             
@@ -401,7 +438,25 @@ def analyze(db, line, filename):
             else:
                 for rec in records:
                     # update info with finished time
-                    db.update(rec, finished = result['time'])    
+                    db.update(rec, finished = result['time'])   
+                    
+def print_on_display(a_db, a_display, a_last_time_display):
+    """
+       Display every x seconds
+    """ 
+    
+    if not a_last_time_display:
+        a_display.print_screen(a_db)
+        return datetime.datetime.now()
+    else:
+        current_time = datetime.datetime.now()
+        if current_time - a_last_time_display > datetime.timedelta(seconds=2):
+            a_display.print_screen(a_db)
+            return datetime.datetime.now()
+        else:
+            return a_last_time_display
+    
+        
     
 def analyze_from_aggregated_file():
     """
@@ -417,20 +472,38 @@ def analyze_from_aggregated_file():
               'announced','blocked', \
               'finished','metadata', mode = 'open')
     
-    display = TextDisplay()
+    #display = TextDisplay()
+    display = CurseDisplay()
     
+    last_time_display = None
     
-    for elem in iter:
-        #process only tuples (other lines should be ignored)
-        matched = expr_re.match(elem)
-        if matched:
-             
-            line     = matched.group('line')
-            filename = matched.group('filename')
-            
-            analyze(db, line, filename)
-            
-            display.print_screen(db)
+    try:
+    
+        for elem in iter:
+            #process only tuples (other lines should be ignored)
+            matched = expr_re.match(elem)
+            if matched:
+                 
+                line     = matched.group('line')
+                filename = matched.group('filename')
+                
+                analyze(db, line, filename)
+                
+                last_time_display = print_on_display(db, display, last_time_display)
+                
+                
+    except KeyboardInterrupt:
+        display.reset_screen()
+        #CTRL^C pressed so silently quit
+        sys.exit(0)
+    except Exception, e:
+        
+        error_str = utils.get_exception_traceback()
+        
+        display.reset_screen()
+         
+        print("received error %s. Traceback = %s" %(e,error_str))
+        
     
 
 def analyze_from_multiple_files():
