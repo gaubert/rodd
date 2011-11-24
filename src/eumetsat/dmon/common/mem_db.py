@@ -54,6 +54,7 @@ Syntax :
 import os
 import cPickle
 import bisect
+import collections
 
 # compatibility with Python 2.3
 try:
@@ -84,7 +85,8 @@ class Index:
 class Base:
 
     def __init__(self,basename):
-        self.name = basename
+        self.name        = basename
+        self.capped_size = None
 
     def create(self,*fields,**kw):
         """Create a new base with specified field names
@@ -93,7 +95,11 @@ class Base:
         - if mode = 'open' : open the existing base, ignore the fields
         - if mode = 'override' : erase the existing base and create a
         new one with the specified fields"""
-        self.mode = mode = kw.get("mode",None)
+        
+        #check if there is a capped_size 
+        self.capped_size = kw.get("capped_size", -1)
+        
+        self.mode = mode = kw.get("mode", None)
         if os.path.exists(self.name):
             if not os.path.isfile(self.name):
                 raise IOError,"%s exists and is not a file" %self.name
@@ -103,8 +109,9 @@ class Base:
                 return self.open()
             elif mode == "override":
                 os.remove(self.name)
+               
         self.fields = list(fields)
-        self.records = {}
+        self.records = collections.OrderedDict() #add an orderedDict to cap the collection
         self.next_id = 0
         self.indices = {}
         self.commit()
@@ -175,11 +182,21 @@ class Base:
         record = dict([(f,None) for f in self.fields])
         # set keys and values
         for (k,v) in kw.iteritems():
+            #add record
             record[k]=v
+            
+        #remove first inserted element in capped size collections
+        if self.capped_size >= 0 and len(self.records)+1 > self.capped_size:
+            #first record:
+            rec = self.records.itervalues().next()
+            self.delete(rec)
+
+            
         # add the key __id__ : record identifier
         record['__id__'] = self.next_id
         # add the key __version__ : version number
         record['__version__'] = 0
+        
         # create an entry in the dictionary self.records, indexed by __id__
         self.records[self.next_id] = record
         # update index
@@ -301,6 +318,19 @@ class Base:
         return self.records.itervalues()
 
 if __name__ == '__main__':
+    
+    db = Base('capped_test')
+    db.create('name','age',mode="override",capped_size=3)
+    
+    db.insert(name='Vlad', age=1)
+    db.insert(name='Guillaume', age=37)
+    db.insert(name='Benedicte', age=37)
+    db.insert(name='Elise', age=13)
+    
+    for rec in db:
+        print('name = %s, age= %d' %(rec['name'], rec['age']))
+   
+    
     # test on a 1000 record base
     import random
     import datetime

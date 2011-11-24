@@ -5,7 +5,6 @@ Created on Nov 3, 2011
 '''
 
 import os
-import string
 import datetime
 import sys
 import re
@@ -17,13 +16,16 @@ import xferlog_parser
 import eumetsat.dmon.common.mem_db as mem_db
 import eumetsat.dmon.common.time_utils as time_utils
 import eumetsat.dmon.common.utils as utils
+import eumetsat.dmon.common.log_utils  as log_utils
 
 import curses
 import time
 
+LOG = None
+
 class CurseDisplay(object):
     '''
-       A simple text display
+       A simple Curse display
     '''
     def __init__(self):
         """
@@ -40,17 +42,31 @@ class CurseDisplay(object):
         self._screen.bkgd(curses.color_pair(1))
         self._screen.box()
         self._screen.refresh()
+        # to have non blocking getch
+        self._screen.nodelay(1)
         
         #get screen size
         self._maxy, self._maxx = self._screen.getmaxyx()
+        LOG.info("maxx = %d, maxy = %d\n" %(self._maxy, self._maxx))
+        
+        self._pad = curses.newpad(3000, 3000)
         
         
-        
+    def check_for_input(self):
+        """
+           Check for inputs
+        """  
+        c = self._screen.getch()
+        if c in [ord('x'),ord('q')]:
+            #QUIT
+            return "QUIT"
+        else:
+            return None
     
     def print_screen(self, a_db):
         """
         """
-        self._pad = curses.newpad(3000, 3000)
+        
         pad = self._pad
         
         header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -67,8 +83,10 @@ class CurseDisplay(object):
         nb_recs = len(a_db)
         printed_rec = 0
         
+        LOG.info("------ start Printing on screen ------")
+        
         #reverse iteration from the lastest records to the oldest one
-        while nb_recs > 0 and printed_rec < 3000:  
+        while nb_recs > 0 and printed_rec < 65:  
             
             record = a_db.get_by_id(nb_recs-1,None)
             
@@ -121,10 +139,11 @@ class CurseDisplay(object):
                 else:
                     finished = time_utils.datetime_to_compactdate(finished)
                 
-                s = template % (filename.center(50), uplinked.center(17),\
-                                  queued.center(17),jobname.center(20), \
-                                  blocked.center(17),  annouc.center(17),\
-                                  finished.center(17))
+                s = template % (filename.ljust(50) if filename != '-' else filename.center(50), \
+                                uplinked.center(17),\
+                              queued.center(17),jobname.center(20), \
+                              blocked.center(17),  annouc.center(17),\
+                              finished.center(17))
                 
                 pad.addstr(x, 1, s)
                 
@@ -139,6 +158,8 @@ class CurseDisplay(object):
             
         
         pad.refresh(1, 1, 1, 1, self._maxy-2, self._maxx-2)
+        
+        LOG.info("------ End Printing on screen ------")
 
         #sleep 1 sec for the moment
         time.sleep(1)
@@ -162,6 +183,12 @@ class TextDisplay(object):
            constructor
         """
         pass
+    
+    def check_for_input(self):
+        """
+           Check for inputs
+        """  
+        return None
 
     def print_screen(self, a_db):
         """
@@ -228,18 +255,20 @@ class TextDisplay(object):
                 finished = time_utils.datetime_to_compactdate(finished)
                 
             if finished == '-':
-                active_data += template % (string.center(filename,50), string.center(uplinked,17),\
-                              string.center(queued, 17),string.center(jobname, 20), \
-                              string.center(blocked, 17),  string.center(annouc, 17),\
-                              string.center(finished, 17))
+                active_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
+                              queued.center(17),jobname.center(20), \
+                              blocked.center(17),  annouc.center(17),\
+                              finished.center(17))
             else:
-                finish_data += template % (string.center(filename,50), string.center(uplinked,17),\
-                              string.center(queued, 17),string.center(jobname, 20), \
-                              string.center(blocked, 17),  string.center(annouc, 17),\
-                              string.center(finished, 17))
+                finish_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
+                              queued.center(17),jobname.center(20), \
+                              blocked.center(17),  annouc.center(17),\
+                              finished.center(17))
             
            
         print("%s\n%s" %(active_data, finish_data) )
+        
+        
     
     def reset_screen(self):
         """
@@ -309,10 +338,10 @@ class TextDisplay(object):
             else:
                 finished = time_utils.datetime_to_compactdate(finished)
             
-            print(template % (string.center(filename,50), string.center(uplinked,17),\
-                              string.center(queued, 17),string.center(jobname, 20), \
-                              string.center(blocked, 17),  string.center(annouc, 17),\
-                              string.center(finished, 17)))
+            print(template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
+                              queued.center(17),jobname.center(20), \
+                              blocked.center(17),  annouc.center(17),\
+                              finished.center(17)))
         
         print(header_l)
     
@@ -450,7 +479,7 @@ def print_on_display(a_db, a_display, a_last_time_display):
         return datetime.datetime.now()
     else:
         current_time = datetime.datetime.now()
-        if current_time - a_last_time_display > datetime.timedelta(seconds=2):
+        if current_time - a_last_time_display > datetime.timedelta(seconds=1):
             a_display.print_screen(a_db)
             return datetime.datetime.now()
         else:
@@ -462,15 +491,16 @@ def analyze_from_aggregated_file():
     """
        Analyze from an aggregated file containing xferlog, dirmon.log and send.log
     """
-    iter = open('/tmp/logfile.log')
+    iter = open('/tmp/logfile.log', 'r')
     
     # create database
     db = mem_db.Base('analysis')
-     # create new base with field names (set mode = open) to overwrite db on next run
+    # create new base with field names (set mode = open) to overwrite db on next run
+    #keep X elements max in collections
     db.create('filename', 'uplinked', \
               'queued', 'jobname', \
               'announced','blocked', \
-              'finished','metadata', mode = 'open')
+              'finished','metadata', mode = 'open', capped_size=1000000)
     
     #display = TextDisplay()
     display = CurseDisplay()
@@ -491,21 +521,36 @@ def analyze_from_aggregated_file():
                 
                 last_time_display = print_on_display(db, display, last_time_display)
                 
+                input = display.check_for_input()
+                if input and input == 'QUIT':
+                    break # quit loop
+                    
+        else:
+            #force update
+            print_on_display(db, display, None)
+        
+        LOG.info("Out of loop")
+                
                 
     except KeyboardInterrupt:
-        display.reset_screen()
+        
         #CTRL^C pressed so silently quit
         sys.exit(0)
     except Exception, e:
         
+        LOG.error("In Error")
+        
         error_str = utils.get_exception_traceback()
         
+        LOG.error("received error %s. Traceback = %s" %(e,error_str))
+    finally:
+        #whatever the case always reset the screen
         display.reset_screen()
-         
-        print("received error %s. Traceback = %s" %(e,error_str))
         
-    
-
+        print("Exiting program")
+        
+         
+        
 def analyze_from_multiple_files():
     """
        Analyze
@@ -530,6 +575,11 @@ def analyze_from_multiple_files():
     
     
 if __name__ == '__main__': 
-    str = "('VRB:2011-11-21 13:14:15.075:Content for job \"retim-4030-36515-2011-11-21-13-14-09-497.job\" on channel \"MFRAFRG6\" is announced.', 'send.log')" 
+    
+    log_utils.LoggerFactory.setup_simple_file_handler('/tmp/analyze.log') 
+    
+    LOG = log_utils.LoggerFactory.get_logger('ALogger')
+    
+    LOG.info("start")
      
     analyze_from_aggregated_file()

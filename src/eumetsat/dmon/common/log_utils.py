@@ -68,4 +68,19 @@ class LoggerFactory(object):
         null_handler.push_application()
         # add Stderr Handler
         handler.push_application() 
+    
+    @classmethod
+    def setup_simple_file_handler(cls, file_path):
+        """
+           Push a file handler logging only the message (no timestamp)
+        """
+        
+        null_handler = logbook.NullHandler()
+        
+        handler      = logbook.FileHandler(file_path, format_string='{record.message}', level = 2, bubble = False)
+         
+        # first stack null handler to not have anything else logged 
+        null_handler.push_application()
+        # add Stderr Handler
+        handler.push_application() 
         
