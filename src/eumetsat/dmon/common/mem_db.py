@@ -95,6 +95,10 @@ class Base:
         - if mode = 'open' : open the existing base, ignore the fields
         - if mode = 'override' : erase the existing base and create a
         new one with the specified fields"""
+        
+        #check if there is a capped_size 
+        self.capped_size = kw.get("capped_size", -1)
+        
         self.mode = mode = kw.get("mode", None)
         if os.path.exists(self.name):
             if not os.path.isfile(self.name):
@@ -106,8 +110,6 @@ class Base:
             elif mode == "override":
                 os.remove(self.name)
                
-        #check if there is a capped_size 
-        self.capped_size = kw.get("capped_size", -1)
         self.fields = list(fields)
         self.records = collections.OrderedDict() #add an orderedDict to cap the collection
         self.next_id = 0
