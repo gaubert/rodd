@@ -5,7 +5,6 @@ Created on Nov 3, 2011
 '''
 
 import os
-import string
 import datetime
 import sys
 import re
@@ -43,14 +42,26 @@ class CurseDisplay(object):
         self._screen.bkgd(curses.color_pair(1))
         self._screen.box()
         self._screen.refresh()
+        # to have non blocking getch
+        self._screen.nodelay(1)
         
         #get screen size
         self._maxy, self._maxx = self._screen.getmaxyx()
+        LOG.info("maxx = %d, maxy = %d\n" %(self._maxy, self._maxx))
         
         self._pad = curses.newpad(3000, 3000)
         
         
-        
+    def check_for_input(self):
+        """
+           Check for inputs
+        """  
+        c = self._screen.getch()
+        if c in [ord('x'),ord('q')]:
+            #QUIT
+            return "QUIT"
+        else:
+            return None
     
     def print_screen(self, a_db):
         """
@@ -75,7 +86,7 @@ class CurseDisplay(object):
         LOG.info("------ start Printing on screen ------")
         
         #reverse iteration from the lastest records to the oldest one
-        while nb_recs > 0 and printed_rec < 30:  
+        while nb_recs > 0 and printed_rec < 65:  
             
             record = a_db.get_by_id(nb_recs-1,None)
             
@@ -172,6 +183,12 @@ class TextDisplay(object):
            constructor
         """
         pass
+    
+    def check_for_input(self):
+        """
+           Check for inputs
+        """  
+        return None
 
     def print_screen(self, a_db):
         """
@@ -462,7 +479,7 @@ def print_on_display(a_db, a_display, a_last_time_display):
         return datetime.datetime.now()
     else:
         current_time = datetime.datetime.now()
-        if current_time - a_last_time_display > datetime.timedelta(seconds=2):
+        if current_time - a_last_time_display > datetime.timedelta(seconds=1):
             a_display.print_screen(a_db)
             return datetime.datetime.now()
         else:
@@ -474,18 +491,19 @@ def analyze_from_aggregated_file():
     """
        Analyze from an aggregated file containing xferlog, dirmon.log and send.log
     """
-    iter = open('/tmp/logfile.log','r')
+    iter = open('/tmp/logfile.log', 'r')
     
     # create database
     db = mem_db.Base('analysis')
-     # create new base with field names (set mode = open) to overwrite db on next run
+    # create new base with field names (set mode = open) to overwrite db on next run
+    #keep X elements max in collections
     db.create('filename', 'uplinked', \
               'queued', 'jobname', \
               'announced','blocked', \
-              'finished','metadata', mode = 'open')
+              'finished','metadata', mode = 'open', capped_size=1000000)
     
-    display = TextDisplay()
-    #display = CurseDisplay()
+    #display = TextDisplay()
+    display = CurseDisplay()
     
     last_time_display = None
     
@@ -502,6 +520,11 @@ def analyze_from_aggregated_file():
                 analyze(db, line, filename)
                 
                 last_time_display = print_on_display(db, display, last_time_display)
+                
+                input = display.check_for_input()
+                if input and input == 'QUIT':
+                    break # quit loop
+                    
         else:
             #force update
             print_on_display(db, display, None)
