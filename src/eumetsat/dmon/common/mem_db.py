@@ -247,7 +247,7 @@ class Base:
             del self.records[_id]
         return deleted
 
-    def update(self,record,**kw):
+    def update(self, record, **kw):
         """Update the record with new keys and values and update indices"""
         # update indices
         _id = record["__id__"]
@@ -329,7 +329,16 @@ if __name__ == '__main__':
     
     for rec in db:
         print('name = %s, age= %d' %(rec['name'], rec['age']))
+        
+    # update test
+    for rec in db:
+        db.update(rec, age=42)
    
+    for rec in db:
+        print('name = %s, age= %d' %(rec['name'], rec['age']))
+     
+    import sys   
+    sys.exit(1)
     
     # test on a 1000 record base
     import random

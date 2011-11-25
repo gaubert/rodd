@@ -419,7 +419,14 @@ def remove_expired_records(db):
     for rec in [ r for r in db if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )]:
         #LOG.info("rec = %s\n" %(rec))
         db.delete(rec)
-    
+
+def print_db_logfile(db):
+    """
+      print database in log file for debuging purposes
+    """
+    for rec in db:
+        LOG.info(rec)
+           
 
 def analyze(db, line, filename):
     """
@@ -456,19 +463,22 @@ def analyze(db, line, filename):
                 for rec in records:
                                                                                 
                     r_job = db(jobname = result['job'])
-                    
+                                      
                     #if job reconcile both info
                     if r_job:
                         
                         #update filename info
-                        db.update(rec, queued = result['time'], jobname = r_job[0]['jobname'], announced = r_job[0]['announced'], finished = r_job[0]['finished'])  
+                        db.update(rec, queued = result['time'], \
+                                  jobname = r_job[0]['jobname'], \
+                                  announced = r_job[0]['announced'], \
+                                  finished = r_job[0]['finished'])  
                         
                         #delete job record
                         db.delete(r_job[0])
                         
                     else:
                         #no other record with job name, update record
-                        db.update(rec, jobname = result['job'], queued = result['time'])                
+                        db.update(rec, jobname = result['job'], queued = result['time'])              
             
     elif the_type == 'tc-send':
         result = s_parser.parse_one_line(line)
@@ -544,8 +554,8 @@ def analyze_from_tailed_file():
               'announced','blocked', \
               'finished','metadata', 'finished_time_insert', mode = 'open', capped_size=1000000)
     
-    #display = TextDisplay()
-    display = CurseDisplay()
+    display = TextDisplay()
+    #display = CurseDisplay()
     
     last_time_display = None
     
@@ -568,7 +578,7 @@ def analyze_from_tailed_file():
                 if input and input == 'QUIT':
                     break # quit loop
                 
-                remove_expired_records(db)
+                #remove_expired_records(db)
                     
         else:
             #force update
