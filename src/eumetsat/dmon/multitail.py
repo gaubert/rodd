@@ -8,6 +8,7 @@ import select
 import fcntl
 import os
 
+
 class MultiFileTailer(object):
     '''
        Does a tail on multiple files
@@ -21,7 +22,7 @@ class MultiFileTailer(object):
         Constructor
         '''
         pass
-        
+            
     @classmethod
     def tail(cls, a_files, delay=0.4):
         """\

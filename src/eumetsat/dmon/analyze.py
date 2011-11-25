@@ -48,10 +48,10 @@ class CurseDisplay(object):
         # to have non blocking getch
         self._full_screen.nodelay(1)
          
-        LOG.info("maxy = %d, maxx = %d\n" %(self._maxy, self._maxx))
+        LOG.debug("maxy = %d, maxx = %d\n" %(self._maxy, self._maxx))
         
-        self._active_pad   = curses.newpad(3000, 3000)
-        self._finished_pad = curses.newpad(3000, 3000)
+        self._active_pad   = curses.newpad(1000, 1000)
+        self._finished_pad = curses.newpad(1000, 1000)
         
         
     def check_for_input(self):
@@ -67,14 +67,20 @@ class CurseDisplay(object):
     
     def print_screen(self, a_db):
         """
+           print on screen
         """
+        #constants to be put in files
+        nb_max_active_records   = 70
+        nb_max_finished_records = 30
+        sleep_time = 2
+        
         
         active_pad   = self._active_pad
         finished_pad = self._finished_pad
         
         header_active   = "-ACTIVE-----------------------------------------------------------------------------------------------------------------------------------------------------------"
         header_finished = "-FINISHED---------------------------------------------------------------------------------------------------------------------------------------------------------"
-        header          = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |       sent       |"
+        header          = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |       sent      |"
         template = "%s|%s|%s|%s|%s|%s|%s|"
         
         #print(header)
@@ -162,16 +168,14 @@ class CurseDisplay(object):
                 #add records to be printed in the right area
                 #it means this is active    
                 if finished == "-":
-                    if active_printed_records < 50:
-                        LOG.info("Add record in active")
+                    if active_printed_records < nb_max_active_records:
                         #insert record to be printed
                         active_pad.addstr(x_active, 1, s )
                         x_active += 1
                         active_printed_records +=1
                 else:
                     #finished
-                    if finished_printed_records < 50:
-                        LOG.info("Add record in finished")
+                    if finished_printed_records < nb_max_finished_records:
                         #insert record to be printed
                         finished_pad.addstr(x_finished, 1, s )
                         x_finished += 1
@@ -180,16 +184,16 @@ class CurseDisplay(object):
             #decrement nb_recs
             nb_recs -= 1
             
-        finished_pad.noutrefresh(1, 1, ((self._maxy-2)/2)+1, 1, self._maxy-2, self._maxx-2)
-        active_pad.noutrefresh(1, 1, 1, 1, (self._maxy-2)/2, self._maxx-2)
+        finished_pad.noutrefresh(1, 1, int(round((self._maxy-2)*(2.00/3)))+1 , 1, self._maxy-2, self._maxx-2)
+        active_pad.noutrefresh(1, 1, 1, 1, int(round(self._maxy-2)*(2.00/3)) , self._maxx-2)
         
         curses.doupdate()
         
         
         LOG.info("------ End Printing on screen ------")
 
-        #sleep 1 sec for the moment
-        time.sleep(1)
+        #sleep x secs for the moment
+        time.sleep(sleep_time)
         
     
     def reset_screen(self):
@@ -405,6 +409,18 @@ mapper = {'xferlog'   : 'xferlog',
           'send.log'  : 'tc-send',
           'dirmon.log' : 'dirmon'}
 
+def remove_expired_records(db):
+    """
+       remove records that have been finished for more than 60 seconds
+    """
+    expiry_time = 60 #in seconds
+    now = datetime.datetime.now()
+    
+    for rec in [ r for r in db if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )]:
+        #LOG.info("rec = %s\n" %(rec))
+        db.delete(rec)
+    
+
 def analyze(db, line, filename):
     """
        Analysis from the line and filename
@@ -490,11 +506,11 @@ def analyze(db, line, filename):
             
             if len(records) == 0:
                 # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
-                db.insert(jobname = result.get('job', None), finished = result['time'])
+                db.insert(jobname = result.get('job', None), finished = result['time'], finished_time_insert = datetime.datetime.now())
             else:
                 for rec in records:
                     # update info with finished time
-                    db.update(rec, finished = result['time'])   
+                    db.update(rec, finished = result['time'], finished_time_insert = datetime.datetime.now())   
                     
 def print_on_display(a_db, a_display, a_last_time_display):
     """
@@ -511,8 +527,73 @@ def print_on_display(a_db, a_display, a_last_time_display):
         else:
             return a_last_time_display
     
-        
+def analyze_from_tailed_file():
+    """
+       Analyze from an aggregated file containing xferlog, dirmon.log and send.log
+    """
+    agregfile = open('/tmp/logfile.log', 'r')
     
+    iter = multitail.MultiFileTailer.tail([agregfile])
+    
+    # create database
+    db = mem_db.Base('analysis')
+    # create new base with field names (set mode = open) to overwrite db on next run
+    #keep X elements max in collections
+    db.create('filename', 'uplinked', \
+              'queued', 'jobname', \
+              'announced','blocked', \
+              'finished','metadata', 'finished_time_insert', mode = 'open', capped_size=1000000)
+    
+    #display = TextDisplay()
+    display = CurseDisplay()
+    
+    last_time_display = None
+    
+    try:
+    
+        for (f_line, _) in iter:
+            
+            #process only tuples (other lines should be ignored)
+            matched = expr_re.match(f_line)
+            if matched:
+                 
+                line     = matched.group('line')
+                filename = matched.group('filename')
+                
+                analyze(db, line, filename)
+                
+                last_time_display = print_on_display(db, display, last_time_display)
+                
+                input = display.check_for_input()
+                if input and input == 'QUIT':
+                    break # quit loop
+                
+                remove_expired_records(db)
+                    
+        else:
+            #force update
+            print_on_display(db, display, None)
+        
+        LOG.info("Out of loop")
+                
+                
+    except KeyboardInterrupt:
+        
+        #CTRL^C pressed so silently quit
+        sys.exit(0)
+    except Exception, e:
+        
+        LOG.error("In Error")
+        
+        error_str = utils.get_exception_traceback()
+        
+        LOG.error("received error %s. Traceback = %s" %(e,error_str))
+    finally:
+        #whatever the case always reset the screen
+        display.reset_screen()
+        
+        print("Exiting program")
+ 
 def analyze_from_aggregated_file():
     """
        Analyze from an aggregated file containing xferlog, dirmon.log and send.log
@@ -526,7 +607,7 @@ def analyze_from_aggregated_file():
     db.create('filename', 'uplinked', \
               'queued', 'jobname', \
               'announced','blocked', \
-              'finished','metadata', mode = 'open', capped_size=1000000)
+              'finished','metadata', 'finished_time_insert', mode = 'open', capped_size=1000000)
     
     #display = TextDisplay()
     display = CurseDisplay()
@@ -550,6 +631,8 @@ def analyze_from_aggregated_file():
                 input = display.check_for_input()
                 if input and input == 'QUIT':
                     break # quit loop
+                
+                remove_expired_records(db)
                     
         else:
             #force update
@@ -608,4 +691,5 @@ if __name__ == '__main__':
     
     LOG.info("start")
      
-    analyze_from_aggregated_file()
+    #analyze_from_aggregated_file()
+    analyze_from_tailed_file()
