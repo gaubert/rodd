@@ -1,7 +1,7 @@
 '''
 Created on Nov 3, 2011
 
-@author: gaubert
+@author: guillaume.aubert@eumetsat.int
 '''
 
 import os
@@ -31,32 +31,34 @@ class CurseDisplay(object):
         """
            constructor
         """
-        self._screen = curses.initscr()
+        self._full_screen = curses.initscr()
+        #get screen size
+        self._maxy, self._maxx = self._full_screen.getmaxyx()
         
         curses.noecho()
         curses.cbreak()
-        self._screen.keypad(1)
         curses.start_color()
         curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
         curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLUE)
-        self._screen.bkgd(curses.color_pair(1))
-        self._screen.box()
-        self._screen.refresh()
+        self._full_screen.keypad(1)
+        
+        self._full_screen.bkgd(curses.color_pair(1))
+        self._full_screen.box()
+        self._full_screen.refresh()
         # to have non blocking getch
-        self._screen.nodelay(1)
+        self._full_screen.nodelay(1)
+         
+        LOG.info("maxy = %d, maxx = %d\n" %(self._maxy, self._maxx))
         
-        #get screen size
-        self._maxy, self._maxx = self._screen.getmaxyx()
-        LOG.info("maxx = %d, maxy = %d\n" %(self._maxy, self._maxx))
-        
-        self._pad = curses.newpad(3000, 3000)
+        self._active_pad   = curses.newpad(3000, 3000)
+        self._finished_pad = curses.newpad(3000, 3000)
         
         
     def check_for_input(self):
         """
            Check for inputs
         """  
-        c = self._screen.getch()
+        c = self._full_screen.getch()
         if c in [ord('x'),ord('q')]:
             #QUIT
             return "QUIT"
@@ -67,26 +69,33 @@ class CurseDisplay(object):
         """
         """
         
-        pad = self._pad
+        active_pad   = self._active_pad
+        finished_pad = self._finished_pad
         
-        header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-        header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |"
+        header_active   = "-ACTIVE-----------------------------------------------------------------------------------------------------------------------------------------------------------"
+        header_finished = "-FINISHED---------------------------------------------------------------------------------------------------------------------------------------------------------"
+        header          = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |       sent       |"
         template = "%s|%s|%s|%s|%s|%s|%s|"
         
         #print(header)
-        pad.addstr(1, 1, header_l)
-        pad.addstr(2, 1, header)
+        active_pad.addstr(1, 1, header_active)
+        active_pad.addstr(2, 1, header)
+        active_printed_records = 0
+        
+        finished_pad.addstr(1, 1, header_finished)
+        finished_pad.addstr(2, 1, header)
+        finished_printed_records = 0
         
         #set x 
-        x = 3
+        x_active   = 3
+        x_finished = 3
         
         nb_recs = len(a_db)
-        printed_rec = 0
         
         LOG.info("------ start Printing on screen ------")
         
         #reverse iteration from the lastest records to the oldest one
-        while nb_recs > 0 and printed_rec < 65:  
+        while nb_recs > 0:  
             
             record = a_db.get_by_id(nb_recs-1,None)
             
@@ -133,9 +142,14 @@ class CurseDisplay(object):
                 else:
                     blocked = time_utils.datetime_to_compactdate(blocked)
                     
+                    
+                #dissociate active from finished part
+                
                 finished = record.get('finished', None)
+                
+                #active
                 if not finished:
-                    finished = "-"
+                    finished = "-"        
                 else:
                     finished = time_utils.datetime_to_compactdate(finished)
                 
@@ -145,19 +159,32 @@ class CurseDisplay(object):
                               blocked.center(17),  annouc.center(17),\
                               finished.center(17))
                 
-                pad.addstr(x, 1, s)
-                
-                #increment x to reach a new line
-                x += 1
-                
-                #inserted on records so add it
-                printed_rec += 1
-                
+                #add records to be printed in the right area
+                #it means this is active    
+                if finished == "-":
+                    if active_printed_records < 50:
+                        LOG.info("Add record in active")
+                        #insert record to be printed
+                        active_pad.addstr(x_active, 1, s )
+                        x_active += 1
+                        active_printed_records +=1
+                else:
+                    #finished
+                    if finished_printed_records < 50:
+                        LOG.info("Add record in finished")
+                        #insert record to be printed
+                        finished_pad.addstr(x_finished, 1, s )
+                        x_finished += 1
+                        finished_printed_records +=1
+            
             #decrement nb_recs
             nb_recs -= 1
             
+        finished_pad.noutrefresh(1, 1, ((self._maxy-2)/2)+1, 1, self._maxy-2, self._maxx-2)
+        active_pad.noutrefresh(1, 1, 1, 1, (self._maxy-2)/2, self._maxx-2)
         
-        pad.refresh(1, 1, 1, 1, self._maxy-2, self._maxx-2)
+        curses.doupdate()
+        
         
         LOG.info("------ End Printing on screen ------")
 
@@ -169,7 +196,7 @@ class CurseDisplay(object):
         """
         """
         curses.nocbreak()
-        self._screen.keypad(0)
+        self._full_screen.keypad(0)
         curses.echo()
         curses.endwin()
 
@@ -473,7 +500,6 @@ def print_on_display(a_db, a_display, a_last_time_display):
     """
        Display every x seconds
     """ 
-    
     if not a_last_time_display:
         a_display.print_screen(a_db)
         return datetime.datetime.now()
