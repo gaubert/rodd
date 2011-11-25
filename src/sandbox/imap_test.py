@@ -34,6 +34,11 @@ def read_password_file(a_path):
 def imaplib_test(login, password):
     """
        IMAP client
+       issue: it is easy to download all emails (as they are in All Mail) and push them back in All Mail.
+       However the labels will not be revived as google manages them as imap directories. 
+       This could be the easy solution quickly built. 
+       A second solution would be for each email to look for the different dirs where they are.
+       Maybe IMAP provides a unique id for the emails (too be seen).
     """
     
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
