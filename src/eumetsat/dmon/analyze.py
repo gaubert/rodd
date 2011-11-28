@@ -461,7 +461,7 @@ def analyze(database, line, filename):
         result = x_parser.parse_one_line(line)
         
         #add file in db
-        database.insert(filename = result['file'],uplinked = result['time'], metadata = result['metadata'])
+        database.insert(filename = result['file'],uplinked = result['time'], metadata = result['metadata'], last_update= datetime.datetime.now())
         
     elif the_type == 'dirmon':
         result = d_parser.parse_one_line(line)
@@ -480,7 +480,7 @@ def analyze(database, line, filename):
             if len(records) == 0:
                 #no file created so it means that the xferlog message has not been received
                 # add it in the table
-                database.insert(filename=result['file'], jobname = result['job'], queued = result['time'], metadata = result['metadata'])
+                database.insert(filename=result['file'], jobname = result['job'], queued = result['time'], metadata = result['metadata'], last_update= datetime.datetime.now())
             else:
                 for rec in records:
                                                                                 
@@ -500,7 +500,7 @@ def analyze(database, line, filename):
                         
                     else:
                         #no other record with job name, update record
-                        database.update(rec, jobname = result['job'], queued = result['time'])              
+                        database.update(rec, jobname = result['job'], queued = result['time'], last_update= datetime.datetime.now())              
             
     elif the_type == 'tc-send':
         result = s_parser.parse_one_line(line)
@@ -513,11 +513,11 @@ def analyze(database, line, filename):
             
             if len(records) == 0:
                 # add a line in the to print table
-                database.insert(jobname = result.get('job', None), announced = result['time'])
+                database.insert(jobname = result.get('job', None), announced = result['time'], last_update= datetime.datetime.now())
             else:
                 for rec in records:
                     #found a job so update this line in db
-                    database.update(rec, jobname = result.get('job', None), announced = result['time']) 
+                    database.update(rec, jobname = result.get('job', None), announced = result['time'], last_update= datetime.datetime.now()) 
                    
         elif result.get('job_status') == 'blocked':
             
@@ -526,7 +526,7 @@ def analyze(database, line, filename):
             
             if len(records) == 0:
                 # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
-                database.insert(jobname = result.get('job', None), blocked = result['time'])
+                database.insert(jobname = result.get('job', None), blocked = result['time'], last_update= datetime.datetime.now())
             else:
                 for rec in records:
                     # update info with finished time
@@ -538,11 +538,11 @@ def analyze(database, line, filename):
             
             if len(records) == 0:
                 # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
-                database.insert(jobname = result.get('job', None), finished = result['time'], finished_time_insert = datetime.datetime.now())
+                database.insert(jobname = result.get('job', None), finished = result['time'], finished_time_insert = datetime.datetime.now(), last_update= datetime.datetime.now())
             else:
                 for rec in records:
                     # update info with finished time
-                    database.update(rec, finished = result['time'], finished_time_insert = datetime.datetime.now())   
+                    database.update(rec, finished = result['time'], finished_time_insert = datetime.datetime.now(), last_update= datetime.datetime.now())   
                     
 def print_on_display(a_db, a_display, a_last_time_display):
     """
@@ -574,7 +574,9 @@ def analyze_from_tailed_file():
     db.create('filename', 'uplinked', \
               'queued', 'jobname', \
               'announced','blocked', \
-              'finished','metadata', 'finished_time_insert', mode = 'open', capped_size=1000000)
+              'finished','metadata', 'last_update', 'finished_time_insert', mode = 'open', capped_size=1000000)
+    
+    db.create_index('last_update')
     
     #display = TextDisplay()
     display = CurseDisplay()
