@@ -4,7 +4,6 @@ Created on Nov 3, 2011
 @author: guillaume.aubert@eumetsat.int
 '''
 
-import os
 import datetime
 import sys
 import re
@@ -18,7 +17,6 @@ import eumetsat.dmon.common.utils as utils
 import eumetsat.dmon.common.log_utils  as log_utils
 
 import eumetsat.dmon.displays as displays
-
 
 class Analyzer(object):
     """
@@ -44,20 +42,20 @@ class Analyzer(object):
            constructor
         """
         # create database
-        self.db = mem_db.Base('analysis')
+        self.mem_db = mem_db.Base('analysis')
         # create new base with field names (set mode = open) to overwrite db on next run
         #keep X elements max in collections
-        self.db.create('filename', 'uplinked', \
+        self.mem_db.create('filename', 'uplinked', \
                   'queued', 'jobname', \
                   'announced','blocked', \
                   'finished','metadata', 'last_update', 'finished_time_insert', mode = 'override', capped_size=1000000)
         
-        self.db.create_index('last_update')
+        self.mem_db.create_index('last_update')
         
         #display = displays.TextDisplay()
         self.display = displays.CurseDisplay()
         
-    def get_dwd_record(self, database, result, dirmon_dir):
+    def get_dwd_record(self, database, result, dirmon_dir): #pylint: disable-msg=R0201
         """
            Manage the particular case of DWD records
         """  
@@ -75,7 +73,7 @@ class Analyzer(object):
         
         return []
 
-    def remove_expired_records(self, database):
+    def remove_expired_records(self, database): #pylint: disable-msg=R0201
         """
            remove records that have been finished for more than 60 seconds
         """
@@ -92,7 +90,7 @@ class Analyzer(object):
         if removed_rec > 0:
             Analyzer.LOG.info("Deleted %d records" % (removed_rec))
 
-    def print_db_logfile(self, database):
+    def print_db_logfile(self, database): #pylint: disable-msg=R0201
         """
           print database in log file for debuging purposes
         """
@@ -190,6 +188,7 @@ class Analyzer(object):
                     for rec in records:
                         # update info with finished time
                         database.update(rec, blocked = result['time']) 
+                        
             elif result.get('job_status') == 'finished':
     
                 #get all records concerned by this job
@@ -209,18 +208,18 @@ class Analyzer(object):
                                         last_update= datetime.datetime.now())   
          
                     
-    def print_on_display(self, a_db, a_display, a_last_time_display):
+    def print_on_display(self, a_db, a_display, a_last_time_display):  #pylint: disable-msg=R0201
         """
            Display every x seconds
         """ 
+        current_time = datetime.datetime.now()
         if not a_last_time_display:
-            a_display.print_screen(a_db)
-            return datetime.datetime.now()
+            a_display.print_screen(a_db, current_time)
+            return current_time
         else:
-            current_time = datetime.datetime.now()
             if current_time - a_last_time_display > datetime.timedelta(seconds=2):
-                a_display.print_screen(a_db)
-                return datetime.datetime.now()
+                a_display.print_screen(a_db, current_time)
+                return current_time
             else:
                 return a_last_time_display
     
@@ -240,7 +239,7 @@ class Analyzer(object):
         try:
             
             #init print
-            self.print_on_display(self.db, self.display, None)
+            self.print_on_display(self.mem_db, self.display, None)
         
             for (f_line, _) in f_iter:
                 
@@ -254,22 +253,22 @@ class Analyzer(object):
                     # sometimes the tail can eat (bug) part of the line
                     # ignore this exception
                     try:
-                        self.analyze(self.db, line, filename)
+                        self.analyze(self.mem_db, line, filename)
                     except tellicastlog_parser.InvalidTellicastlogFormatError, err:
                         error_str = utils.get_exception_traceback()
                         Analyzer.LOG.error("Parser Exception %s, traceback %s" %(err, error_str))
                     
-                    last_time_display = self.print_on_display(self.db, self.display, last_time_display)
+                    last_time_display = self.print_on_display(self.mem_db, self.display, last_time_display)
                     
                     kb_input = self.display.check_for_input()
                     if kb_input and kb_input == 'QUIT':
                         break # quit loop
                     
-                    self.remove_expired_records(self.db)
+                    self.remove_expired_records(self.mem_db)
                         
             else:
                 #force update
-                self.print_on_display(self.db, self.display, None)
+                self.print_on_display(self.mem_db, self.display, None)
             
             Analyzer.LOG.info("Out of loop")
                     
@@ -292,16 +291,15 @@ class Analyzer(object):
             self.display.reset_screen()
             if on_error:
                 print("Exiting on error")
-                sys.exit(1)
+                return 1  #pylint: disable-msg=W0150
             else:
                 print("Exiting gracefully")
-                sys.exit(0)
+                return 0  #pylint: disable-msg=W0150
     
 if __name__ == '__main__': 
     
     log_utils.LoggerFactory.setup_simple_file_handler('/tmp/analyze.log') 
     
-    analyzer = Analyzer()
+    analyzer = Analyzer() #pylint: disable-msg=C0103
     
-    #analyze_from_aggregated_file()
-    analyzer.analyze_from_tailed_file(['/tmp/logfile.log'])
+    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/logfile.log']))

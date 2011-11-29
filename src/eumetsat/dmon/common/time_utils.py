@@ -127,6 +127,35 @@ def convert_date_str_to_datetime(a_date_str):
         return datetime.datetime.strptime(a_date_str, date_pattern)
     else:
         raise Exception("No date pattern found for %s\n" %(a_date_str))
+    
+def e2datetime(a_epoch):
+    """
+        convert epoch time in datetime
+
+            Args:
+               a_epoch: the epoch time to convert
+
+            Returns: a datetime
+    """
+
+    #utcfromtimestamp is not working properly with a decimals.
+    # use floor to create the datetime
+#    decim = decimal.Decimal('%s' % (a_epoch)).quantize(decimal.Decimal('.001'), rounding=decimal.ROUND_DOWN)
+
+    new_date = datetime.datetime.utcfromtimestamp(a_epoch)
+
+    return new_date
+
+def datetime2e(a_date):
+    """
+        convert datetime in epoch
+        Beware the datetime as to be in UTC otherwise you might have some surprises
+            Args:
+               a_date: the datertime to convert
+
+            Returns: a epoch time
+    """
+    return calendar.timegm(a_date.timetuple())
 
 if __name__ == '__main__':
     

@@ -43,7 +43,7 @@ class CurseDisplay(object):
         curses.cbreak()
         curses.start_color()
         curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
-        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLUE)
+        #curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLUE)
         self._full_screen.keypad(1)
         
         self._full_screen.bkgd(curses.color_pair(1))
@@ -56,6 +56,9 @@ class CurseDisplay(object):
         
         self._active_pad   = curses.newpad(1000, 1000)
         self._finished_pad = curses.newpad(1000, 1000)
+        
+        #used to colorized elems that have changed since last update on screen
+        self._previous_display_time = None
         
         
     def check_for_input(self):
@@ -76,7 +79,7 @@ class CurseDisplay(object):
         for rec in a_db._last_update.get_sorted_iter(sorted, reverse = True):
             CurseDisplay.LOG.info("sorted rec = %s" %(rec))
     
-    def print_screen(self, a_db):
+    def print_screen(self, a_db, a_current_display_time):
         """
            print on screen
         """
@@ -113,6 +116,14 @@ class CurseDisplay(object):
         
         #reverse iteration from the lastest records to the oldest one
         for index in a_db._last_update.get_sorted_iter(sorted, reverse = True):
+            
+            # if index which is the last_update_time is superior to the previous_display_time
+            # meaning was updated since the last display then change color
+            
+            if not self._previous_display_time or (index > self._previous_display_time):
+                color = curses.A_BOLD
+            else:
+                color = curses.color_pair(0)
             
             for record in a_db._last_update[index]:
              
@@ -176,14 +187,14 @@ class CurseDisplay(object):
                 if finished == "-":
                     if active_printed_records < nb_max_active_records:
                         #insert record to be printed
-                        active_pad.addstr(x_active, 1, str_to_print )
+                        active_pad.addstr(x_active, 1, str_to_print, color)
                         x_active += 1
                         active_printed_records += 1
                 else:
                     #finished
                     if finished_printed_records < nb_max_finished_records:
                         #insert record to be printed
-                        finished_pad.addstr(x_finished, 1, str_to_print )
+                        finished_pad.addstr(x_finished, 1, str_to_print, color )
                         x_finished += 1
                         finished_printed_records += 1
             
@@ -192,6 +203,9 @@ class CurseDisplay(object):
         active_pad.noutrefresh(1, 1, 1, 1, int(round(self._maxy-2)*(2.00/3)) , self._maxx-2)
         
         curses.doupdate()
+        
+        #update previous_display_time with the current display time
+        self._previous_display_time = a_current_display_time
     
     def reset_screen(self):
         """
@@ -221,7 +235,7 @@ class TextDisplay(object):
         """  
         return None
 
-    def print_screen(self, a_db):
+    def print_screen(self, a_db, a_current_time):
         """
           print a table
         """
