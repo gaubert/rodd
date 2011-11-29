@@ -81,7 +81,6 @@ class CurseDisplay(object):
         nb_max_finished_records = 30
         sleep_time = 1
         
-        self.print_index(a_db)
         
         active_pad   = self._active_pad
         finished_pad = self._finished_pad
@@ -106,14 +105,17 @@ class CurseDisplay(object):
         
         nb_recs = len(a_db)
         
+        active, finished, blocked = get_active_jobs(a_db)
+                
+        LOG.info("active jobs = %d, finished jobs=%d, blocked=%d" % (active, finished, blocked) )
+        
         LOG.info("------ start Printing on screen ------")
         
         #reverse iteration from the lastest records to the oldest one
-        while nb_recs > 0:  
+        for index in a_db._last_update.get_sorted_iter(sorted, reverse = True):
             
-            record = a_db.get_by_id(nb_recs-1, None)
-            
-            if record:          
+            for record in a_db._last_update[index]:
+             
                 #reduce filename and jobname size to 50
                 filename = record['filename']
                 if filename:
@@ -185,19 +187,11 @@ class CurseDisplay(object):
                         x_finished += 1
                         finished_printed_records += 1
             
-            #decrement nb_recs
-            nb_recs -= 1
             
         finished_pad.noutrefresh(1, 1, int(round((self._maxy-2)*(2.00/3)))+1 , 1, self._maxy-2, self._maxx-2)
         active_pad.noutrefresh(1, 1, 1, 1, int(round(self._maxy-2)*(2.00/3)) , self._maxx-2)
         
         curses.doupdate()
-        
-        LOG.info("------ End Printing on screen ------")
-
-        #sleep x secs for the moment
-        time.sleep(sleep_time)
-        
     
     def reset_screen(self):
         """
@@ -239,66 +233,70 @@ class TextDisplay(object):
         active_data = header_Active   + header
         finish_data = header_Finished + header
         
-        for record in a_db:
+        #reverse iteration from the lastest records to the oldest one
+        for index in a_db._last_update.get_sorted_iter(sorted, reverse = True):
             
-            #reduce filename and jobname size to 50
-            filename = record['filename']
-            if filename:
-                filename = os.path.basename(filename)
-                
-                #will not fail if name < 50
-                filename = filename[:50]
-            else:
-                filename = "-"
+            record_list = a_db._last_update[index]
             
-            jobname = record['jobname']
-            if jobname:
-                #will not fail if name < 20
-                jobelems = jobname.split('-')
-                jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
-            else:
-                jobname = "-"
-            
-            uplinked = record.get('uplinked', None)
-            if not uplinked:
-                uplinked = "-"
-            else:
-                uplinked = time_utils.datetime_to_compactdate(uplinked)
+            for record in record_list:
+                #reduce filename and jobname size to 50
+                filename = record['filename']
+                if filename:
+                    filename = os.path.basename(filename)
+                    
+                    #will not fail if name < 50
+                    filename = filename[:50]
+                else:
+                    filename = "-"
                 
-            queued   = record.get('queued', None)
-            if not queued:
-                queued = "-"
-            else:
-                queued = time_utils.datetime_to_compactdate(queued)
-            
-            annouc   = record.get('announced', None)
-            if not annouc:
-                annouc = "-"
-            else:
-                annouc = time_utils.datetime_to_compactdate(annouc)
+                jobname = record['jobname']
+                if jobname:
+                    #will not fail if name < 20
+                    jobelems = jobname.split('-')
+                    jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
+                else:
+                    jobname = "-"
                 
-            blocked   = record.get('blocked', None)
-            if not blocked:
-                blocked = "-"
-            else:
-                blocked = time_utils.datetime_to_compactdate(blocked)
+                uplinked = record.get('uplinked', None)
+                if not uplinked:
+                    uplinked = "-"
+                else:
+                    uplinked = time_utils.datetime_to_compactdate(uplinked)
+                    
+                queued   = record.get('queued', None)
+                if not queued:
+                    queued = "-"
+                else:
+                    queued = time_utils.datetime_to_compactdate(queued)
                 
-            finished = record.get('finished', None)
-            if not finished:
-                finished = "-"
-            else:
-                finished = time_utils.datetime_to_compactdate(finished)
-                
-            if finished == '-':
-                active_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
-                              queued.center(17),jobname.center(20), \
-                              blocked.center(17),  annouc.center(17),\
-                              finished.center(17))
-            else:
-                finish_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
-                              queued.center(17),jobname.center(20), \
-                              blocked.center(17),  annouc.center(17),\
-                              finished.center(17))
+                annouc   = record.get('announced', None)
+                if not annouc:
+                    annouc = "-"
+                else:
+                    annouc = time_utils.datetime_to_compactdate(annouc)
+                    
+                blocked   = record.get('blocked', None)
+                if not blocked:
+                    blocked = "-"
+                else:
+                    blocked = time_utils.datetime_to_compactdate(blocked)
+                    
+                finished = record.get('finished', None)
+                if not finished:
+                    finished = "-"
+                else:
+                    finished = time_utils.datetime_to_compactdate(finished)
+                    
+                if finished == '-':
+                    active_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
+                                  queued.center(17),jobname.center(20), \
+                                  blocked.center(17),  annouc.center(17),\
+                                  finished.center(17))
+                else:
+                    finish_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
+                                  queued.center(17),jobname.center(20), \
+                                  blocked.center(17),  annouc.center(17),\
+                                  finished.center(17))
             
            
         print("%s\n%s" %(active_data, finish_data) )
@@ -561,7 +559,7 @@ def print_on_display(a_db, a_display, a_last_time_display):
         return datetime.datetime.now()
     else:
         current_time = datetime.datetime.now()
-        if current_time - a_last_time_display > datetime.timedelta(seconds=1):
+        if current_time - a_last_time_display > datetime.timedelta(seconds=2):
             a_display.print_screen(a_db)
             return datetime.datetime.now()
         else:
@@ -582,7 +580,7 @@ def analyze_from_tailed_file():
     db.create('filename', 'uplinked', \
               'queued', 'jobname', \
               'announced','blocked', \
-              'finished','metadata', 'last_update', 'finished_time_insert', mode = 'open', capped_size=1000000)
+              'finished','metadata', 'last_update', 'finished_time_insert', mode = 'override', capped_size=1000000)
     
     db.create_index('last_update')
     
@@ -613,10 +611,6 @@ def analyze_from_tailed_file():
                 except tellicastlog_parser.InvalidTellicastlogFormatError, e:
                     error_str = utils.get_exception_traceback()
                     LOG.error("Parser Exception %s, traceback %s" %(e, error_str))
-                    
-                #active, finished, blocked = get_active_jobs(db)
-                
-                #LOG.info("active jobs = %d, finished jobs=%d, blocked=%d" % (active, finished, blocked) )
                 
                 last_time_display = print_on_display(db, display, last_time_display)
                 
@@ -672,7 +666,7 @@ def analyze_from_multiple_files():
     database.create('filename', 'uplinked', \
               'queued', 'jobname', \
               'announced','blocked', \
-              'finished','metadata', mode = 'open')
+              'finished','metadata', mode = 'override')
     
     for (line, filename) in iterable:
         
