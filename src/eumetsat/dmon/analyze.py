@@ -1,10 +1,9 @@
 '''
 Created on Nov 3, 2011
 
-@author: gaubert
+@author: guillaume.aubert@eumetsat.int
 '''
 
-import os
 import datetime
 import sys
 import re
@@ -14,572 +13,303 @@ import tellicastlog_parser
 import xferlog_parser
 
 import eumetsat.dmon.common.mem_db as mem_db
-import eumetsat.dmon.common.time_utils as time_utils
 import eumetsat.dmon.common.utils as utils
 import eumetsat.dmon.common.log_utils  as log_utils
 
-import curses
-import time
+import eumetsat.dmon.displays as displays
 
-LOG = None
-
-class CurseDisplay(object):
-    '''
-       A simple Curse display
-    '''
+class Analyzer(object):
+    """
+       Analyze uplink server logs and display results on screen
+    """
+    LOG = log_utils.LoggerFactory.get_logger('Analyzer')
+    
+    #regular expression to read aggregated info
+    process_expr = "\(('|\")(?P<line>.*)('|\"),\s('|\")(?P<filename>.*)('|\")\)" 
+    expr_re = re.compile(process_expr)
+    
+    # global to the module
+    s_parser = tellicastlog_parser.TellicastLogParser('tc-send')
+    x_parser = xferlog_parser.XferlogParser()
+    d_parser = tellicastlog_parser.TellicastLogParser('dirmon')
+        
+    mapper = {'xferlog'   : 'xferlog',
+              'send.log'  : 'tc-send',
+              'dirmon.log' : 'dirmon'}
+        
     def __init__(self):
         """
            constructor
         """
-        self._screen = curses.initscr()
+        # create database
+        self.mem_db = mem_db.Base('analysis')
+        # create new base with field names (set mode = open) to overwrite db on next run
+        #keep X elements max in collections
+        self.mem_db.create('filename', 'uplinked', \
+                  'queued', 'jobname', \
+                  'announced','blocked', \
+                  'finished','metadata', 'last_update', 'finished_time_insert', mode = 'override', capped_size=1000000)
         
-        curses.noecho()
-        curses.cbreak()
-        self._screen.keypad(1)
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
-        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLUE)
-        self._screen.bkgd(curses.color_pair(1))
-        self._screen.box()
-        self._screen.refresh()
-        # to have non blocking getch
-        self._screen.nodelay(1)
+        self.mem_db.create_index('last_update')
         
-        #get screen size
-        self._maxy, self._maxx = self._screen.getmaxyx()
-        LOG.info("maxx = %d, maxy = %d\n" %(self._maxy, self._maxx))
+        #display = displays.TextDisplay()
+        self.display = displays.CurseDisplay()
         
-        self._pad = curses.newpad(3000, 3000)
-        
-        
-    def check_for_input(self):
+    def get_dwd_record(self, database, result, dirmon_dir): #pylint: disable-msg=R0201
         """
-           Check for inputs
+           Manage the particular case of DWD records
         """  
-        c = self._screen.getch()
-        if c in [ord('x'),ord('q')]:
-            #QUIT
-            return "QUIT"
+        #define type dirmon_dir -> ftp user
+        if dirmon_dir == 'wmo-ra6':
+            msg_type = 'wmora6'
         else:
-            return None
-    
-    def print_screen(self, a_db):
-        """
-        """
+            msg_type = 'dwd'
         
-        pad = self._pad
+        records = database(filename = result['file'])
         
-        header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-        header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |"
-        template = "%s|%s|%s|%s|%s|%s|%s|"
+        for rec in records:
+            if rec['metadata'].get('ftp_user') == msg_type:
+                return [rec]
         
-        #print(header)
-        pad.addstr(1, 1, header_l)
-        pad.addstr(2, 1, header)
-        
-        #set x 
-        x = 3
-        
-        nb_recs = len(a_db)
-        printed_rec = 0
-        
-        LOG.info("------ start Printing on screen ------")
-        
-        #reverse iteration from the lastest records to the oldest one
-        while nb_recs > 0 and printed_rec < 65:  
-            
-            record = a_db.get_by_id(nb_recs-1,None)
-            
-            if record:          
-                #reduce filename and jobname size to 50
-                filename = record['filename']
-                if filename:
-                    filename = os.path.basename(filename)
-                    
-                    #will not fail if name < 50
-                    filename = filename[:50]
-                else:
-                    filename = "-"
-                
-                jobname = record['jobname']
-                if jobname:
-                    #will not fail if name < 20
-                    jobelems = jobname.split('-')
-                    jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
-                else:
-                    jobname = "-"
-                
-                uplinked = record.get('uplinked', None)
-                if not uplinked:
-                    uplinked = "-"
-                else:
-                    uplinked = time_utils.datetime_to_compactdate(uplinked)
-                    
-                queued   = record.get('queued', None)
-                if not queued:
-                    queued = "-"
-                else:
-                    queued = time_utils.datetime_to_compactdate(queued)
-                
-                annouc   = record.get('announced', None)
-                if not annouc:
-                    annouc = "-"
-                else:
-                    annouc = time_utils.datetime_to_compactdate(annouc)
-                    
-                blocked   = record.get('blocked', None)
-                if not blocked:
-                    blocked = "-"
-                else:
-                    blocked = time_utils.datetime_to_compactdate(blocked)
-                    
-                finished = record.get('finished', None)
-                if not finished:
-                    finished = "-"
-                else:
-                    finished = time_utils.datetime_to_compactdate(finished)
-                
-                s = template % (filename.ljust(50) if filename != '-' else filename.center(50), \
-                                uplinked.center(17),\
-                              queued.center(17),jobname.center(20), \
-                              blocked.center(17),  annouc.center(17),\
-                              finished.center(17))
-                
-                pad.addstr(x, 1, s)
-                
-                #increment x to reach a new line
-                x += 1
-                
-                #inserted on records so add it
-                printed_rec += 1
-                
-            #decrement nb_recs
-            nb_recs -= 1
-            
-        
-        pad.refresh(1, 1, 1, 1, self._maxy-2, self._maxx-2)
-        
-        LOG.info("------ End Printing on screen ------")
+        return []
 
-        #sleep 1 sec for the moment
-        time.sleep(1)
+    def remove_expired_records(self, database): #pylint: disable-msg=R0201
+        """
+           remove records that have been finished for more than 60 seconds
+        """
+        expiry_time = 0 # 20 in seconds
+        now = datetime.datetime.now()
         
-    
-    def reset_screen(self):
-        """
-        """
-        curses.nocbreak()
-        self._screen.keypad(0)
-        curses.echo()
-        curses.endwin()
+        Analyzer.LOG.info("Before to remove records")
+        #self.print_db_logfile(database)
+        
+        removed_rec = 0
+        for rec in [ r for r in database \
+                    if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
+                   ]:
+            database.delete(rec)
+            Analyzer.LOG.info("deleted %s" % (rec) )
+            removed_rec += 1
+        
+        if removed_rec > 0:
+            Analyzer.LOG.info("Deleted %d records" % (removed_rec))
+            Analyzer.LOG.info("After to remove records")
+            self.print_db_logfile(database)
+            
+        
 
-
-class TextDisplay(object):
-    '''
-       A simple text display
-    '''
-    def __init__(self):
+    def print_db_logfile(self, database): #pylint: disable-msg=R0201
         """
-           constructor
+          print database in log file for debuging purposes
         """
-        pass
-    
-    def check_for_input(self):
-        """
-           Check for inputs
-        """  
-        return None
-
-    def print_screen(self, a_db):
-        """
-          print a table
-        """
-        header_Active   = "--Active----------------------------------------------------------------------------------------------------------------------------------------------------------\n"
-        header_Finished = "--Finished--------------------------------------------------------------------------------------------------------------------------------------------------------\n"
-        
-        header          = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |\n"
-        
-        template = "%s|%s|%s|%s|%s|%s|%s|\n"
-        
-        active_data = header_Active   + header
-        finish_data = header_Finished + header
-        
-        for record in a_db:
-            
-            #reduce filename and jobname size to 50
-            filename = record['filename']
-            if filename:
-                filename = os.path.basename(filename)
-                
-                #will not fail if name < 50
-                filename = filename[:50]
-            else:
-                filename = "-"
-            
-            jobname = record['jobname']
-            if jobname:
-                #will not fail if name < 20
-                jobelems = jobname.split('-')
-                jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
-            else:
-                jobname = "-"
-            
-            uplinked = record.get('uplinked', None)
-            if not uplinked:
-                uplinked = "-"
-            else:
-                uplinked = time_utils.datetime_to_compactdate(uplinked)
-                
-            queued   = record.get('queued', None)
-            if not queued:
-                queued = "-"
-            else:
-                queued = time_utils.datetime_to_compactdate(queued)
-            
-            annouc   = record.get('announced', None)
-            if not annouc:
-                annouc = "-"
-            else:
-                annouc = time_utils.datetime_to_compactdate(annouc)
-                
-            blocked   = record.get('blocked', None)
-            if not blocked:
-                blocked = "-"
-            else:
-                blocked = time_utils.datetime_to_compactdate(blocked)
-                
-            finished = record.get('finished', None)
-            if not finished:
-                finished = "-"
-            else:
-                finished = time_utils.datetime_to_compactdate(finished)
-                
-            if finished == '-':
-                active_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
-                              queued.center(17),jobname.center(20), \
-                              blocked.center(17),  annouc.center(17),\
-                              finished.center(17))
-            else:
-                finish_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
-                              queued.center(17),jobname.center(20), \
-                              blocked.center(17),  annouc.center(17),\
-                              finished.center(17))
-            
+        for rec in database:
+            Analyzer.LOG.info(rec)
            
-        print("%s\n%s" %(active_data, finish_data) )
-        
-        
-    
-    def reset_screen(self):
+
+    def analyze(self, database, line, filename):
         """
-           Do nothing
+           Analysis from the line and filename
         """
-        pass
-    
-    
-
-    def old_print_table(self, a_db):
-        """
-          print a table
-        """
-        header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-        header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |"
-        template = "%s|%s|%s|%s|%s|%s|%s|"
         
-        print(header)
-        
-        for record in a_db:
-            
-            #reduce filename and jobname size to 50
-            filename = record['filename']
-            if filename:
-                filename = os.path.basename(filename)
+        the_type = Analyzer.mapper[filename]
                 
-                #will not fail if name < 50
-                filename = filename[:50]
-            else:
-                filename = "-"
+        if the_type == 'xferlog':
+            result = Analyzer.x_parser.parse_one_line(line)
             
-            jobname = record['jobname']
-            if jobname:
-                #will not fail if name < 20
-                jobelems = jobname.split('-')
-                jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
-            else:
-                jobname = "-"
+            #add file in db
+            database.insert(filename = result['file'], \
+                            uplinked = result['time'], \
+                            metadata = result['metadata'], \
+                            last_update= datetime.datetime.now())
             
-            uplinked = record.get('uplinked', None)
-            if not uplinked:
-                uplinked = "-"
-            else:
-                uplinked = time_utils.datetime_to_compactdate(uplinked)
+        elif the_type == 'dirmon':
+            result = Analyzer.d_parser.parse_one_line(line)
+            
+            if result.get('job_status', None) == 'created':
                 
-            queued   = record.get('queued', None)
-            if not queued:
-                queued = "-"
-            else:
-                queued = time_utils.datetime_to_compactdate(queued)
-            
-            annouc   = record.get('announced', None)
-            if not annouc:
-                annouc = "-"
-            else:
-                annouc = time_utils.datetime_to_compactdate(annouc)
+                dirmon_dir = result['metadata']['dirmon_dir']
+                #special case for DWD (should hopefully disappear in the future
+                if dirmon_dir == 'wmo-ra6' or dirmon_dir.startswith('DWD'):
+                    records = self.get_dwd_record(database, result, dirmon_dir)
+                                
+                else:       
                 
-            blocked   = record.get('blocked', None)
-            if not blocked:
-                blocked = "-"
-            else:
-                blocked = time_utils.datetime_to_compactdate(blocked)
-                
-            finished = record.get('finished', None)
-            if not finished:
-                finished = "-"
-            else:
-                finished = time_utils.datetime_to_compactdate(finished)
-            
-            print(template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
-                              queued.center(17),jobname.center(20), \
-                              blocked.center(17),  annouc.center(17),\
-                              finished.center(17)))
-        
-        print(header_l)
-    
-    
-#regular expression to read aggregated info
-process_expr = "\(('|\")(?P<line>.*)('|\"),\s('|\")(?P<filename>.*)('|\")\)" 
-expr_re = re.compile(process_expr)
-
-def get_dwd_record(db, result, dirmon_dir):
-    """
-       Manage the particular case of DWD records
-    """  
-    #define type dirmon_dir -> ftp user
-    if dirmon_dir == 'wmo-ra6':
-        type = 'wmora6'
-    else:
-        type = 'dwd'
-    
-    records = db(filename = result['file'])
-    
-    for rec in records:
-        if rec['metadata'].get('ftp_user') == type:
-            return [rec]
-    
-    return []
-
-
-# global to the module
-s_parser = tellicastlog_parser.TellicastLogParser('tc-send')
-x_parser = xferlog_parser.XferlogParser()
-d_parser = tellicastlog_parser.TellicastLogParser('dirmon')
-    
-mapper = {'xferlog'   : 'xferlog',
-          'send.log'  : 'tc-send',
-          'dirmon.log' : 'dirmon'}
-
-def analyze(db, line, filename):
-    """
-       Analysis from the line and filename
-    """
-    
-    the_type = mapper[filename]
-            
-    if the_type == 'xferlog':
-        result = x_parser.parse_one_line(line)
-        
-        #add file in db
-        db.insert(filename = result['file'],uplinked = result['time'], metadata = result['metadata'])
-        
-    elif the_type == 'dirmon':
-        result = d_parser.parse_one_line(line)
-        
-        if result.get('job_status', None) == 'created':
-            
-            dirmon_dir = result['metadata']['dirmon_dir']
-            #special case for DWD (should hopefully disappear in the future
-            if dirmon_dir == 'wmo-ra6' or dirmon_dir.startswith('DWD'):
-                records = get_dwd_record(db, result, dirmon_dir)
+                    records = database(filename = result['file'])
+                    
+                if len(records) == 0:
+                    #no file created so it means that the xferlog message has not been received
+                    # add it in the table
+                    database.insert(filename=result['file'], \
+                                    jobname = result['job'], \
+                                    queued = result['time'], \
+                                    metadata = result['metadata'], last_update= datetime.datetime.now())
+                else:
+                    for rec in records:
+                                                                                    
+                        r_job = database(jobname = result['job'])
+                                          
+                        #if job reconcile both info
+                        if r_job:
                             
-            else:       
-            
-                records = db(filename = result['file'])
+                            #update filename info
+                            database.update(rec, queued = result['time'], \
+                                      jobname = r_job[0]['jobname'], \
+                                      announced = r_job[0]['announced'], \
+                                      finished = r_job[0]['finished'])  
+                            
+                            #delete job record
+                            database.delete(r_job[0])
+                            
+                        else:
+                            #no other record with job name, update record
+                            database.update(rec, jobname = result['job'], queued = result['time'], last_update= datetime.datetime.now())              
                 
-            if len(records) == 0:
-                #no file created so it means that the xferlog message has not been received
-                # add it in the table
-                db.insert(filename=result['file'], jobname = result['job'], queued = result['time'], metadata = result['metadata'])
-            else:
-                for rec in records:
-                                                                                
-                    r_job = db(jobname = result['job'])
-                    
-                    #if job reconcile both info
-                    if r_job:
+        elif the_type == 'tc-send':
+            result = Analyzer.s_parser.parse_one_line(line)
+            
+            # look for job_status == job_announced
+            if result.get('job_status') == 'announced':
+                
+                # get all records concerned by this job
+                records = database(jobname = result.get('job', None))
+                
+                if len(records) == 0:
+                    # add a line in the to print table
+                    database.insert(jobname = result.get('job', None), \
+                                    announced = result['time'], last_update= datetime.datetime.now())
+                else:
+                    for rec in records:
+                        #found a job so update this line in db
+                        database.update(rec, jobname = result.get('job', None), \
+                                        announced = result['time'], last_update= datetime.datetime.now()) 
+                       
+            elif result.get('job_status') == 'blocked':
+                
+                #get all records concerned by this job
+                records = database(jobname = result.get('job', None))
+                
+                if len(records) == 0:
+                    # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                    database.insert(jobname = result.get('job', None), \
+                                    blocked = result['time'], last_update= datetime.datetime.now())
+                else:
+                    for rec in records:
+                        # update info with finished time
+                        database.update(rec, blocked = result['time']) 
                         
-                        #update filename info
-                        db.update(rec, queued = result['time'], jobname = r_job[0]['jobname'], announced = r_job[0]['announced'], finished = r_job[0]['finished'])  
-                        
-                        #delete job record
-                        db.delete(r_job[0])
-                        
-                    else:
-                        #no other record with job name, update record
-                        db.update(rec, jobname = result['job'], queued = result['time'])                
-            
-    elif the_type == 'tc-send':
-        result = s_parser.parse_one_line(line)
-        
-        # look for job_status == job_announced
-        if result.get('job_status') == 'announced':
-            
-            # get all records concerned by this job
-            records = db(jobname = result.get('job', None))
-            
-            if len(records) == 0:
-                # add a line in the to print table
-                db.insert(jobname = result.get('job', None), announced = result['time'])
-            else:
-                for rec in records:
-                    #found a job so update this line in db
-                    db.update(rec, jobname = result.get('job', None), announced = result['time']) 
-                   
-        elif result.get('job_status') == 'blocked':
-            
-            #get all records concerned by this job
-            records = db(jobname = result.get('job', None))
-            
-            if len(records) == 0:
-                # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
-                db.insert(jobname = result.get('job', None), blocked = result['time'])
-            else:
-                for rec in records:
-                    # update info with finished time
-                    db.update(rec, blocked = result['time']) 
-        elif result.get('job_status') == 'finished':
-
-            #get all records concerned by this job
-            records = db(jobname = result.get('job', None))
-            
-            if len(records) == 0:
-                # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
-                db.insert(jobname = result.get('job', None), finished = result['time'])
-            else:
-                for rec in records:
-                    # update info with finished time
-                    db.update(rec, finished = result['time'])   
-                    
-def print_on_display(a_db, a_display, a_last_time_display):
-    """
-       Display every x seconds
-    """ 
+            elif result.get('job_status') == 'finished':
     
-    if not a_last_time_display:
-        a_display.print_screen(a_db)
-        return datetime.datetime.now()
-    else:
-        current_time = datetime.datetime.now()
-        if current_time - a_last_time_display > datetime.timedelta(seconds=1):
-            a_display.print_screen(a_db)
-            return datetime.datetime.now()
-        else:
-            return a_last_time_display
-    
-        
-    
-def analyze_from_aggregated_file():
-    """
-       Analyze from an aggregated file containing xferlog, dirmon.log and send.log
-    """
-    iter = open('/tmp/logfile.log', 'r')
-    
-    # create database
-    db = mem_db.Base('analysis')
-    # create new base with field names (set mode = open) to overwrite db on next run
-    #keep X elements max in collections
-    db.create('filename', 'uplinked', \
-              'queued', 'jobname', \
-              'announced','blocked', \
-              'finished','metadata', mode = 'open', capped_size=1000000)
-    
-    #display = TextDisplay()
-    display = CurseDisplay()
-    
-    last_time_display = None
-    
-    try:
-    
-        for elem in iter:
-            #process only tuples (other lines should be ignored)
-            matched = expr_re.match(elem)
-            if matched:
-                 
-                line     = matched.group('line')
-                filename = matched.group('filename')
+                #get all records concerned by this job
+                records = database(jobname = result.get('job', None))
                 
-                analyze(db, line, filename)
-                
-                last_time_display = print_on_display(db, display, last_time_display)
-                
-                input = display.check_for_input()
-                if input and input == 'QUIT':
-                    break # quit loop
-                    
-        else:
-            #force update
-            print_on_display(db, display, None)
-        
-        LOG.info("Out of loop")
-                
-                
-    except KeyboardInterrupt:
-        
-        #CTRL^C pressed so silently quit
-        sys.exit(0)
-    except Exception, e:
-        
-        LOG.error("In Error")
-        
-        error_str = utils.get_exception_traceback()
-        
-        LOG.error("received error %s. Traceback = %s" %(e,error_str))
-    finally:
-        #whatever the case always reset the screen
-        display.reset_screen()
-        
-        print("Exiting program")
-        
+                if len(records) == 0:
+                    # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                    database.insert(jobname = result.get('job', None), \
+                                    finished = result['time'], \
+                                    finished_time_insert = datetime.datetime.now(), \
+                                    last_update= datetime.datetime.now())
+                else:
+                    for rec in records:
+                        # update info with finished time
+                        database.update(rec, finished = result['time'], \
+                                        finished_time_insert = datetime.datetime.now(), \
+                                        last_update= datetime.datetime.now())   
          
+                    
+    def print_on_display(self, a_display, a_last_time_display):  #pylint: disable-msg=R0201
+        """
+           Display every x seconds
+        """ 
+        current_time = datetime.datetime.now()
+        if not a_last_time_display:
+            a_display.print_screen(self.mem_db, current_time)
+            return current_time
+        else:
+            if current_time - a_last_time_display > datetime.timedelta(seconds=2):
+                
+                #clean database 
+                self.remove_expired_records(self.mem_db)
+                
+                a_display.print_screen(self.mem_db, current_time)
+                return current_time
+            else:
+                return a_last_time_display
+    
+    def analyze_from_tailed_file(self, a_file_paths):
+        """
+           Analyze from an aggregated file containing xferlog, dirmon.log and send.log
+        """
+        files = []
+        for f_path in a_file_paths:
+            files.append(open(f_path, 'r'))
         
-def analyze_from_multiple_files():
-    """
-       Analyze
-    """
-    file_send    = open('/tmp/send.log')
-    file_xferlog = open('/tmp/xferlog')
-    file_dirmon  = open('/tmp/dirmon.log')
-    
-    iter = multitail.MultiFileTailer.tail([file_send, file_xferlog, file_dirmon])
-    
-    # create database
-    db = mem_db.Base('analysis')
-     # create new base with field names (set mode = open) to overwrite db on next run
-    db.create('filename', 'uplinked', \
-              'queued', 'jobname', \
-              'announced','blocked', \
-              'finished','metadata', mode = 'open')
-    
-    for (line, filename) in iter:
+        f_iter = multitail.MultiFileTailer.tail(files)
         
-        analyze(db, line, filename)
-    
+        last_time_display = None
+        on_error = False
+        
+        try:
+            
+            #init print
+            self.print_on_display(self.display, None)
+        
+            for (f_line, _) in f_iter:
+                
+                #process only tuples (other lines should be ignored)
+                matched = Analyzer.expr_re.match(f_line)
+                if matched:
+                     
+                    line     = matched.group('line')
+                    filename = matched.group('filename')
+                    
+                    # sometimes the tail can eat (bug) part of the line
+                    # ignore this exception
+                    try:
+                        self.analyze(self.mem_db, line, filename)
+                    except tellicastlog_parser.InvalidTellicastlogFormatError, err:
+                        error_str = utils.get_exception_traceback()
+                        Analyzer.LOG.error("Parser Exception %s, traceback %s" %(err, error_str))
+                    
+                    last_time_display = self.print_on_display(self.display, last_time_display)
+                    
+                    kb_input = self.display.check_for_input()
+                    if kb_input and kb_input == 'QUIT':
+                        break # quit loop
+                        
+            else:
+                #force update
+                self.print_on_display(self.mem_db, self.display, None)
+            
+            Analyzer.LOG.info("Out of loop")
+                    
+                    
+        except KeyboardInterrupt:
+            
+            #CTRL^C pressed so silently quit
+            sys.exit(0)
+        except Exception, err:
+            
+            Analyzer.LOG.error("In Error")
+            
+            error_str = utils.get_exception_traceback()
+            
+            Analyzer.LOG.error("received error %s. Traceback = %s" %(err, error_str))
+            
+            on_error = True
+        finally:
+            #whatever the case always reset the screen
+            self.display.reset_screen()
+            if on_error:
+                print("Exiting on error")
+                return 1  #pylint: disable-msg=W0150
+            else:
+                print("Exiting gracefully")
+                return 0  #pylint: disable-msg=W0150
     
 if __name__ == '__main__': 
     
     log_utils.LoggerFactory.setup_simple_file_handler('/tmp/analyze.log') 
     
-    LOG = log_utils.LoggerFactory.get_logger('ALogger')
+    analyzer = Analyzer() #pylint: disable-msg=C0103
     
-    LOG.info("start")
-     
-    analyze_from_aggregated_file()
+    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/logfile.log']))

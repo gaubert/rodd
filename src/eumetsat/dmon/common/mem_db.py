@@ -20,8 +20,6 @@ Syntax :
     db = Base('dummy')
     # create new base with field names
     db.create('name','age','size')
-    # existing base
-    db.open()
     # insert new record
     db.insert(name='homer',age=23,size=1.84)
     # records are dictionaries with a unique integer key __id__
@@ -72,6 +70,12 @@ class Index:
 
     def __iter__(self):
         return iter(self.db.indices[self.field])
+    
+    def get_sorted_iter(self, func, reverse = False):
+        """
+           return a sorted iterator (sorted with func)
+        """
+        return iter(func(self.db.indices[self.field], reverse = reverse))
 
     def keys(self):
         return self.db.indices[self.field].keys()
@@ -99,22 +103,12 @@ class Base:
         #check if there is a capped_size 
         self.capped_size = kw.get("capped_size", -1)
         
-        self.mode = mode = kw.get("mode", None)
-        if os.path.exists(self.name):
-            if not os.path.isfile(self.name):
-                raise IOError,"%s exists and is not a file" %self.name
-            elif mode is None:
-                raise IOError,"Base %s already exists" %self.name
-            elif mode == "open":
-                return self.open()
-            elif mode == "override":
-                os.remove(self.name)
+        self.mode = kw.get("mode", None)
                
         self.fields = list(fields)
         self.records = collections.OrderedDict() #add an orderedDict to cap the collection
         self.next_id = 0
         self.indices = {}
-        self.commit()
         return self
 
     def create_index(self,*fields):
@@ -147,29 +141,7 @@ class Base:
         if reset:
             self.commit()
 
-    def open(self):
-        """Open an existing database and load its content into memory"""
-        _in = open(self.name) # don't specify binary mode !
-        self.fields = cPickle.load(_in)
-        self.next_id = cPickle.load(_in)
-        self.records = cPickle.load(_in)
-        self.indices = cPickle.load(_in)
-        for f in self.indices.keys():
-            setattr(self,'_'+f,Index(self,f))
-        _in.close()
-        self.mode = "open"
-        return self
-
-    def commit(self):
-        """Write the database to a file"""
-        out = open(self.name,'wb')
-        cPickle.dump(self.fields,out)
-        cPickle.dump(self.next_id,out)
-        cPickle.dump(self.records,out)
-        cPickle.dump(self.indices,out)
-        out.close()
-
-    def insert(self,*args,**kw):
+    def insert(self, *args, **kw):
         """Insert a record in the database
         Parameters can be positional or keyword arguments. If positional
         they must be in the same order as in the create() method
@@ -177,11 +149,11 @@ class Base:
         Returns the record identifier
         """
         if args:
-            kw = dict([(f,arg) for f,arg in zip(self.fields,args)])
+            kw = dict([(f, arg) for f, arg in zip(self.fields, args)])
         # initialize all fields to None
-        record = dict([(f,None) for f in self.fields])
+        record = dict([(f, None) for f in self.fields])
         # set keys and values
-        for (k,v) in kw.iteritems():
+        for (k, v) in kw.iteritems():
             #add record
             record[k]=v
             
@@ -201,8 +173,7 @@ class Base:
         self.records[self.next_id] = record
         # update index
         for ix in self.indices.keys():
-            bisect.insort(self.indices[ix].setdefault(record[ix],[]),
-                self.next_id)
+            bisect.insort(self.indices[ix].setdefault(record[ix], []), self.next_id)
         # increment the next __id__ to attribute
         self.next_id += 1
         return record['__id__']
@@ -247,7 +218,7 @@ class Base:
             del self.records[_id]
         return deleted
 
-    def update(self,record,**kw):
+    def update(self, record, **kw):
         """Update the record with new keys and values and update indices"""
         # update indices
         _id = record["__id__"]
@@ -329,7 +300,16 @@ if __name__ == '__main__':
     
     for rec in db:
         print('name = %s, age= %d' %(rec['name'], rec['age']))
+        
+    # update test
+    for rec in db:
+        db.update(rec, age=42)
    
+    for rec in db:
+        print('name = %s, age= %d' %(rec['name'], rec['age']))
+     
+    import sys   
+    sys.exit(1)
     
     # test on a 1000 record base
     import random
@@ -374,8 +354,7 @@ if __name__ == '__main__':
     print len([r for r in db if r['name']==u'pierre']),'pierre'
     print len([r for r in db if r['name'] in [u'pierre',u'Pierre']]),'p/Pierre'
     print 'is unicode :',isinstance(db[20]['name'],unicode)
-    db.commit()
-    db.open()
+    
     print '\nSame operation after commit + open'
     print len([r for r in db if r['name']==u'Pierre']),'Pierre'
     print len([r for r in db if r['name']==u'pierre']),'pierre'
