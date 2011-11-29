@@ -3,6 +3,7 @@ Created on Nov 15, 2011
 
 @author: guillaume.aubert@eumetsat.int
 '''
+import sys
 import base64
 from imapclient import IMAPClient
 import imaplib
@@ -38,7 +39,7 @@ def imaplib_test(login, password):
        However the labels will not be revived as google manages them as imap directories. 
        This could be the easy solution quickly built. 
        A second solution would be for each email to look for the different dirs where they are.
-       Maybe IMAP provides a unique id for the emails (too be seen).
+       Maybe IMAP provides a unique id for the emails (too be seen).-m
     """
     
     mail = imaplib.IMAP4_SSL('imap.gmail.com')
@@ -47,9 +48,18 @@ def imaplib_test(login, password):
     # Out: list of "folders" aka labels in gmail.
     mail.select("[Gmail]/All Mail") # connect to inbox.
     
-    result, data = mail.search(None, "ALL")
+    result, data = mail.uid('search', None, "ALL")
+    
+    latest_email_uid = data[0].split()[-1]
+    result, data = mail.uid('fetch', latest_email_uid, '(RFC822)')
+    raw_email = data[0][1]
+    
+    result, data = mail.uid('fetch', latest_email_uid, '(X-GM-THRID X-GM-MSGID)')
+    
+    sys.exit(1)
     
     ids = data[0] # data is a list.
+    
     
     print("ids = %s\n" %(ids))
     
@@ -63,22 +73,27 @@ def imaplib_test(login, password):
     print("hello\n")
      
 
-def imapclient__test(login, password):
+def imapclient_test(login, password):
     
     server = IMAPClient(HOST, use_uid=True, ssl=ssl)
     server.login(login, password)
     
     capabilities = server.capabilities()
     
-    print("list folders = %s\n" %(server.list_folders()))
+    #print("list folders = %s\n" %(server.list_folders()))
        
     select_info = server.select_folder('[Gmail]/All Mail')
     
     #print '%d messages in INBOX' % select_info['EXISTS']
       
     messages = server.search(['NOT DELETED'])
-    print "%d messages in [Gmail]/All Mail" % len(messages)
-       
+    print "%d messages in [Gmail]/Inbox" % len(messages)
+    
+    for msg in messages[:20]:
+        print("msg uid = %d\n" %(msg))
+    
+     
+    sys.exit()  
     select_info = server.select_folder('[Gmail]/Sent Mail')
     
     #print '%d messages in INBOX' % select_info['EXISTS']
@@ -95,5 +110,5 @@ if __name__ == '__main__':
     log, pas = read_password_file('/homespace/gaubert/.ssh/passwd')
     
     imaplib_test(log,pas)
-    #imap_test(log, pas)
+    #imapclient_test(log, pas)
     
