@@ -77,18 +77,26 @@ class Analyzer(object):
         """
            remove records that have been finished for more than 60 seconds
         """
-        expiry_time = 20 #in seconds
+        expiry_time = 0 # 20 in seconds
         now = datetime.datetime.now()
+        
+        Analyzer.LOG.info("Before to remove records")
+        #self.print_db_logfile(database)
         
         removed_rec = 0
         for rec in [ r for r in database \
                     if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
                    ]:
             database.delete(rec)
+            Analyzer.LOG.info("deleted %s" % (rec) )
             removed_rec += 1
         
         if removed_rec > 0:
             Analyzer.LOG.info("Deleted %d records" % (removed_rec))
+            Analyzer.LOG.info("After to remove records")
+            self.print_db_logfile(database)
+            
+        
 
     def print_db_logfile(self, database): #pylint: disable-msg=R0201
         """
@@ -208,17 +216,21 @@ class Analyzer(object):
                                         last_update= datetime.datetime.now())   
          
                     
-    def print_on_display(self, a_db, a_display, a_last_time_display):  #pylint: disable-msg=R0201
+    def print_on_display(self, a_display, a_last_time_display):  #pylint: disable-msg=R0201
         """
            Display every x seconds
         """ 
         current_time = datetime.datetime.now()
         if not a_last_time_display:
-            a_display.print_screen(a_db, current_time)
+            a_display.print_screen(self.mem_db, current_time)
             return current_time
         else:
             if current_time - a_last_time_display > datetime.timedelta(seconds=2):
-                a_display.print_screen(a_db, current_time)
+                
+                #clean database 
+                self.remove_expired_records(self.mem_db)
+                
+                a_display.print_screen(self.mem_db, current_time)
                 return current_time
             else:
                 return a_last_time_display
@@ -239,7 +251,7 @@ class Analyzer(object):
         try:
             
             #init print
-            self.print_on_display(self.mem_db, self.display, None)
+            self.print_on_display(self.display, None)
         
             for (f_line, _) in f_iter:
                 
@@ -258,13 +270,11 @@ class Analyzer(object):
                         error_str = utils.get_exception_traceback()
                         Analyzer.LOG.error("Parser Exception %s, traceback %s" %(err, error_str))
                     
-                    last_time_display = self.print_on_display(self.mem_db, self.display, last_time_display)
+                    last_time_display = self.print_on_display(self.display, last_time_display)
                     
                     kb_input = self.display.check_for_input()
                     if kb_input and kb_input == 'QUIT':
                         break # quit loop
-                    
-                    self.remove_expired_records(self.mem_db)
                         
             else:
                 #force update
