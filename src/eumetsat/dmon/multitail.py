@@ -8,9 +8,6 @@ import select
 import fcntl
 import os
 
-from stat import ST_SIZE
-
-
 class MultiFileTailer(object):
     '''
        Does a tail on multiple files
@@ -71,7 +68,7 @@ class MultiFileTailer(object):
             # get file size and store it in sizes
             sizes.append(os.path.getsize(the_file.name))
             #go the end of files
-            the_file.seek(0,2) 
+            the_file.seek(0, 2) 
             #set it non blocking
             file_num = the_file.fileno()
             old_flags = fcntl.fcntl(file_num, fcntl.F_GETFL)
@@ -108,7 +105,7 @@ class MultiFileTailer(object):
                                     line = line[:-1]
             
                             trailing = False
-                            line_read +=1
+                            line_read += 1
                             yield (line, os.path.basename(a_file.name)) 
                         else:
                             trailing = True
@@ -117,14 +114,14 @@ class MultiFileTailer(object):
                             
                             #every ten iteration check that has not rotated
                             if select_iteration > 15:
-                                (a_files, res_fsize) = MultiFileTailer.check_file_rotation(a_files, sizes)
+                                (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
                                 select_iteration = 0
                             
                             #leave line reading loop
                             break
             else:
                 time.sleep(delay)
-                (a_files, res_fsize) = MultiFileTailer.check_file_rotation(a_files, sizes)
+                (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
    
         
         
