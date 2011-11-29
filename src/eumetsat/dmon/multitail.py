@@ -45,7 +45,7 @@ class MultiFileTailer(object):
                 file_list[ind].close()
                 fdesc = open(name,'r')
                 res_flist.append(fdesc)
-                res_fsize.append(os.path.getsize(the_file.name))
+                res_fsize.append(os.path.getsize(name))
             else:
                 #update list
                 res_flist.append(file_list[ind])

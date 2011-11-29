@@ -64,6 +64,13 @@ class CurseDisplay(object):
             return "QUIT"
         else:
             return None
+        
+    def print_index(self, a_db):
+        """
+        """
+        
+        for rec in a_db._last_update.get_sorted_iter(sorted, reverse = True):
+            LOG.info("sorted rec = %s" %(rec))
     
     def print_screen(self, a_db):
         """
@@ -74,6 +81,7 @@ class CurseDisplay(object):
         nb_max_finished_records = 30
         sleep_time = 1
         
+        self.print_index(a_db)
         
         active_pad   = self._active_pad
         finished_pad = self._finished_pad
@@ -606,9 +614,9 @@ def analyze_from_tailed_file():
                     error_str = utils.get_exception_traceback()
                     LOG.error("Parser Exception %s, traceback %s" %(e, error_str))
                     
-                active, finished, blocked = get_active_jobs(db)
+                #active, finished, blocked = get_active_jobs(db)
                 
-                LOG.info("active jobs = %d, finished jobs=%d, blocked=%d" % (active, finished, blocked) )
+                #LOG.info("active jobs = %d, finished jobs=%d, blocked=%d" % (active, finished, blocked) )
                 
                 last_time_display = print_on_display(db, display, last_time_display)
                 

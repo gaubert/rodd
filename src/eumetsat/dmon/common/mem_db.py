@@ -72,6 +72,12 @@ class Index:
 
     def __iter__(self):
         return iter(self.db.indices[self.field])
+    
+    def get_sorted_iter(self, func, reverse = False):
+        """
+           return a sorted iterator (sorted with func)
+        """
+        return iter(func(self.db.indices[self.field], reverse = reverse))
 
     def keys(self):
         return self.db.indices[self.field].keys()
@@ -150,12 +156,12 @@ class Base:
     def open(self):
         """Open an existing database and load its content into memory"""
         _in = open(self.name) # don't specify binary mode !
-        self.fields = cPickle.load(_in)
+        self.fields  = cPickle.load(_in)
         self.next_id = cPickle.load(_in)
         self.records = cPickle.load(_in)
         self.indices = cPickle.load(_in)
         for f in self.indices.keys():
-            setattr(self,'_'+f,Index(self,f))
+            setattr(self, '_'+f, Index(self,f))
         _in.close()
         self.mode = "open"
         return self
@@ -163,13 +169,13 @@ class Base:
     def commit(self):
         """Write the database to a file"""
         out = open(self.name,'wb')
-        cPickle.dump(self.fields,out)
-        cPickle.dump(self.next_id,out)
-        cPickle.dump(self.records,out)
-        cPickle.dump(self.indices,out)
+        cPickle.dump(self.fields, out)
+        cPickle.dump(self.next_id, out)
+        cPickle.dump(self.records, out)
+        cPickle.dump(self.indices, out)
         out.close()
 
-    def insert(self,*args,**kw):
+    def insert(self, *args, **kw):
         """Insert a record in the database
         Parameters can be positional or keyword arguments. If positional
         they must be in the same order as in the create() method
@@ -177,11 +183,11 @@ class Base:
         Returns the record identifier
         """
         if args:
-            kw = dict([(f,arg) for f,arg in zip(self.fields,args)])
+            kw = dict([(f, arg) for f, arg in zip(self.fields, args)])
         # initialize all fields to None
-        record = dict([(f,None) for f in self.fields])
+        record = dict([(f, None) for f in self.fields])
         # set keys and values
-        for (k,v) in kw.iteritems():
+        for (k, v) in kw.iteritems():
             #add record
             record[k]=v
             
@@ -201,8 +207,7 @@ class Base:
         self.records[self.next_id] = record
         # update index
         for ix in self.indices.keys():
-            bisect.insort(self.indices[ix].setdefault(record[ix],[]),
-                self.next_id)
+            bisect.insort(self.indices[ix].setdefault(record[ix], []), self.next_id)
         # increment the next __id__ to attribute
         self.next_id += 1
         return record['__id__']
