@@ -20,292 +20,288 @@ import eumetsat.dmon.common.log_utils  as log_utils
 import eumetsat.dmon.displays as displays
 
 
-import time
-
-
-    
-    
-#regular expression to read aggregated info
-process_expr = "\(('|\")(?P<line>.*)('|\"),\s('|\")(?P<filename>.*)('|\")\)" 
-expr_re = re.compile(process_expr)
-
-def get_dwd_record(database, result, dirmon_dir):
+class Analyzer(object):
     """
-       Manage the particular case of DWD records
-    """  
-    #define type dirmon_dir -> ftp user
-    if dirmon_dir == 'wmo-ra6':
-        msg_type = 'wmora6'
-    else:
-        msg_type = 'dwd'
-    
-    records = database(filename = result['file'])
-    
-    for rec in records:
-        if rec['metadata'].get('ftp_user') == msg_type:
-            return [rec]
-    
-    return []
-
-
-# global to the module
-s_parser = tellicastlog_parser.TellicastLogParser('tc-send')
-x_parser = xferlog_parser.XferlogParser()
-d_parser = tellicastlog_parser.TellicastLogParser('dirmon')
-    
-mapper = {'xferlog'   : 'xferlog',
-          'send.log'  : 'tc-send',
-          'dirmon.log' : 'dirmon'}
-
-def remove_expired_records(database):
+       Analyze uplink server logs and display results on screen
     """
-       remove records that have been finished for more than 60 seconds
-    """
-    expiry_time = 20 #in seconds
-    now = datetime.datetime.now()
+    LOG = log_utils.LoggerFactory.get_logger('Analyzer')
     
-    removed_rec = 0
-    for rec in [ r for r in database \
-                if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
-               ]:
-        database.delete(rec)
-        removed_rec += 1
+    #regular expression to read aggregated info
+    process_expr = "\(('|\")(?P<line>.*)('|\"),\s('|\")(?P<filename>.*)('|\")\)" 
+    expr_re = re.compile(process_expr)
     
-    if removed_rec > 0:
-        LOG.info("Deleted %d records" % (removed_rec))
+    # global to the module
+    s_parser = tellicastlog_parser.TellicastLogParser('tc-send')
+    x_parser = xferlog_parser.XferlogParser()
+    d_parser = tellicastlog_parser.TellicastLogParser('dirmon')
+        
+    mapper = {'xferlog'   : 'xferlog',
+              'send.log'  : 'tc-send',
+              'dirmon.log' : 'dirmon'}
+        
+    def __init__(self):
+        """
+           constructor
+        """
+        # create database
+        self.db = mem_db.Base('analysis')
+        # create new base with field names (set mode = open) to overwrite db on next run
+        #keep X elements max in collections
+        self.db.create('filename', 'uplinked', \
+                  'queued', 'jobname', \
+                  'announced','blocked', \
+                  'finished','metadata', 'last_update', 'finished_time_insert', mode = 'override', capped_size=1000000)
+        
+        self.db.create_index('last_update')
+        
+        #display = displays.TextDisplay()
+        self.display = displays.CurseDisplay()
+        
+    def get_dwd_record(self, database, result, dirmon_dir):
+        """
+           Manage the particular case of DWD records
+        """  
+        #define type dirmon_dir -> ftp user
+        if dirmon_dir == 'wmo-ra6':
+            msg_type = 'wmora6'
+        else:
+            msg_type = 'dwd'
+        
+        records = database(filename = result['file'])
+        
+        for rec in records:
+            if rec['metadata'].get('ftp_user') == msg_type:
+                return [rec]
+        
+        return []
 
-def print_db_logfile(database):
-    """
-      print database in log file for debuging purposes
-    """
-    for rec in database:
-        LOG.info(rec)
+    def remove_expired_records(self, database):
+        """
+           remove records that have been finished for more than 60 seconds
+        """
+        expiry_time = 20 #in seconds
+        now = datetime.datetime.now()
+        
+        removed_rec = 0
+        for rec in [ r for r in database \
+                    if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
+                   ]:
+            database.delete(rec)
+            removed_rec += 1
+        
+        if removed_rec > 0:
+            Analyzer.LOG.info("Deleted %d records" % (removed_rec))
+
+    def print_db_logfile(self, database):
+        """
+          print database in log file for debuging purposes
+        """
+        for rec in database:
+            Analyzer.LOG.info(rec)
            
 
-def analyze(database, line, filename):
-    """
-       Analysis from the line and filename
-    """
-    
-    the_type = mapper[filename]
-            
-    if the_type == 'xferlog':
-        result = x_parser.parse_one_line(line)
+    def analyze(self, database, line, filename):
+        """
+           Analysis from the line and filename
+        """
         
-        #add file in db
-        database.insert(filename = result['file'],uplinked = result['time'], metadata = result['metadata'], last_update= datetime.datetime.now())
-        
-    elif the_type == 'dirmon':
-        result = d_parser.parse_one_line(line)
-        
-        if result.get('job_status', None) == 'created':
-            
-            dirmon_dir = result['metadata']['dirmon_dir']
-            #special case for DWD (should hopefully disappear in the future
-            if dirmon_dir == 'wmo-ra6' or dirmon_dir.startswith('DWD'):
-                records = get_dwd_record(database, result, dirmon_dir)
-                            
-            else:       
-            
-                records = database(filename = result['file'])
+        the_type = Analyzer.mapper[filename]
                 
-            if len(records) == 0:
-                #no file created so it means that the xferlog message has not been received
-                # add it in the table
-                database.insert(filename=result['file'], jobname = result['job'], queued = result['time'], metadata = result['metadata'], last_update= datetime.datetime.now())
-            else:
-                for rec in records:
-                                                                                
-                    r_job = database(jobname = result['job'])
-                                      
-                    #if job reconcile both info
-                    if r_job:
-                        
-                        #update filename info
-                        database.update(rec, queued = result['time'], \
-                                  jobname = r_job[0]['jobname'], \
-                                  announced = r_job[0]['announced'], \
-                                  finished = r_job[0]['finished'])  
-                        
-                        #delete job record
-                        database.delete(r_job[0])
-                        
-                    else:
-                        #no other record with job name, update record
-                        database.update(rec, jobname = result['job'], queued = result['time'], last_update= datetime.datetime.now())              
+        if the_type == 'xferlog':
+            result = Analyzer.x_parser.parse_one_line(line)
             
-    elif the_type == 'tc-send':
-        result = s_parser.parse_one_line(line)
-        
-        # look for job_status == job_announced
-        if result.get('job_status') == 'announced':
+            #add file in db
+            database.insert(filename = result['file'], \
+                            uplinked = result['time'], \
+                            metadata = result['metadata'], \
+                            last_update= datetime.datetime.now())
             
-            # get all records concerned by this job
-            records = database(jobname = result.get('job', None))
+        elif the_type == 'dirmon':
+            result = Analyzer.d_parser.parse_one_line(line)
             
-            if len(records) == 0:
-                # add a line in the to print table
-                database.insert(jobname = result.get('job', None), announced = result['time'], last_update= datetime.datetime.now())
-            else:
-                for rec in records:
-                    #found a job so update this line in db
-                    database.update(rec, jobname = result.get('job', None), announced = result['time'], last_update= datetime.datetime.now()) 
-                   
-        elif result.get('job_status') == 'blocked':
-            
-            #get all records concerned by this job
-            records = database(jobname = result.get('job', None))
-            
-            if len(records) == 0:
-                # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
-                database.insert(jobname = result.get('job', None), blocked = result['time'], last_update= datetime.datetime.now())
-            else:
-                for rec in records:
-                    # update info with finished time
-                    database.update(rec, blocked = result['time']) 
-        elif result.get('job_status') == 'finished':
-
-            #get all records concerned by this job
-            records = database(jobname = result.get('job', None))
-            
-            if len(records) == 0:
-                # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
-                database.insert(jobname = result.get('job', None), finished = result['time'], finished_time_insert = datetime.datetime.now(), last_update= datetime.datetime.now())
-            else:
-                for rec in records:
-                    # update info with finished time
-                    database.update(rec, finished = result['time'], finished_time_insert = datetime.datetime.now(), last_update= datetime.datetime.now())   
+            if result.get('job_status', None) == 'created':
+                
+                dirmon_dir = result['metadata']['dirmon_dir']
+                #special case for DWD (should hopefully disappear in the future
+                if dirmon_dir == 'wmo-ra6' or dirmon_dir.startswith('DWD'):
+                    records = self.get_dwd_record(database, result, dirmon_dir)
+                                
+                else:       
+                
+                    records = database(filename = result['file'])
                     
-def print_on_display(a_db, a_display, a_last_time_display):
-    """
-       Display every x seconds
-    """ 
-    if not a_last_time_display:
-        a_display.print_screen(a_db)
-        return datetime.datetime.now()
-    else:
-        current_time = datetime.datetime.now()
-        if current_time - a_last_time_display > datetime.timedelta(seconds=2):
+                if len(records) == 0:
+                    #no file created so it means that the xferlog message has not been received
+                    # add it in the table
+                    database.insert(filename=result['file'], \
+                                    jobname = result['job'], \
+                                    queued = result['time'], \
+                                    metadata = result['metadata'], last_update= datetime.datetime.now())
+                else:
+                    for rec in records:
+                                                                                    
+                        r_job = database(jobname = result['job'])
+                                          
+                        #if job reconcile both info
+                        if r_job:
+                            
+                            #update filename info
+                            database.update(rec, queued = result['time'], \
+                                      jobname = r_job[0]['jobname'], \
+                                      announced = r_job[0]['announced'], \
+                                      finished = r_job[0]['finished'])  
+                            
+                            #delete job record
+                            database.delete(r_job[0])
+                            
+                        else:
+                            #no other record with job name, update record
+                            database.update(rec, jobname = result['job'], queued = result['time'], last_update= datetime.datetime.now())              
+                
+        elif the_type == 'tc-send':
+            result = Analyzer.s_parser.parse_one_line(line)
+            
+            # look for job_status == job_announced
+            if result.get('job_status') == 'announced':
+                
+                # get all records concerned by this job
+                records = database(jobname = result.get('job', None))
+                
+                if len(records) == 0:
+                    # add a line in the to print table
+                    database.insert(jobname = result.get('job', None), \
+                                    announced = result['time'], last_update= datetime.datetime.now())
+                else:
+                    for rec in records:
+                        #found a job so update this line in db
+                        database.update(rec, jobname = result.get('job', None), \
+                                        announced = result['time'], last_update= datetime.datetime.now()) 
+                       
+            elif result.get('job_status') == 'blocked':
+                
+                #get all records concerned by this job
+                records = database(jobname = result.get('job', None))
+                
+                if len(records) == 0:
+                    # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                    database.insert(jobname = result.get('job', None), \
+                                    blocked = result['time'], last_update= datetime.datetime.now())
+                else:
+                    for rec in records:
+                        # update info with finished time
+                        database.update(rec, blocked = result['time']) 
+            elif result.get('job_status') == 'finished':
+    
+                #get all records concerned by this job
+                records = database(jobname = result.get('job', None))
+                
+                if len(records) == 0:
+                    # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                    database.insert(jobname = result.get('job', None), \
+                                    finished = result['time'], \
+                                    finished_time_insert = datetime.datetime.now(), \
+                                    last_update= datetime.datetime.now())
+                else:
+                    for rec in records:
+                        # update info with finished time
+                        database.update(rec, finished = result['time'], \
+                                        finished_time_insert = datetime.datetime.now(), \
+                                        last_update= datetime.datetime.now())   
+         
+                    
+    def print_on_display(self, a_db, a_display, a_last_time_display):
+        """
+           Display every x seconds
+        """ 
+        if not a_last_time_display:
             a_display.print_screen(a_db)
             return datetime.datetime.now()
         else:
-            return a_last_time_display
+            current_time = datetime.datetime.now()
+            if current_time - a_last_time_display > datetime.timedelta(seconds=2):
+                a_display.print_screen(a_db)
+                return datetime.datetime.now()
+            else:
+                return a_last_time_display
     
-def analyze_from_tailed_file():
-    """
-       Analyze from an aggregated file containing xferlog, dirmon.log and send.log
-    """
-    agregfile = open('/tmp/logfile.log', 'r')
-    
-    iter = multitail.MultiFileTailer.tail([agregfile])
-    
-    # create database
-    db = mem_db.Base('analysis')
-    # create new base with field names (set mode = open) to overwrite db on next run
-    #keep X elements max in collections
-    db.create('filename', 'uplinked', \
-              'queued', 'jobname', \
-              'announced','blocked', \
-              'finished','metadata', 'last_update', 'finished_time_insert', mode = 'override', capped_size=1000000)
-    
-    db.create_index('last_update')
-    
-    #display = displays.TextDisplay()
-    display = displays.CurseDisplay()
-    
-    last_time_display = None
-    on_error = False
-    
-    try:
+    def analyze_from_tailed_file(self, a_file_paths):
+        """
+           Analyze from an aggregated file containing xferlog, dirmon.log and send.log
+        """
+        files = []
+        for f_path in a_file_paths:
+            files.append(open(f_path, 'r'))
         
-        #init print
-        print_on_display(db, display, None)
-    
-        for (f_line, _) in iter:
+        f_iter = multitail.MultiFileTailer.tail(files)
+        
+        last_time_display = None
+        on_error = False
+        
+        try:
             
-            #process only tuples (other lines should be ignored)
-            matched = expr_re.match(f_line)
-            if matched:
-                 
-                line     = matched.group('line')
-                filename = matched.group('filename')
+            #init print
+            self.print_on_display(self.db, self.display, None)
+        
+            for (f_line, _) in f_iter:
                 
-                # sometimes the tail can eat (bug) part of the line
-                # ignore this exception
-                try:
-                    analyze(db, line, filename)
-                except tellicastlog_parser.InvalidTellicastlogFormatError, e:
-                    error_str = utils.get_exception_traceback()
-                    LOG.error("Parser Exception %s, traceback %s" %(e, error_str))
-                
-                last_time_display = print_on_display(db, display, last_time_display)
-                
-                input = display.check_for_input()
-                if input and input == 'QUIT':
-                    break # quit loop
-                
-                remove_expired_records(db)
+                #process only tuples (other lines should be ignored)
+                matched = Analyzer.expr_re.match(f_line)
+                if matched:
+                     
+                    line     = matched.group('line')
+                    filename = matched.group('filename')
                     
-        else:
-            #force update
-            print_on_display(db, display, None)
-        
-        LOG.info("Out of loop")
-                
-                
-    except KeyboardInterrupt:
-        
-        #CTRL^C pressed so silently quit
-        sys.exit(0)
-    except Exception, e:
-        
-        LOG.error("In Error")
-        
-        error_str = utils.get_exception_traceback()
-        
-        LOG.error("received error %s. Traceback = %s" %(e,error_str))
-        
-        on_error = True
-    finally:
-        #whatever the case always reset the screen
-        display.reset_screen()
-        if on_error:
-            print("Exiting on error")
-            sys.exit(1)
-        else:
-            print("Exiting gracefully")
+                    # sometimes the tail can eat (bug) part of the line
+                    # ignore this exception
+                    try:
+                        self.analyze(self.db, line, filename)
+                    except tellicastlog_parser.InvalidTellicastlogFormatError, err:
+                        error_str = utils.get_exception_traceback()
+                        Analyzer.LOG.error("Parser Exception %s, traceback %s" %(err, error_str))
+                    
+                    last_time_display = self.print_on_display(self.db, self.display, last_time_display)
+                    
+                    kb_input = self.display.check_for_input()
+                    if kb_input and kb_input == 'QUIT':
+                        break # quit loop
+                    
+                    self.remove_expired_records(self.db)
+                        
+            else:
+                #force update
+                self.print_on_display(self.db, self.display, None)
+            
+            Analyzer.LOG.info("Out of loop")
+                    
+                    
+        except KeyboardInterrupt:
+            
+            #CTRL^C pressed so silently quit
             sys.exit(0)
- 
-def analyze_from_multiple_files():
-    """
-       Analyze
-    """
-    file_send    = open('/tmp/send.log')
-    file_xferlog = open('/tmp/xferlog')
-    file_dirmon  = open('/tmp/dirmon.log')
-    
-    iterable = multitail.MultiFileTailer.tail([file_send, file_xferlog, file_dirmon])
-    
-    # create database
-    database = mem_db.Base('analysis')
-    # create new base with field names (set mode = open) to overwrite db on next run
-    database.create('filename', 'uplinked', \
-              'queued', 'jobname', \
-              'announced','blocked', \
-              'finished','metadata', mode = 'override')
-    
-    for (line, filename) in iterable:
-        
-        analyze(database, line, filename)
-    
+        except Exception, err:
+            
+            Analyzer.LOG.error("In Error")
+            
+            error_str = utils.get_exception_traceback()
+            
+            Analyzer.LOG.error("received error %s. Traceback = %s" %(err, error_str))
+            
+            on_error = True
+        finally:
+            #whatever the case always reset the screen
+            self.display.reset_screen()
+            if on_error:
+                print("Exiting on error")
+                sys.exit(1)
+            else:
+                print("Exiting gracefully")
+                sys.exit(0)
     
 if __name__ == '__main__': 
     
     log_utils.LoggerFactory.setup_simple_file_handler('/tmp/analyze.log') 
     
-    LOG = log_utils.LoggerFactory.get_logger('ALogger')
+    analyzer = Analyzer()
     
-    LOG.info("start")
-     
     #analyze_from_aggregated_file()
-    analyze_from_tailed_file()
+    analyzer.analyze_from_tailed_file(['/tmp/logfile.log'])

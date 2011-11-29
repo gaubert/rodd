@@ -21,11 +21,7 @@ def get_active_jobs(database):
             finished_nb += 1
         
         if rec.get('blocked', None):
-                 blocked +=1
-    
-    #for rec in [ r for r in database \
-    #             if (r.get('finished_time_insert', None))]:
-    #                 finished_nb += 1
+            blocked +=1
     
     return len(database)-finished_nb, finished_nb, blocked
 
@@ -87,8 +83,6 @@ class CurseDisplay(object):
         #constants to be put in files
         nb_max_active_records   = 70
         nb_max_finished_records = 30
-        sleep_time = 1
-        
         
         active_pad   = self._active_pad
         finished_pad = self._finished_pad
@@ -110,8 +104,6 @@ class CurseDisplay(object):
         #set x 
         x_active   = 3
         x_finished = 3
-        
-        nb_recs = len(a_db)
         
         active, finished, blocked = get_active_jobs(a_db)
                 
