@@ -45,12 +45,8 @@ Syntax :
     # add and drop fields
     db.add_field('new_field')
     db.drop_field('name')
-    # save changes on disk
-    db.commit()
 """
 
-import os
-import cPickle
 import bisect
 import collections
 
@@ -64,48 +60,47 @@ class Index:
     """Class used for indexing a base on a field
     The instance of Index is an attribute the Base instance"""
 
-    def __init__(self,db,field):
-        self.db = db # database object (instance of Base)
+    def __init__(self, datadb, field):
+        self.database = datadb # database object (instance of Base)
         self.field = field # field name
 
     def __iter__(self):
-        return iter(self.db.indices[self.field])
+        return iter(self.database.indices[self.field])
     
     def get_sorted_iter(self, func, reverse = False):
         """
            return a sorted iterator (sorted with func)
         """
-        return iter(func(self.db.indices[self.field], reverse = reverse))
+        return iter(func(self.database.indices[self.field], reverse = reverse))
 
     def keys(self):
-        return self.db.indices[self.field].keys()
+        """
+           Return keys
+        """
+        return self.database.indices[self.field].keys()
 
-    def __getitem__(self,key):
+    def __getitem__(self, key):
         """Lookup by key : return the list of records where
         field value is equal to this key, or an empty list"""
-        ids = self.db.indices[self.field].get(key,[])
-        return [ self.db.records[_id] for _id in ids ]
+        ids = self.database.indices[self.field].get(key, [])
+        return [ self.database.records[_id] for _id in ids ]
 
 class Base:
+    """
+       Database main class
+    """
 
-    def __init__(self,basename):
+    def __init__(self, basename):
         self.name        = basename
         self.capped_size = None
 
-    def create(self,*fields,**kw):
-        """Create a new base with specified field names
-        A keyword argument mode can be specified ; it is used if a file
-        with the base name already exists
-        - if mode = 'open' : open the existing base, ignore the fields
-        - if mode = 'override' : erase the existing base and create a
-        new one with the specified fields"""
+    def create(self, *fields, **kw):
+        """Create a new base with specified field names """
         
         #check if there is a capped_size 
         self.capped_size = kw.get("capped_size", -1)
-        
-        self.mode = kw.get("mode", None)
                
-        self.fields = list(fields)
+        self.fields  = list(fields)
         self.records = collections.OrderedDict() #add an orderedDict to cap the collection
         self.next_id = 0
         self.indices = {}
@@ -122,14 +117,12 @@ class Base:
         of the class Index (see above). Its name it the field name, with the
         prefix _ to avoid name conflicts
         """
-        reset = False
         for f in fields:
             if not f in self.fields:
-                raise NameError,"%s is not a field name" %f
+                raise NameError, "%s is not a field name" % f
             # initialize the indices
-            if self.mode == "open" and f in self.indices:
+            if f in self.indices:
                 continue
-            reset = True
             self.indices[f] = {}
             for _id,record in self.records.iteritems():
                 # use bisect to quickly insert the id in the list
@@ -138,8 +131,6 @@ class Base:
             # create a new attribute of self, used to find the records
             # by this index
             setattr(self,'_'+f,Index(self,f))
-        if reset:
-            self.commit()
 
     def insert(self, *args, **kw):
         """Insert a record in the database
@@ -155,7 +146,7 @@ class Base:
         # set keys and values
         for (k, v) in kw.iteritems():
             #add record
-            record[k]=v
+            record[k] = v
             
         #remove first inserted element in capped size collections
         if self.capped_size >= 0 and len(self.records)+1 > self.capped_size:
@@ -178,7 +169,7 @@ class Base:
         self.next_id += 1
         return record['__id__']
 
-    def delete(self,removed):
+    def delete(self, removed):
         """Remove a single record, or the records in an iterable
         Before starting deletion, test if all records are in the base
         and don't have twice the same __id__
@@ -198,19 +189,19 @@ class Base:
         # check if the records are in the base
         if not set(_ids).issubset(keys):
             missing = list(set(_ids).difference(keys))
-            raise IndexError,'Delete aborted. Records with these ids' \
-                ' not found in the base : %s' %str(missing)
+            raise IndexError, 'Delete aborted. Records with these ids' \
+                ' not found in the base : %s' % str(missing)
         # raise exception if duplicate ids
-        for i in range(len(_ids)-1):
+        for i in range(len(_ids) - 1):
             if _ids[i] == _ids[i+1]:
-                raise IndexError,"Delete aborted. Duplicate id : %s" %_ids[i]
+                raise IndexError, "Delete aborted. Duplicate id : %s" % (_ids[i])
         deleted = len(removed)
         while removed:
             r = removed.pop()
             _id = r['__id__']
             # remove id from indices
             for indx in self.indices.keys():
-                pos = bisect.bisect(self.indices[indx][r[indx]],_id)-1
+                pos = bisect.bisect(self.indices[indx][r[indx]], _id) - 1
                 del self.indices[indx][r[indx]][pos]
                 if not self.indices[indx][r[indx]]:
                     del self.indices[indx][r[indx]]
@@ -227,18 +218,18 @@ class Base:
                 if record[indx] == kw[indx]:
                     continue
                 # remove id for the old value
-                old_pos = bisect.bisect(self.indices[indx][record[indx]],_id)-1
+                old_pos = bisect.bisect(self.indices[indx][record[indx]], _id) - 1
                 del self.indices[indx][record[indx]][old_pos]
                 if not self.indices[indx][record[indx]]:
                     del self.indices[indx][record[indx]]
                 # insert new value
-                bisect.insort(self.indices[indx].setdefault(kw[indx],[]),_id)
+                bisect.insort(self.indices[indx].setdefault(kw[indx], []), _id)
         # update record values
         record.update(kw)
         # increment version number
         record["__version__"] += 1
 
-    def add_field(self,field,default=None):
+    def add_field(self, field, default = None):
         if field in self.fields + ["__id__","__version__"]:
             raise ValueError,"Field %s already defined" %field
         for r in self:
@@ -246,9 +237,9 @@ class Base:
         self.fields.append(field)
         self.commit()
     
-    def drop_field(self,field):
+    def drop_field(self, field):
         if field in ["__id__","__version__"]:
-            raise ValueError,"Can't delete field %s" %field
+            raise ValueError,"Can't delete field %s" % field
         self.fields.remove(field)
         for r in self:
             del r[field]
@@ -261,7 +252,7 @@ class Base:
         db(key=value) returns the list of records where r[key] = value"""
         for key in kw:
             if not key in self.fields:
-                raise ValueError,"Field %s not in the database" %key
+                raise ValueError, "Field %s not in the database" % key
         def sel_func(r):
             for key in kw:
                 if not r[key] == kw[key]:
@@ -269,18 +260,18 @@ class Base:
             return True
         return [ r for r in self if sel_func(r) ]
     
-    def __getitem__(self,record_id):
+    def __getitem__(self, record_id):
         """Direct access by record id"""
         return self.records[record_id]
     
-    def get_by_id(self,record_id, default):
+    def get_by_id(self, record_id, default):
         """ like get in dictionary """
         return self.records.get(record_id, default)
     
     def __len__(self):
         return len(self.records)
 
-    def __delitem__(self,record_id):
+    def __delitem__(self, record_id):
         """Delete by record id"""
         self.delete(self[record_id])
         

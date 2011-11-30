@@ -43,12 +43,11 @@ class Analyzer(object):
         """
         # create database
         self.mem_db = mem_db.Base('analysis')
-        # create new base with field names (set mode = open) to overwrite db on next run
         #keep X elements max in collections
         self.mem_db.create('filename', 'uplinked', \
                   'queued', 'jobname', \
                   'announced','blocked', \
-                  'finished','metadata', 'last_update', 'finished_time_insert', mode = 'override', capped_size=1000000)
+                  'finished','metadata', 'last_update', 'finished_time_insert', capped_size=1000000)
         
         self.mem_db.create_index('last_update')
         
@@ -279,10 +278,7 @@ class Analyzer(object):
             else:
                 #force update
                 self.print_on_display(self.mem_db, self.display, None)
-            
-            Analyzer.LOG.info("Out of loop")
-                    
-                    
+                  
         except KeyboardInterrupt:
             
             #CTRL^C pressed so silently quit
