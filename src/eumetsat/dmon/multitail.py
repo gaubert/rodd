@@ -59,8 +59,9 @@ class MultiFileTailer(object):
         
         Return (line, filename)
         """
-        trailing = True
-        sizes    = []
+        trailing       = True
+        sizes          = []
+        file_buffer    = {}
         
         # go the end of file
         for the_file in a_files:
@@ -72,53 +73,44 @@ class MultiFileTailer(object):
             #set it non blocking
             file_num = the_file.fileno()
             old_flags = fcntl.fcntl(file_num, fcntl.F_GETFL)
-            fcntl.fcntl(file_num, fcntl.F_SETFL, old_flags | os.O_NONBLOCK)    
+            fcntl.fcntl(file_num, fcntl.F_SETFL, old_flags | os.O_NONBLOCK)  
+            
+            #initialise file position
+            file_buffer[the_file.name] = ''  
         
         
         select_iteration = 0
         while 1:
             #set up the select (for the moment use a select)
-            (rlist, _, _) = select.select(a_files, [], [], 1)
+            (rlist, _, _) = select.select(a_files, [], [], 0)
             
             select_iteration +=1
             
             if len(rlist) > 0:
-                for a_file in rlist:
-                    #try to read up to x lines
-                    nb_line_max_to_read = 10
-                    line_read = 0
-                    while line_read < nb_line_max_to_read:
-                        where = a_file.tell()
-                        line = a_file.readline()
-                        if line:    
-                            if trailing and line in MultiFileTailer.LINE_TERMINATORS:
-                                # This is just the line terminator added to the end of the file
-                                # before a new line, ignore.
-                                trailing = False
-                                #leave readline loop to continue next iteration of file reading loop
-                                break
-            
-                            if line[-1] in MultiFileTailer.LINE_TERMINATORS:
-                                line = line[:-1]
-                                if line[-1:] == '\r\n' and '\r\n' in MultiFileTailer.LINE_TERMINATORS:
-                                    # found crlf
-                                    line = line[:-1]
-            
-                            trailing = False
-                            line_read += 1
-                            yield (line, os.path.basename(a_file.name)) 
-                        else:
-                            trailing = True
-                            a_file.seek(where)
-                            time.sleep(delay)
-                            
-                            #every ten iteration check that has not rotated
-                            if select_iteration > 15:
-                                (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
-                                select_iteration = 0
-                            
-                            #leave line reading loop
-                            break
+                for a_file in rlist:              
+                    data = a_file.read(4096)
+                    if len(data) < 1:
+                        continue
+                    
+                    file_buffer[a_file.name] = file_buffer[a_file.name] + data
+                    
+                    #  process lines within the data
+                    while 1:
+                        pos = file_buffer[a_file.name].find('\n')
+                        if pos < 0: break
+                        the_line = file_buffer[a_file.name][:pos]
+                        file_buffer[a_file.name] = file_buffer[a_file.name][pos + 1:]
+                        
+                        yield(the_line, os.path.basename(a_file.name))
+                    
+                        
+                    #every ten iteration check that has not rotated
+                    if select_iteration > 15:
+                        (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
+                        select_iteration = 0
+                        
+                        #leave line reading loop
+                        break
             else:
                 time.sleep(delay)
                 (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
@@ -130,7 +122,7 @@ class MultiFileTailer(object):
 
 if __name__ == '__main__':
 
-    file_send = open('/tmp/logfile.log')
+    file_send = open('/tmp/analyse/logfile.log')
     #file_send = open('/tmp/weather.txt')
     file_send1 = open('/tmp/weather.txt')
     file_send2 = open('/tmp/weather.txt')

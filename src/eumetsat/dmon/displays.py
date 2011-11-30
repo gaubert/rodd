@@ -124,8 +124,8 @@ class CurseDisplay(object):
         if char in [ord('x'), ord('q')]:
             #QUIT
             return "QUIT"
-        else:
-            return None
+        elif char in [ord('s')]:
+            return "STOPACCEPTING"
         
     def print_index(self, a_db):
         """

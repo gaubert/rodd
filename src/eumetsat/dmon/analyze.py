@@ -57,6 +57,7 @@ class Analyzer(object):
         
         self._finished_file = open('/tmp/finished.file','w')
         self._line_file     = open('/tmp/line_file.file','w')
+        self._accepting_new = True
         
     def get_dwd_record(self, database, result, dirmon_dir): #pylint: disable-msg=R0201
         """
@@ -116,7 +117,7 @@ class Analyzer(object):
         
         the_type = Analyzer.mapper[filename]
                 
-        if the_type == 'xferlog':
+        if the_type == 'xferlog' and self._accepting_new:
             result = Analyzer.x_parser.parse_one_line(line)
             
             #add file in db
@@ -127,7 +128,7 @@ class Analyzer(object):
                             created  = now, \
                             last_update= now)
             
-        elif the_type == 'dirmon':
+        elif the_type == 'dirmon' and self._accepting_new:
             result = Analyzer.d_parser.parse_one_line(line)
             
             if result and result.get('job_status', None) == 'created':
@@ -175,7 +176,7 @@ class Analyzer(object):
             result = Analyzer.s_parser.parse_one_line(line)
             
             # look for job_status == job_announced
-            if result.get('job_status') == 'announced':
+            if result.get('job_status') == 'announced' and self._accepting_new:
                 
                 # get all records concerned by this job
                 records = database(jobname = result.get('job', None))
@@ -307,6 +308,9 @@ class Analyzer(object):
                     kb_input = self.display.check_for_input()
                     if kb_input and kb_input == 'QUIT':
                         break # quit loop
+                    elif kb_input and kb_input == 'STOPACCEPTING':
+                        Analyzer.LOG.error("Stop Accepting")
+                        self._accepting_new = False
                         
             else:
                 #force update
