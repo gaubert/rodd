@@ -5,25 +5,80 @@ Created on Nov 29, 2011
 '''
 import os
 import curses
+import datetime
 
 import eumetsat.dmon.common.time_utils as time_utils
 import eumetsat.dmon.common.log_utils  as log_utils
+
+PREVIOUS_SNAPSHOT = {}
+
+def db_differ(prev_snapshot, database):
+    """
+       return nb of deleted and already existing and new records
+    """
+    new_snapshot = {}
+    existing = 0
+    new      = 0
+    deleted  = 0
+    for rec in database:
+        id = rec['__id__']
+        if id in prev_snapshot:
+            existing += 1
+            del prev_snapshot[id]
+            new_snapshot[id] = rec
+        else:
+            new += 1
+            new_snapshot[id] = rec
+    
+    #get the deleted this is what is left in prev_snapshot
+    deleted = len(prev_snapshot)
+    
+    return new_snapshot, deleted, new, existing
+    
+            
 
 def get_active_jobs(database):
     """
        Get the number of active jobs
     """
-    finished_nb = 0
+    finished    = 0
     blocked     = 0
+    active      = 0
+    
+    active_for = {}
+    secs       = 120
+    
+    nb_rec_printed = 0
     
     for rec in database:
         if rec.get('finished_time_insert', None):
-            finished_nb += 1
+            finished += 1
+        else:
+            active += 1
+            now = datetime.datetime.now()
+            if now - rec.get('created') > datetime.timedelta(seconds = secs):
+                #CurseDisplay.LOG.info("One active for more than %d secs" %(secs))
+                active_for[rec['__id__']] = rec
+                if nb_rec_printed < 20:
+                    CurseDisplay.LOG.info("rec = %s" % (rec))
+                
         
         if rec.get('blocked', None):
-            blocked +=1
+            blocked += 1
+        
     
-    return len(database)-finished_nb, finished_nb, blocked
+    active = len(database)- finished
+
+    CurseDisplay.LOG.info("active file transfers = %d, finished ft =%d, blocked=%d" % (active, finished, blocked) )
+    CurseDisplay.LOG.info("%d active file transfers from more than %d secs" % (len(active_for), secs))
+    CurseDisplay.LOG.info("%d jobnames in the db" % (len(database._jobname)))
+    
+    global PREVIOUS_SNAPSHOT
+    PREVIOUS_SNAPSHOT, d_del, d_new, d_existing = db_differ(PREVIOUS_SNAPSHOT, database)
+    
+    CurseDisplay.LOG.info("Since last print %d deleted file transfers, %d new and %d existing. total %d" % (d_del, d_new, d_existing, len(database)) )
+    
+    
 
 class CurseDisplay(object):
     '''
@@ -108,10 +163,8 @@ class CurseDisplay(object):
         x_active   = 3
         x_finished = 3
         
-        active, finished, blocked = get_active_jobs(a_db)
+        get_active_jobs(a_db)
                 
-        CurseDisplay.LOG.info("active jobs = %d, finished jobs=%d, blocked=%d" % (active, finished, blocked) )
-        
         CurseDisplay.LOG.info("------ start Printing on screen ------")
         
         #reverse iteration from the lastest records to the oldest one

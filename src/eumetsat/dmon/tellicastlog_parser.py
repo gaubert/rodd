@@ -51,6 +51,9 @@ TCSEND_JOB_ACTIVATED_RE  = re.compile(TCSEND_JOB_ACTIVATED)
 TCSEND_JOB_BLOCKED     = r'Job "(?P<job>.*)" blocked: Waiting for channel "(?P<channel>.*)"'
 TCSEND_JOB_BLOCKED_RE  = re.compile(TCSEND_JOB_BLOCKED)
 
+TCSEND_JOB_ABORTED      = r'FileBroadcast job "(?P<job>.*)" on channel "(?P<channel>.*)" aborted.' 
+TCSEND_JOB_ABORTED_RE   = re.compile(TCSEND_JOB_ABORTED)
+
 TCSEND_JOB_FINISHED      = r'FileBroadcast job "(?P<job>.*)" on channel "(?P<channel>.*)" done'
 TCSEND_JOB_FINISHED_RE   = re.compile(TCSEND_JOB_FINISHED)
 
@@ -62,6 +65,7 @@ TCSEND_PATTERNS = {
                     'job_announced'   : TCSEND_JOB_ANNOUNCED_RE,
                     'job_activated'   : TCSEND_JOB_ACTIVATED_RE,
                     'job_blocked'     : TCSEND_JOB_BLOCKED_RE,
+                    'job_aborted'     : TCSEND_JOB_ABORTED_RE,
                     'job_finished'    : TCSEND_JOB_FINISHED_RE,
                     'chan_closed'     : TCSEND_CHAN_CLOSED_RE,
                   }
@@ -291,6 +295,11 @@ class TellicastLogParser(object):
                              "channel"    : matched.group('channel'),
                              "job_status" : "blocked", 
                            }
+                elif key == "job_aborted":
+                    return { "job"  : self._clean_jobname(matched.group('job')),
+                             "channel"    : matched.group('channel'),
+                             "job_status" : "aborted", 
+                           }
                 elif key == "job_finished":
                     return { "job"  : self._clean_jobname(matched.group('job')),
                              "channel"    : matched.group('channel'),
@@ -444,9 +453,9 @@ if __name__ == '__main__':
     tokens = { 'dirmon' : [],
                'tc-send' : []}
     
-    the_file = ['send.log: Entry detected: MSG:2011-11-10 08:30:00.006:Scheduled restart time reached: Initiating child restart']
+    the_file = ['send.log: Entry detected: MSG:2011-11-30 12:41:42.091:FileBroadcast job "retim-4010-53359-2011-11-30-12-41-04-203.job" on channel "MFRAFRG2" done.']
     
-    result = s_parser.parse_one_line('send.log: Entry detected: MSG:2011-11-10 08:30:00.006:Scheduled restart time reached: Initiating child restart')
+    result = s_parser.parse_one_line('send.log: Entry detected: MSG:2011-11-30 12:41:42.091:FileBroadcast job "retim-4010-53359-2011-11-30-12-41-04-203.job" on channel "MFRAFRG2" done.')
     print(result)
         
        

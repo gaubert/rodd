@@ -67,6 +67,9 @@ class Index:
     def __iter__(self):
         return iter(self.database.indices[self.field])
     
+    def __len__(self):
+        return len(self.database.indices[self.field])
+    
     def get_sorted_iter(self, func, reverse = False):
         """
            return a sorted iterator (sorted with func)

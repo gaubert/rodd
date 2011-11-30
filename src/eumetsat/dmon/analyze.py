@@ -46,13 +46,17 @@ class Analyzer(object):
         #keep X elements max in collections
         self.mem_db.create('filename', 'uplinked', \
                   'queued', 'jobname', \
-                  'announced','blocked', \
-                  'finished','metadata', 'last_update', 'finished_time_insert', capped_size=1000000)
+                  'announced', 'blocked', \
+                  'finished', 'metadata', 'created', 'last_update', 'finished_time_insert', capped_size=1000000)
         
         self.mem_db.create_index('last_update')
+        self.mem_db.create_index('jobname')
         
-        #display = displays.TextDisplay()
+        #self.display = displays.TextDisplay()
         self.display = displays.CurseDisplay()
+        
+        self._finished_file = open('/tmp/finished.file','w')
+        self._line_file     = open('/tmp/line_file.file','w')
         
     def get_dwd_record(self, database, result, dirmon_dir): #pylint: disable-msg=R0201
         """
@@ -87,13 +91,13 @@ class Analyzer(object):
                     if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
                    ]:
             database.delete(rec)
-            Analyzer.LOG.info("deleted %s" % (rec) )
+            #Analyzer.LOG.info("deleted %s" % (rec) )
             removed_rec += 1
         
         if removed_rec > 0:
             Analyzer.LOG.info("Deleted %d records" % (removed_rec))
             Analyzer.LOG.info("After to remove records")
-            self.print_db_logfile(database)
+            #self.print_db_logfile(database)
             
         
 
@@ -116,15 +120,17 @@ class Analyzer(object):
             result = Analyzer.x_parser.parse_one_line(line)
             
             #add file in db
+            now = datetime.datetime.now()
             database.insert(filename = result['file'], \
                             uplinked = result['time'], \
                             metadata = result['metadata'], \
-                            last_update= datetime.datetime.now())
+                            created  = now, \
+                            last_update= now)
             
         elif the_type == 'dirmon':
             result = Analyzer.d_parser.parse_one_line(line)
             
-            if result.get('job_status', None) == 'created':
+            if result and result.get('job_status', None) == 'created':
                 
                 dirmon_dir = result['metadata']['dirmon_dir']
                 #special case for DWD (should hopefully disappear in the future
@@ -138,10 +144,12 @@ class Analyzer(object):
                 if len(records) == 0:
                     #no file created so it means that the xferlog message has not been received
                     # add it in the table
+                    now = datetime.datetime.now()
+                    
                     database.insert(filename=result['file'], \
                                     jobname = result['job'], \
                                     queued = result['time'], \
-                                    metadata = result['metadata'], last_update= datetime.datetime.now())
+                                    metadata = result['metadata'], created  = now, last_update= now)
                 else:
                     for rec in records:
                                                                                     
@@ -173,14 +181,15 @@ class Analyzer(object):
                 records = database(jobname = result.get('job', None))
                 
                 if len(records) == 0:
+                    now = datetime.datetime.now()
                     # add a line in the to print table
                     database.insert(jobname = result.get('job', None), \
-                                    announced = result['time'], last_update= datetime.datetime.now())
+                                    announced = result['time'],  created = now, last_update= now)
                 else:
                     for rec in records:
                         #found a job so update this line in db
                         database.update(rec, jobname = result.get('job', None), \
-                                        announced = result['time'], last_update= datetime.datetime.now()) 
+                                        announced = result['time'],last_update= datetime.datetime.now()) 
                        
             elif result.get('job_status') == 'blocked':
                 
@@ -188,25 +197,47 @@ class Analyzer(object):
                 records = database(jobname = result.get('job', None))
                 
                 if len(records) == 0:
+                    now = datetime.datetime.now()
                     # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
                     database.insert(jobname = result.get('job', None), \
-                                    blocked = result['time'], last_update= datetime.datetime.now())
+                                    blocked = result['time'], created = now, last_update= now)
                 else:
                     for rec in records:
                         # update info with finished time
                         database.update(rec, blocked = result['time']) 
-                        
-            elif result.get('job_status') == 'finished':
+            elif result.get('job_status') == 'aborted':
     
                 #get all records concerned by this job
                 records = database(jobname = result.get('job', None))
                 
                 if len(records) == 0:
+                    now = datetime.datetime.now()
+                    # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
+                    # put it in finish at the moment but it should be treated differently
+                    database.insert(jobname = result.get('job', None), \
+                                    finished = result['time'], \
+                                    finished_time_insert = datetime.datetime.now(), \
+                                    created = now, \
+                                    last_update= now)
+                        
+            elif result.get('job_status') == 'finished':
+                
+                #self._finished_file.write('%s\n' % result)
+                self._finished_file.write('job:%s.msg=[%s]\n' % (result.get('job',''), result.get('msg', None)))
+                self._finished_file.flush()
+    
+                #get all records concerned by this job
+                records = database(jobname = result.get('job', None))
+                
+                if len(records) == 0:
+                    now = datetime.datetime.now()
                     # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
                     database.insert(jobname = result.get('job', None), \
                                     finished = result['time'], \
                                     finished_time_insert = datetime.datetime.now(), \
-                                    last_update= datetime.datetime.now())
+                                    created = now, \
+                                    last_update= now)
+                    
                 else:
                     for rec in records:
                         # update info with finished time
@@ -264,6 +295,8 @@ class Analyzer(object):
                     # sometimes the tail can eat (bug) part of the line
                     # ignore this exception
                     try:
+                        self._line_file.write("('%s', 'send.log')\n" %(line))
+                        self._line_file.flush()
                         self.analyze(self.mem_db, line, filename)
                     except tellicastlog_parser.InvalidTellicastlogFormatError, err:
                         error_str = utils.get_exception_traceback()
@@ -307,5 +340,5 @@ if __name__ == '__main__':
     log_utils.LoggerFactory.setup_simple_file_handler('/tmp/analyze.log') 
     
     analyzer = Analyzer() #pylint: disable-msg=C0103
-    
-    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/logfile.log']))
+
+    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))
