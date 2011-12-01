@@ -455,6 +455,15 @@ if __name__ == '__main__':
     
     the_file = ['send.log: Entry detected: MSG:2011-11-30 12:41:42.091:FileBroadcast job "retim-4010-53359-2011-11-30-12-41-04-203.job" on channel "MFRAFRG2" done.']
     
+    result = d_parser.parse_one_line("VRB:2011-12-01 09:30:34.307:Adding file '/home/eumetsat/data/dwd/groups/DWD-DWDintern/gts01-VHDL30_DWSG_010800-1112010930-afsv--25-ia5' to job 'DWD-DWDintern-58556-2011-12-01-09-30-34-295', last modified: 2011-12-01 09:30:07, size: 1581")
+    print(result)
+    dirmon_dir = result['metadata']['dirmon_dir']
+    #special case for DWD (should hopefully disappear in the future
+    if dirmon_dir == 'wmo-ra6' or dirmon_dir.startswith('DWD'):
+        print("DWD")
+    import sys
+    sys.exit(1)
+    
     result = s_parser.parse_one_line('send.log: Entry detected: MSG:2011-11-30 12:41:42.091:FileBroadcast job "retim-4010-53359-2011-11-30-12-41-04-203.job" on channel "MFRAFRG2" done.')
     print(result)
         

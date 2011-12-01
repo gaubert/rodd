@@ -82,7 +82,7 @@ class MultiFileTailer(object):
         select_iteration = 0
         while 1:
             #set up the select (for the moment use a select)
-            (rlist, _, _) = select.select(a_files, [], [], 0)
+            (rlist, _, _) = select.select(a_files, [], [], 1)
             
             select_iteration +=1
             

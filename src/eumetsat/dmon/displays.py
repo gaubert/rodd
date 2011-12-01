@@ -6,6 +6,7 @@ Created on Nov 29, 2011
 import os
 import curses
 import datetime
+import time
 
 import eumetsat.dmon.common.time_utils as time_utils
 import eumetsat.dmon.common.log_utils  as log_utils
@@ -59,19 +60,25 @@ def get_active_jobs(database):
             if now - rec.get('created') > datetime.timedelta(seconds = secs):
                 #CurseDisplay.LOG.info("One active for more than %d secs" %(secs))
                 active_for[rec['__id__']] = rec
-                if nb_rec_printed < 20:
-                    CurseDisplay.LOG.info("rec = %s" % (rec))
+                #if nb_rec_printed < 20:
+                #    CurseDisplay.LOG.info("rec = %s" % (rec))
                 
         
         if rec.get('blocked', None):
             blocked += 1
         
+    job_nb = 0    
+    for j in database._jobname:
+        if j is not None:
+            job_nb += 1
+        
     
-    active = len(database)- finished
+    #active = len(database)- finished
 
-    CurseDisplay.LOG.info("active file transfers = %d, finished ft =%d, blocked=%d" % (active, finished, blocked) )
+    CurseDisplay.LOG.info("active file transfers = %d, finished ft =%d, blocked=%d, total_in_db=%d" % (active, finished, blocked,len(database)) )
     CurseDisplay.LOG.info("%d active file transfers from more than %d secs" % (len(active_for), secs))
-    CurseDisplay.LOG.info("%d jobnames in the db" % (len(database._jobname)))
+    
+    CurseDisplay.LOG.info("%d jobnames in the db" % (job_nb))
     
     global PREVIOUS_SNAPSHOT
     PREVIOUS_SNAPSHOT, d_del, d_new, d_existing = db_differ(PREVIOUS_SNAPSHOT, database)
@@ -259,6 +266,8 @@ class CurseDisplay(object):
         
         #update previous_display_time with the current display time
         self._previous_display_time = a_current_display_time
+        
+        time.sleep(1)
     
     def reset_screen(self):
         """

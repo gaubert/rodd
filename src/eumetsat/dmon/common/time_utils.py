@@ -86,6 +86,15 @@ def datetime_to_compactdate(a_datetime):
     """
     return a_datetime.strftime(COMPACTDATE_PATTERN)
 
+def datetime_to_time(a_datetime):
+    """
+       Convert datetime to simple date
+    """
+    if a_datetime:
+        return a_datetime.strftime('%H:%M:%S')
+    
+    return None
+
 def simpledate_to_gemsdate(a_simpledate):
     """
        Transform a simple date into a GEMS date
@@ -93,6 +102,8 @@ def simpledate_to_gemsdate(a_simpledate):
     """
     the_date = datetime.datetime.strptime(a_simpledate, SIMPLEDATE_PATTERN)
     return the_date.strftime(GEMSDATE_PATTERN)
+
+
 
 def gemsdate_to_simpledate(a_gemsdate):
     """
