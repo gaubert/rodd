@@ -114,6 +114,8 @@ class MultiFileTailer(object):
             else:
                 time.sleep(delay)
                 (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
+            
+            time.sleep(delay)
    
         
         

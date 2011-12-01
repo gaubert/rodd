@@ -81,26 +81,17 @@ class Analyzer(object):
         """
            remove records that have been finished for more than 60 seconds
         """
-        expiry_time = 0 # 20 in seconds
+        expiry_time = 20 # 20 in seconds
         now = datetime.datetime.now()
         
         Analyzer.LOG.info("Before to remove records")
         #self.print_db_logfile(database)
         
-        removed_rec = 0
         for rec in [ r for r in database \
                     if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
                    ]:
             database.delete(rec)
-            #Analyzer.LOG.info("deleted %s" % (rec) )
-            removed_rec += 1
-        
-        if removed_rec > 0:
-            Analyzer.LOG.info("Deleted %d records" % (removed_rec))
-            Analyzer.LOG.info("After to remove records")
-            #self.print_db_logfile(database)
-            
-        
+            #Analyzer.LOG.info("deleted %s" % (rec) )         
 
     def print_db_logfile(self, database): #pylint: disable-msg=R0201
         """
@@ -307,7 +298,7 @@ class Analyzer(object):
                         
                         self.analyze(self.mem_db, line, filename)
                         
-                        self.print_db_logfile(self.mem_db)
+                        #self.print_db_logfile(self.mem_db)
                         
                     except tellicastlog_parser.InvalidTellicastlogFormatError, err:
                         error_str = utils.get_exception_traceback()

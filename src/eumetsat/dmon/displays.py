@@ -84,7 +84,18 @@ def get_active_jobs(database):
     PREVIOUS_SNAPSHOT, d_del, d_new, d_existing = db_differ(PREVIOUS_SNAPSHOT, database)
     
     CurseDisplay.LOG.info("Since last print %d deleted file transfers, %d new and %d existing. total %d" % (d_del, d_new, d_existing, len(database)) )
-    
+
+def print_db_logfile(database): #pylint: disable-msg=R0201
+        """
+          print database in log file for debuging purposes
+        """
+        CurseDisplay.LOG.info('--BEG-------------------------------------------------------------------------')
+        for rec in database:
+            CurseDisplay.LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
+                                                                                            time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
+                                                                                            time_utils.datetime_to_time(rec['announced']), time_utils.datetime_to_time(rec['blocked']), \
+                                                                                            time_utils.datetime_to_time(rec['last_update'])) )
+        CurseDisplay.LOG.info('--END-------------------------------------------------------------------------')    
     
 
 class CurseDisplay(object):
@@ -113,9 +124,7 @@ class CurseDisplay(object):
         self._full_screen.refresh()
         # to have non blocking getch
         self._full_screen.nodelay(1)
-         
-        CurseDisplay.LOG.debug("maxy = %d, maxx = %d\n" %(self._maxy, self._maxx))
-        
+          
         self._active_pad   = curses.newpad(1000, 1000)
         self._finished_pad = curses.newpad(1000, 1000)
         
@@ -149,8 +158,8 @@ class CurseDisplay(object):
         nb_max_active_records   = 70
         nb_max_finished_records = 30
         
-        active_pad   = self._active_pad
-        finished_pad = self._finished_pad
+        active_pad   = curses.newpad(1000, 1000)
+        finished_pad = curses.newpad(1000, 1000)
         
         header_active   = "-ACTIVE-----------------------------------------------------------------------------------------------------------------------------------------------------------"
         header_finished = "-FINISHED---------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -171,6 +180,9 @@ class CurseDisplay(object):
         x_finished = 3
         
         get_active_jobs(a_db)
+        
+        CurseDisplay.LOG.info("------ really in DB ------")
+        print_db_logfile(a_db)
                 
         CurseDisplay.LOG.info("------ start Printing on screen ------")
         
@@ -179,7 +191,6 @@ class CurseDisplay(object):
             
             # if index which is the last_update_time is superior to the previous_display_time
             # meaning was updated since the last display then change color
-            
             if not self._previous_display_time or (index > self._previous_display_time):
                 color = curses.A_BOLD
             else:
@@ -187,6 +198,11 @@ class CurseDisplay(object):
             
             for record in a_db._last_update[index]:
              
+                rec = record
+                CurseDisplay.LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
+                                                                                            time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
+                                                                                            time_utils.datetime_to_time(rec['announced']), time_utils.datetime_to_time(rec['blocked']), \
+                                                                                            time_utils.datetime_to_time(rec['last_update'])) )
                 #reduce filename and jobname size to 50
                 filename = record['filename']
                 if filename:
@@ -267,7 +283,7 @@ class CurseDisplay(object):
         #update previous_display_time with the current display time
         self._previous_display_time = a_current_display_time
         
-        time.sleep(1)
+        #time.sleep(1)
     
     def reset_screen(self):
         """
