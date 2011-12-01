@@ -10,19 +10,19 @@ import datetime
 #regular Expression to parse the xferlogs
 #to eat potential header addded by GEMS
 XFERLOG_GEMS_HEADER  = r'\s*(xferlog:)?.*'
-XFERLOG_DATE_PATTERN = r'(?P<date>(?P<wday>Mon|Tue|Wed|Thu|Fri|Sat|Sun) (?P<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dev) (?P<day>(0[1-9]|[12][0-9]|3[01]|[1-9])) (?P<time>([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])) (?P<year>(18|19|[2-5][0-9])\d\d))'
+XFERLOG_DATE_PATTERN = r'(?P<date>(?P<wday>Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+(?P<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(?P<day>(0[1-9]|[12][0-9]|3[01]|[1-9]))\s+(?P<time>([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]))\s+(?P<year>(18|19|[2-5][0-9])\d\d))'
 XFERLOG_TRANSFERTIME = r'(?P<transfer_time>\d+)'
 XFERLOG_HOST         = r'(?P<host>(::ffff:)?\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b)'
 XFERLOG_FILESIZE     = r'(?P<filesize>\S+)'
 XFERLOG_FILENAME     = r'(?P<filename>\S+)'
-XFERLOG_REST         = r'(?P<transfer_type>\S+) (?P<special_action_flag>\S+) (?P<direction>\S+) (?P<access_mode>\S+) (?P<username>\S+) (?P<service_name>\S+) (?P<authentication_method>\S+) (?P<authenticated_user_id>\S+) (?P<completion_status>\S+)'
+XFERLOG_REST         = r'(?P<transfer_type>\S+)\s+(?P<special_action_flag>\S+)\s+(?P<direction>\S+)\s+(?P<access_mode>\S+)\s+(?P<username>\S+)\s+(?P<service_name>\S+)\s+(?P<authentication_method>\S+)\s+(?P<authenticated_user_id>\S+)\s+(?P<completion_status>\S+)'
 
 XFERLOG_PATTERN      =  XFERLOG_GEMS_HEADER + \
-                        XFERLOG_DATE_PATTERN + r' ' +\
-                        XFERLOG_TRANSFERTIME + r' ' + \
-                        XFERLOG_HOST + r' ' +\
-                        XFERLOG_FILESIZE + r' ' +\
-                        XFERLOG_FILENAME + r' ' +\
+                        XFERLOG_DATE_PATTERN + r'\s+' +\
+                        XFERLOG_TRANSFERTIME + r'\s+' + \
+                        XFERLOG_HOST + r'\s+' +\
+                        XFERLOG_FILESIZE + r'\s+' +\
+                        XFERLOG_FILENAME + r'\s+' +\
                         XFERLOG_REST
 
 XFERLOG_RE           = re.compile(XFERLOG_PATTERN)
@@ -167,13 +167,22 @@ class XferlogParser(object):
 
 if __name__ == '__main__':
     
+    line = 'Thu Dec  1 09:07:52 2011 0 137.129.9.61 9756 /home/eumetsat/data/retim/groups/retim-4030/LFPW00048608.20111201090722_P4030PTBDE0_RAFALENT.9756.b.tmp b _ i r retim ftp 0 * c'
+    
+    parser = XferlogParser()
+    
+    res = parser.parse_one_line(line)
+    
+    print("Sucess res =%s\n" % (res))
+    import sys
+    sys.exit(1)
+    
+    
     xferlog_test_path  = '/homespace/gaubert/logs/tests/xferlog_test'
     xferlog_path       = '/homespace/gaubert/logs/tests/xferlog'
     xferlog_path1      = '/homespace/gaubert/logs/tests/xferlog'
     xferlog_path2      = '/homespace/gaubert/logs/tests/xferlog'
     
-    
-    parser = XferlogParser()
     
     files = [open(xferlog_path), open(xferlog_path1), open(xferlog_path2)]
     files = [open(xferlog_test_path)]
