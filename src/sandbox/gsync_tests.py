@@ -9,6 +9,7 @@ import base64
 
 import ssl
 import gsync
+import gsync_utils
 
 
 def obfuscate_string(a_str):
@@ -109,9 +110,9 @@ class TestGSync(unittest.TestCase):
         
         self.assertEquals(res, {27362: {'X-GM-MSGID': 1147537963432096749L, 'SEQ': 14535}, 27363: {'X-GM-MSGID': 1147537994018957026L, 'SEQ': 14536}})
         
-    def test_gsync_retrieve_all_params(self):
+    def ztest_gsync_retrieve_all_params(self):
         """
-           Get all uid before Sep 2004
+           Get all params for a uid
            Retrieve all parts for one email
         """
         has_ssl = True
@@ -130,6 +131,131 @@ class TestGSync(unittest.TestCase):
         self.assertEquals(res[ids[0]][gimap.GMAIL_ID], 1147537963432096749L)
         
         self.assertEquals(res[ids[0]][gimap.EMAIL_BODY],'Message-ID: <6999505.1094377483218.JavaMail.wwwadm@chewbacca.ecmwf.int>\r\nDate: Sun, 5 Sep 2004 09:44:43 +0000 (GMT)\r\nFrom: Guillaume.Aubert@ecmwf.int\r\nReply-To: Guillaume.Aubert@ecmwf.int\r\nTo: aubert_guillaume@yahoo.fr\r\nSubject: Fwd: [Flickr] Guillaume Aubert wants you to see their photos\r\nMime-Version: 1.0\r\nContent-Type: text/plain; charset=us-ascii\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: jwma\r\nStatus: RO\r\nX-Status: \r\nX-Keywords:                 \r\nX-UID: 1\r\n\r\n\r\n')
+        
+    def ztest_gsync_retrieve_email_store_and_read(self):
+        """
+           Retrieve an email store it on disk and read it
+        """
+        storage_dir = '/tmp/gmail_bk'
+        gsync_utils.delete_all_under(storage_dir)
+        
+        has_ssl = True
+        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gstorer = gsync.GmailStorer(storage_dir)
+        
+        gimap.connect()
+        
+        criteria = ['Before 1-Oct-2006']
+        #criteria = ['ALL']
+        ids = gimap.search(criteria)
+        
+        the_id = ids[124]
+        
+        res          = gimap.fetch(the_id, [gimap.GMAIL_ID, gimap.EMAIL_BODY, gimap.GMAIL_THREAD_ID, gimap.GMAIL_LABELS])
+        
+        file_path = gstorer.store_email(res[the_id][gimap.GMAIL_ID], \
+                           res[the_id][gimap.EMAIL_BODY], \
+                           res[the_id][gimap.GMAIL_THREAD_ID], \
+                           res[the_id][gimap.GMAIL_LABELS])
+        
+        j_results = gstorer.restore_email(file_path)
+        
+        self.assertEquals(res[the_id][gimap.GMAIL_ID], j_results['id'])
+        self.assertEquals(res[the_id][gimap.EMAIL_BODY], j_results['email'])
+        self.assertEquals(res[the_id][gimap.GMAIL_THREAD_ID], j_results['thread_ids'])
+        
+        labels = []
+        for label in res[the_id][gimap.GMAIL_LABELS]:
+            labels.append(label)
+            
+        self.assertEquals(labels, j_results['labels'])
+    
+    def ztest_gsync_retrieve_multiple_emails_store_and_read(self):
+        """
+           Retrieve emails store them it on disk and read it
+        """
+        storage_dir = '/tmp/gmail_bk'
+        gsync_utils.delete_all_under(storage_dir)
+        has_ssl = True
+        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gstorer = gsync.GmailStorer(storage_dir)
+        
+        gimap.connect()
+        
+        criteria = ['Before 1-Oct-2006']
+        #criteria = ['ALL']
+        ids = gimap.search(criteria)
+        
+        #get 30 emails
+        for index in range(9, 40):
+        
+            print("retrieve email index %d\n" % (index))
+            the_id = ids[index]
+            
+            res          = gimap.fetch(the_id, [gimap.GMAIL_ID, gimap.EMAIL_BODY, gimap.GMAIL_THREAD_ID, gimap.GMAIL_LABELS])
+            
+            file_path = gstorer.store_email(res[the_id][gimap.GMAIL_ID], \
+                               res[the_id][gimap.EMAIL_BODY], \
+                               res[the_id][gimap.GMAIL_THREAD_ID], \
+                               res[the_id][gimap.GMAIL_LABELS])
+            
+            print("restore email index %d\n" % (index))
+            j_results = gstorer.restore_email(file_path)
+            
+            self.assertEquals(res[the_id][gimap.GMAIL_ID], j_results['id'])
+            self.assertEquals(res[the_id][gimap.EMAIL_BODY], j_results['email'])
+            self.assertEquals(res[the_id][gimap.GMAIL_THREAD_ID], j_results['thread_ids'])
+            
+            labels = []
+            for label in res[the_id][gimap.GMAIL_LABELS]:
+                labels.append(label)
+                
+            self.assertEquals(labels, j_results['labels'])
+        
+    def test_gsync_store_gzip_email_and_read(self):
+        """
+           Retrieve emails store them it on disk and read it
+        """
+        storage_dir = '/tmp/gmail_bk'
+        gsync_utils.delete_all_under(storage_dir)
+        has_ssl = True
+        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        
+        gstorer = gsync.GmailStorer(storage_dir)
+        
+        gimap.connect()
+        
+        criteria = ['Before 1-Oct-2006']
+        #criteria = ['ALL']
+        ids = gimap.search(criteria)
+        
+        #get 30 emails
+        for index in range(9, 20):
+        
+            print("retrieve email index %d\n" % (index))
+            the_id = ids[index]
+            
+            res          = gimap.fetch(the_id, [gimap.GMAIL_ID, gimap.EMAIL_BODY, gimap.GMAIL_THREAD_ID, gimap.GMAIL_LABELS])
+            
+            file_path = gstorer.store_email(res[the_id][gimap.GMAIL_ID], \
+                               res[the_id][gimap.EMAIL_BODY], \
+                               res[the_id][gimap.GMAIL_THREAD_ID], \
+                               res[the_id][gimap.GMAIL_LABELS], compress = True)
+            
+            print("restore email index %d\n" % (index))
+            j_results = gstorer.restore_email(file_path, compress = True)
+            
+            self.assertEquals(res[the_id][gimap.GMAIL_ID], j_results['id'])
+            self.assertEquals(res[the_id][gimap.EMAIL_BODY], j_results['email'])
+            self.assertEquals(res[the_id][gimap.GMAIL_THREAD_ID], j_results['thread_ids'])
+            
+            labels = []
+            for label in res[the_id][gimap.GMAIL_LABELS]:
+                labels.append(label)
+                
+            self.assertEquals(labels, j_results['labels'])
+        
+        
         
 
 def tests():
