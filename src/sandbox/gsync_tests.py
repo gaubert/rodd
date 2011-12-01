@@ -40,9 +40,15 @@ class TestGSync(unittest.TestCase):
         
         self.login  = None
         self.passwd = None
+        
+        self._gsync_login  = None
+        self._gsync_passwd = None 
     
     def setUp(self):
         self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
+        
+        self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
+        
     
     def ztest_gsync_connect_error(self):
         """
@@ -254,6 +260,19 @@ class TestGSync(unittest.TestCase):
                 labels.append(label)
                 
             self.assertEquals(labels, j_results['labels'])
+            
+    def test_gsync_gmail_account(self):
+        """
+           Test connection to gsync account
+        """
+        has_ssl = True
+        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.gsync_login, self.gsync_passwd, has_ssl)
+        
+        gimap.connect()
+        
+        gimap.check_gmailness()
+        
+        print(gimap.get_all_folders())
         
         
         

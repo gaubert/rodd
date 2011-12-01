@@ -14,6 +14,7 @@ class GIMAPFetcher(object):
     '''
     GMAIL_EXTENSION   = 'X-GM-EXT-1'  # GMAIL capability
     GMAIL_ALL         = '[Gmail]/All Mail' #GMAIL All Mail mailbox
+    GOOGLE_MAIL_ALL   = '[Google Mail]/All Mail' #Google Mail All Mail mailbox for Germany
     GMAIL_ID          = 'X-GM-MSGID' #GMAIL ID attribute
     GMAIL_THREAD_ID   = 'X-GM-THRID'
     GMAIL_LABELS      = 'X-GM-LABELS'
@@ -34,7 +35,7 @@ class GIMAPFetcher(object):
         
         self.server   = None
     
-    def connect(self):
+    def connect(self, go_to_all_folder = True):
         """
            connect to the IMAP server
         """
@@ -42,9 +43,43 @@ class GIMAPFetcher(object):
         
         self.server.login(self.login, self.password)
         
-        # set to GMAIL_ALL dir by default and in readonly
-        self.server.select_folder(GIMAPFetcher.GMAIL_ALL, readonly = True)
+        self._all_mail_folder = None
         
+        #find the all mail folder
+        self.find_all_mail_folder()
+        
+        # set to GMAIL_ALL dir by default and in readonly
+        if go_to_all_folder:
+            self.server.select_folder(self._all_mail_folder, readonly = True)
+    
+    def find_all_mail_folder(self):
+        """
+           depending on your account the all mail folder can be named 
+           [GMAIL]/ALL Mail or [GoogleMail]/All Mail.
+           Find and set the right one
+        """
+        
+        folders = self.server.list_folders()
+        dir = None
+        for (_, _, dir) in folders:
+            if dir == GIMAPFetcher.GMAIL_ALL:
+                self._all_mail_folder = GIMAPFetcher.GMAIL_ALL
+                break
+            elif dir == GIMAPFetcher.GOOGLE_MAIL_ALL:
+                self._all_mail_folder = GIMAPFetcher.GOOGLE_MAIL_ALL
+                break
+        
+        if dir == None:
+            #Error
+            raise Exception("Cannot find global dir %s or %s. Are you sure it is a GMail account" % (GIMAPFetcher.GMAIL_ALL, GIMAPFetcher.GOOGLE_MAIL_ALL))
+            
+        
+    
+    def get_all_folders(self): 
+        """
+           Return all folders mainly for debuging purposes
+        """
+        return self.server.list_folders()
         
     def get_capabilities(self):
         """
