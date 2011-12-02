@@ -19,8 +19,16 @@ class GIMAPFetcher(object):
     GMAIL_THREAD_ID   = 'X-GM-THRID'
     GMAIL_LABELS      = 'X-GM-LABELS'
     
+    IMAP_INTERNALDATE = 'INTERNALDATE'
+    IMAP_FLAGS        = 'FLAGS'
+    IMAP_BODY_PEEK    = 'BODY.PEEK[]'
+    
     EMAIL_BODY        = 'RFC822'
+    
+    GET_ALL_INFO = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, EMAIL_BODY, IMAP_FLAGS, IMAP_BODY_PEEK]
 
+    GET_ALL_BUT_DATA = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS]
+ 
 
     def __init__(self, host, port, login, password, ssl, use_uid = True):
         '''
@@ -111,6 +119,18 @@ class GIMAPFetcher(object):
         """
         return self.server.fetch(a_ids, a_attributes)
     
+    def store_email(self, a_id, a_body):
+        """
+           Push a complete email body 
+        """
+        #protection against myself
+        if self.login == 'guillaume.aubert@gmail.com':
+            raise Exception("Cannot push to this account")
+        
+        
+        
+        
+    
 class GmailStorer(object):
     '''
        Store emails
@@ -129,7 +149,7 @@ class GmailStorer(object):
         gsync_utils.makedirs(a_storage_dir)
         
 
-    def store_email(self, id, email, thread_ids, labels, compress = False):
+    def store_email(self, id, email, thread_ids, labels, internal_date, flags, compress = False):
         """
            store a json structure with all email elements in a file
            If compress is True, use gzip compression
@@ -143,10 +163,12 @@ class GmailStorer(object):
             f_desc = open(path, 'w')
         
         #create json structure
-        json_obj= { 'id'        : id,
-                    'email'     : email,
-                    'thread_ids' : thread_ids,
-                    'labels'    : labels}
+        json_obj= { 'id'            : id,
+                    'email'         : email,
+                    'thread_ids'    : thread_ids,
+                    'labels'        : labels,
+                    'internal_date' : gsync_utils.datetime2e(internal_date),
+                    'flags'         : flags}
         
         json.dump(json_obj, f_desc, ensure_ascii = False)
         
@@ -165,7 +187,11 @@ class GmailStorer(object):
         else:
             f_desc = open(file_path,'r')
         
-        return json.load(f_desc)
+        res = json.load(f_desc)
+        
+        res['internal_date'] =  gsync_utils.e2datetime(res['internal_date'])
+        
+        return res
         
     
     
