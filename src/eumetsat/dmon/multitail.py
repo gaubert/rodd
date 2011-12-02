@@ -59,7 +59,6 @@ class MultiFileTailer(object):
         
         Return (line, filename)
         """
-        trailing       = True
         sizes          = []
         file_buffer    = {}
         
@@ -84,7 +83,7 @@ class MultiFileTailer(object):
             #set up the select (for the moment use a select)
             (rlist, _, _) = select.select(a_files, [], [], 1)
             
-            select_iteration +=1
+            select_iteration += 1
             
             if len(rlist) > 0:
                 for a_file in rlist:              
@@ -97,7 +96,7 @@ class MultiFileTailer(object):
                     #  process lines within the data
                     while 1:
                         pos = file_buffer[a_file.name].find('\n')
-                        if pos < 0: break
+                        if pos < 0: break #pylint: disable-msg=C0321
                         the_line = file_buffer[a_file.name][:pos]
                         file_buffer[a_file.name] = file_buffer[a_file.name][pos + 1:]
                         
@@ -124,12 +123,12 @@ class MultiFileTailer(object):
 
 if __name__ == '__main__':
 
-    file_send = open('/tmp/analyse/logfile.log')
+    File_send = open('/tmp/analyse/logfile.log')
     #file_send = open('/tmp/weather.txt')
-    file_send1 = open('/tmp/weather.txt')
-    file_send2 = open('/tmp/weather.txt')
+    File_send1 = open('/tmp/weather.txt')
+    File_send2 = open('/tmp/weather.txt')
 
-    lines = MultiFileTailer.tail([file_send, file_send1, file_send2])
+    lines = MultiFileTailer.tail([File_send, File_send1, File_send2])
 
     for line in lines:
         print(line)

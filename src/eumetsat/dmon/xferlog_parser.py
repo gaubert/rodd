@@ -135,6 +135,23 @@ class XferlogParser(object):
             return (dir_name, name, the_metadata)
         else:
             return (dir_name, the_basename, the_metadata )
+        
+    def _get_action(self, direction):
+        """
+           Set the action from the direction
+           input (i) = push
+           output(o) = get
+           delete(d) = delete
+           rest      = unknown
+        """
+        if direction == 'i':
+            return 'push'
+        elif direction == 'o':
+            return 'get'
+        elif direction == 'd':
+            return 'delete'
+        else:
+            return 'unknown'
             
     def _parse_line(self, a_line):
         """ 
@@ -146,7 +163,7 @@ class XferlogParser(object):
         if matched:
             
             the_dir, the_filename, the_metadata = self._clean_filename(matched.group('filename'))
-            
+                        
             #add user in metadata
             the_metadata.update({ 'ftp_user' : matched.group('username') , 'ftp_dir' : the_dir })
             
@@ -155,6 +172,7 @@ class XferlogParser(object):
                        'time': self._convert_date_to_date_time(matched.group('date')),
                        'lev' : 'info',
                        'file': the_filename,
+                       'action' : self._get_action(matched.group('direction')),
                        'metadata' : the_metadata,
                        'file_size' : matched.group('filesize'),
                        'transfer_time' : matched.group('transfer_time'),
