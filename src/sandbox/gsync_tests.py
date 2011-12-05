@@ -41,8 +41,8 @@ class TestGSync(unittest.TestCase):
         self.login  = None
         self.passwd = None
         
-        self._gsync_login  = None
-        self._gsync_passwd = None 
+        self.gsync_login  = None
+        self.gsync_passwd = None 
     
     def setUp(self):
         self.login, self.passwd = read_password_file('/homespace/gaubert/.ssh/passwd')
@@ -273,7 +273,34 @@ class TestGSync(unittest.TestCase):
         
         print(gimap.get_all_folders())
         
-    def test_get_all_info(self):
+    def test_restore_one_email(self):
+        """
+           get one email from one account and restore it
+        """
+        has_ssl = True
+        read_only_folder = False
+        gsource      = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gdestination = gsync.GIMAPFetcher('imap.gmail.com', 993, self.gsync_login, self.gsync_passwd, has_ssl, readonly_folder = False)
+        
+        gsource.connect()
+        gdestination.connect()
+        
+        criteria = ['Before 1-Oct-2006']
+        #criteria = ['ALL']
+        ids = gsource.search(criteria)
+        
+        the_id = ids[0]
+        
+        res = gsource.fetch(the_id, gsource.GET_ALL_INFO)
+        
+        existing_labels = res[the_id][gsource.GMAIL_LABELS]
+        
+        test_label = ('\Inbox',)
+            
+        gdestination.store_email(the_id, res[the_id][gsource.EMAIL_BODY],res[the_id][gsource.IMAP_FLAGS] ,res[the_id][gsource.IMAP_INTERNALDATE], test_label)
+        
+        
+    def ztest_get_all_info(self):
         """
            Get all info from one email
         """

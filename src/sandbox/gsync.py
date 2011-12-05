@@ -5,6 +5,8 @@ Created on Nov 16, 2011
 '''
 import json
 import gzip
+import re
+import time
 from imapclient import IMAPClient
 import gsync_utils as gsync_utils
 
@@ -43,7 +45,7 @@ class GIMAPFetcher(object):
         
         self.server   = None
     
-    def connect(self, go_to_all_folder = True):
+    def connect(self, go_to_all_folder = True, readonly_folder = True):
         """
            connect to the IMAP server
         """
@@ -58,7 +60,7 @@ class GIMAPFetcher(object):
         
         # set to GMAIL_ALL dir by default and in readonly
         if go_to_all_folder:
-            self.server.select_folder(self._all_mail_folder, readonly = True)
+            self.server.select_folder(self._all_mail_folder, readonly = readonly_folder)
     
     def find_all_mail_folder(self):
         """
@@ -119,7 +121,7 @@ class GIMAPFetcher(object):
         """
         return self.server.fetch(a_ids, a_attributes)
     
-    def store_email(self, a_id, a_body):
+    def store_email(self, a_id, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 
         """
@@ -127,7 +129,25 @@ class GIMAPFetcher(object):
         if self.login == 'guillaume.aubert@gmail.com':
             raise Exception("Cannot push to this account")
         
+        res = self.server.append(self._all_mail_folder, a_body, a_flags, a_internal_time)
         
+        result_uid = int(re.search('^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$', res).group(1))
+
+        
+        # add GMAIL LABELS 
+        if len(a_labels) > 0:
+            
+            labels_str = '('
+            for label in a_labels:
+                labels_str += ' %s' %(label)
+            labels_str = ')'
+            
+            #labels_str = '("'+'" "'.join(a_labels)+'")'
+            r, d = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
+
+        
+        
+        return res
         
         
     
