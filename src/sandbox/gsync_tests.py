@@ -218,7 +218,7 @@ class TestGSync(unittest.TestCase):
                 
             self.assertEquals(labels, j_results['labels'])
         
-    def test_gsync_store_gzip_email_and_read(self):
+    def ztest_gsync_store_gzip_email_and_read(self):
         """
            Retrieve emails store them it on disk and read it
         """
@@ -261,7 +261,7 @@ class TestGSync(unittest.TestCase):
                 
             self.assertEquals(labels, j_results['labels'])
             
-    def test_gsync_gmail_account(self):
+    def ztest_gsync_test_gmail_account(self):
         """
            Test connection to gsync account
         """
@@ -269,10 +269,42 @@ class TestGSync(unittest.TestCase):
         gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.gsync_login, self.gsync_passwd, has_ssl)
         
         gimap.connect()
-        
-        gimap.check_gmailness()
+
         
         print(gimap.get_all_folders())
+        
+    def test_get_all_info(self):
+        """
+           Get all info from one email
+        """
+        storage_dir = '/tmp/gmail_bk'
+        gsync_utils.delete_all_under(storage_dir)
+        has_ssl = True
+        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        
+        gstorer = gsync.GmailStorer(storage_dir)
+        
+        gimap.connect()
+        
+        criteria = ['Before 1-Oct-2006']
+        #criteria = ['ALL']
+        ids = gimap.search(criteria)
+        
+        the_id = ids[0]
+        
+        res = gimap.fetch(the_id, gimap.GET_ALL_INFO)
+            
+        #print(res)
+        file_path = gstorer.store_email(res[the_id][gimap.GMAIL_ID], \
+                               res[the_id][gimap.EMAIL_BODY], \
+                               res[the_id][gimap.GMAIL_THREAD_ID], \
+                               res[the_id][gimap.GMAIL_LABELS],\
+                               res[the_id][gimap.IMAP_INTERNALDATE],\
+                               res[the_id][gimap.IMAP_FLAGS], compress = True)
+        
+        
+        
+        
         
         
         
