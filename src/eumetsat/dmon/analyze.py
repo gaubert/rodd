@@ -97,7 +97,7 @@ class Analyzer(object):
         """
           print database in log file for debuging purposes
         """
-        Analyzer.LOG.info('--BEG-------------------------------------------------------------------------')
+        Analyzer.LOG.info('--BEG---%s----------------------------------------------------------------------' % (time_utils.datetime_to_time(datetime.datetime.now())))
         for rec in database:
             Analyzer.LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
                                                                                             time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
@@ -116,13 +116,26 @@ class Analyzer(object):
         if the_type == 'xferlog' and self._accepting_new:
             result = Analyzer.x_parser.parse_one_line(line)
             
-            #add file in db
-            now = datetime.datetime.now()
-            database.insert(filename = result['file'], \
-                            uplinked = result['time'], \
-                            metadata = result['metadata'], \
-                            created  = now, \
-                            last_update= now)
+            if result['action'] == 'push':
+            
+                #add file in db
+                now = datetime.datetime.now()
+                database.insert(filename = result['file'], \
+                                uplinked = result['time'], \
+                                metadata = result['metadata'], \
+                                created  = now, \
+                                last_update= now)
+            elif result['action'] == 'delete':
+                
+                #look for a file name x in the db in order to delete it
+                records = database(filename = result['file'])
+                for rec in records:
+                    #simply delete it at the moment
+                    database.delete(rec)
+                    Analyzer.LOG.info('*********** Delete fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
+                                                                                            time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
+                                                                                            time_utils.datetime_to_time(rec['announced']), time_utils.datetime_to_time(rec['blocked']), \
+                                                                                            time_utils.datetime_to_time(rec['last_update'])) )
             
         elif the_type == 'dirmon':
             result = Analyzer.d_parser.parse_one_line(line)
@@ -383,7 +396,7 @@ def analyze_with_text_display_from_tailed_file(self, a_file_paths):
                         self.print_db_logfile(self.mem_db)
                         
                         stop_accepting +=1 
-                        if stop_accepting > 25:
+                        if stop_accepting > 1000:
                             self._accepting_new = False
                         
                     except tellicastlog_parser.InvalidTellicastlogFormatError, err:
@@ -431,5 +444,7 @@ if __name__ == '__main__':
     log_utils.LoggerFactory.setup_simple_file_handler('/tmp/analyze.log') 
     
     analyzer = Analyzer() #pylint: disable-msg=C0103
+    
+    #sys.exit(analyzer.analyze_with_text_display_from_tailed_file(['/tmp/analyse/logfile.log']))
 
     sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))

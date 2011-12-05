@@ -10,93 +10,7 @@ import time
 
 import eumetsat.dmon.common.time_utils as time_utils
 import eumetsat.dmon.common.log_utils  as log_utils
-
-PREVIOUS_SNAPSHOT = {}
-
-def db_differ(prev_snapshot, database):
-    """
-       return nb of deleted and already existing and new records
-    """
-    new_snapshot = {}
-    existing = 0
-    new      = 0
-    deleted  = 0
-    for rec in database:
-        id = rec['__id__']
-        if id in prev_snapshot:
-            existing += 1
-            del prev_snapshot[id]
-            new_snapshot[id] = rec
-        else:
-            new += 1
-            new_snapshot[id] = rec
-    
-    #get the deleted this is what is left in prev_snapshot
-    deleted = len(prev_snapshot)
-    
-    return new_snapshot, deleted, new, existing
-    
-            
-
-def get_active_jobs(database):
-    """
-       Get the number of active jobs
-    """
-    finished    = 0
-    blocked     = 0
-    active      = 0
-    
-    active_for = {}
-    secs       = 120
-    
-    nb_rec_printed = 0
-    
-    for rec in database:
-        if rec.get('finished_time_insert', None):
-            finished += 1
-        else:
-            active += 1
-            now = datetime.datetime.now()
-            if now - rec.get('created') > datetime.timedelta(seconds = secs):
-                #CurseDisplay.LOG.info("One active for more than %d secs" %(secs))
-                active_for[rec['__id__']] = rec
-                #if nb_rec_printed < 20:
-                #    CurseDisplay.LOG.info("rec = %s" % (rec))
-                
-        
-        if rec.get('blocked', None):
-            blocked += 1
-        
-    job_nb = 0    
-    for j in database._jobname:
-        if j is not None:
-            job_nb += 1
-        
-    
-    #active = len(database)- finished
-
-    CurseDisplay.LOG.info("active file transfers = %d, finished ft =%d, blocked=%d, total_in_db=%d" % (active, finished, blocked,len(database)) )
-    CurseDisplay.LOG.info("%d active file transfers from more than %d secs" % (len(active_for), secs))
-    
-    CurseDisplay.LOG.info("%d jobnames in the db" % (job_nb))
-    
-    global PREVIOUS_SNAPSHOT
-    PREVIOUS_SNAPSHOT, d_del, d_new, d_existing = db_differ(PREVIOUS_SNAPSHOT, database)
-    
-    CurseDisplay.LOG.info("Since last print %d deleted file transfers, %d new and %d existing. total %d" % (d_del, d_new, d_existing, len(database)) )
-
-def print_db_logfile(database): #pylint: disable-msg=R0201
-        """
-          print database in log file for debuging purposes
-        """
-        CurseDisplay.LOG.info('--BEG-------------------------------------------------------------------------')
-        for rec in database:
-            CurseDisplay.LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
-                                                                                            time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
-                                                                                            time_utils.datetime_to_time(rec['announced']), time_utils.datetime_to_time(rec['blocked']), \
-                                                                                            time_utils.datetime_to_time(rec['last_update'])) )
-        CurseDisplay.LOG.info('--END-------------------------------------------------------------------------')    
-    
+import eumetsat.dmon.common.analyze_utils as analyze_utils
 
 class CurseDisplay(object):
     '''
@@ -131,6 +45,8 @@ class CurseDisplay(object):
         #used to colorized elems that have changed since last update on screen
         self._previous_display_time = None
         
+        self._previous_snapshot = {}
+        
         
     def check_for_input(self):
         """
@@ -142,13 +58,6 @@ class CurseDisplay(object):
             return "QUIT"
         elif char in [ord('s')]:
             return "STOPACCEPTING"
-        
-    def print_index(self, a_db):
-        """
-        """
-        
-        for rec in a_db._last_update.get_sorted_iter(sorted, reverse = True):
-            CurseDisplay.LOG.info("sorted rec = %s" %(rec))
     
     def print_screen(self, a_db, a_current_display_time):
         """
@@ -179,11 +88,8 @@ class CurseDisplay(object):
         x_active   = 3
         x_finished = 3
         
-        get_active_jobs(a_db)
-        
-        CurseDisplay.LOG.info("------ really in DB ------")
-        print_db_logfile(a_db)
-                
+        analyze_utils.get_active_jobs(a_db, self._previous_snapshot )
+                      
         CurseDisplay.LOG.info("------ start Printing on screen ------")
         
         #reverse iteration from the lastest records to the oldest one
