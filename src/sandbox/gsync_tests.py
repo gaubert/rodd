@@ -280,10 +280,10 @@ class TestGSync(unittest.TestCase):
         has_ssl = True
         read_only_folder = False
         gsource      = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
-        gdestination = gsync.GIMAPFetcher('imap.gmail.com', 993, self.gsync_login, self.gsync_passwd, has_ssl, readonly_folder = False)
+        gdestination = gsync.GIMAPFetcher('imap.gmail.com', 993, self.gsync_login, self.gsync_passwd, has_ssl)
         
         gsource.connect()
-        gdestination.connect()
+        gdestination.connect(readonly_folder = False)
         
         criteria = ['Before 1-Oct-2006']
         #criteria = ['ALL']
@@ -295,9 +295,11 @@ class TestGSync(unittest.TestCase):
         
         existing_labels = res[the_id][gsource.GMAIL_LABELS]
         
-        test_label = ('\Inbox',)
+        test_labels = ['\Inbox']
+        for elem in existing_labels:
+            test_labels.append(elem)
             
-        gdestination.store_email(the_id, res[the_id][gsource.EMAIL_BODY],res[the_id][gsource.IMAP_FLAGS] ,res[the_id][gsource.IMAP_INTERNALDATE], test_label)
+        gdestination.store_email(the_id, res[the_id][gsource.EMAIL_BODY],res[the_id][gsource.IMAP_FLAGS] ,res[the_id][gsource.IMAP_INTERNALDATE], test_labels)
         
         
     def ztest_get_all_info(self):

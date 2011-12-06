@@ -139,8 +139,8 @@ class GIMAPFetcher(object):
             
             labels_str = '('
             for label in a_labels:
-                labels_str += ' %s' %(label)
-            labels_str = ')'
+                labels_str += '%s ' %(label)
+            labels_str = '%s%s' % (labels_str[:-1],')')
             
             #labels_str = '("'+'" "'.join(a_labels)+'")'
             r, d = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
