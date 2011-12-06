@@ -54,20 +54,19 @@ class TestGSync(unittest.TestCase):
         """
            Test connect error (connect to a wrong port). Too long to check
         """
-        has_ssl = True
-        gimap = gsync.GIMAPFetcher('imap.gmafil.com', 80, "badlogin", "badpassword", has_ssl)
+
+        gimap = gsync.GIMAPFetcher('imap.gmafil.com', 80, "badlogin", "badpassword")
         
         try:
             gimap.connect()
         except ssl.SSLError, err:
             self.assertEquals(str(err), '[Errno 1] _ssl.c:480: error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol')
     
-    def ztest_gsync_get_capabilities(self):
+    def test_gsync_get_capabilities(self):
         """
            Test simple retrieval
         """
-        has_ssl = True
-        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
         
@@ -77,8 +76,7 @@ class TestGSync(unittest.TestCase):
         """
            Test simple retrieval
         """
-        has_ssl = True
-        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
         
@@ -89,7 +87,7 @@ class TestGSync(unittest.TestCase):
            search all emails before 01.01.2005
         """
         has_ssl = True
-        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
        
@@ -103,8 +101,7 @@ class TestGSync(unittest.TestCase):
            Get all uid before Sep 2004
            Retrieve all GMAIL IDs 
         """
-        has_ssl = True
-        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
        
@@ -121,8 +118,7 @@ class TestGSync(unittest.TestCase):
            Get all params for a uid
            Retrieve all parts for one email
         """
-        has_ssl = True
-        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gimap = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gimap.connect()
        
@@ -145,8 +141,7 @@ class TestGSync(unittest.TestCase):
         storage_dir = '/tmp/gmail_bk'
         gsync_utils.delete_all_under(storage_dir)
         
-        has_ssl = True
-        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         gstorer = gsync.GmailStorer(storage_dir)
         
         gimap.connect()
@@ -182,8 +177,7 @@ class TestGSync(unittest.TestCase):
         """
         storage_dir = '/tmp/gmail_bk'
         gsync_utils.delete_all_under(storage_dir)
-        has_ssl = True
-        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         gstorer = gsync.GmailStorer(storage_dir)
         
         gimap.connect()
@@ -224,8 +218,7 @@ class TestGSync(unittest.TestCase):
         """
         storage_dir = '/tmp/gmail_bk'
         gsync_utils.delete_all_under(storage_dir)
-        has_ssl = True
-        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gstorer = gsync.GmailStorer(storage_dir)
         
@@ -260,30 +253,17 @@ class TestGSync(unittest.TestCase):
                 labels.append(label)
                 
             self.assertEquals(labels, j_results['labels'])
-            
-    def ztest_gsync_test_gmail_account(self):
-        """
-           Test connection to gsync account
-        """
-        has_ssl = True
-        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.gsync_login, self.gsync_passwd, has_ssl)
-        
-        gimap.connect()
-
-        
-        print(gimap.get_all_folders())
         
     def test_restore_one_email(self):
         """
            get one email from one account and restore it
         """
-        has_ssl = True
         read_only_folder = False
-        gsource      = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
-        gdestination = gsync.GIMAPFetcher('imap.gmail.com', 993, self.gsync_login, self.gsync_passwd, has_ssl)
+        gsource      = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gdestination = gsync.GIMAPFetcher('imap.gmail.com', 993, self.gsync_login, self.gsync_passwd, readonly_folder = False)
         
         gsource.connect()
-        gdestination.connect(readonly_folder = False)
+        gdestination.connect()
         
         criteria = ['Before 1-Oct-2006']
         #criteria = ['ALL']
@@ -291,25 +271,86 @@ class TestGSync(unittest.TestCase):
         
         the_id = ids[0]
         
-        res = gsource.fetch(the_id, gsource.GET_ALL_INFO)
+        source_email = gsource.fetch(the_id, gsource.GET_ALL_INFO)
         
-        existing_labels = res[the_id][gsource.GMAIL_LABELS]
+        existing_labels = source_email[the_id][gsource.GMAIL_LABELS]
         
-        test_labels = ['\Inbox']
+        test_labels = []
         for elem in existing_labels:
             test_labels.append(elem)
             
-        gdestination.store_email(the_id, res[the_id][gsource.EMAIL_BODY],res[the_id][gsource.IMAP_FLAGS] ,res[the_id][gsource.IMAP_INTERNALDATE], test_labels)
+        dest_id = gdestination.store_email(the_id, source_email[the_id][gsource.EMAIL_BODY],\
+                                           source_email[the_id][gsource.IMAP_FLAGS] , \
+                                           source_email[the_id][gsource.IMAP_INTERNALDATE], test_labels)
         
+        dest_email = gdestination.fetch(dest_id, gsource.GET_ALL_INFO)
         
-    def ztest_get_all_info(self):
+        # do the checkings
+        self.assertEquals(dest_email[dest_id][gsource.IMAP_FLAGS], source_email[the_id][gsource.IMAP_FLAGS])
+        self.assertEquals(dest_email[dest_id][gsource.EMAIL_BODY], source_email[the_id][gsource.EMAIL_BODY])
+        self.assertEquals(dest_email[dest_id][gsource.GMAIL_LABELS], source_email[the_id][gsource.GMAIL_LABELS])
+            
+        #should be ok to be checked
+        #self.assertEquals(dest_email[dest_id][gsource.IMAP_INTERNALDATE], source_email[the_id][gsource.IMAP_INTERNALDATE])
+    
+    def _delete_email(self, a_conn, a_id):
+        """
+           Set an email as deleted
+        """
+        pass
+        
+    def test_restore_10_emails(self):
+        """
+           Restore 10 emails
+        """
+        read_only_folder = False
+        gsource      = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
+        gdestination = gsync.GIMAPFetcher('imap.gmail.com', 993, self.gsync_login, self.gsync_passwd, readonly_folder = False)
+        
+        gsource.connect()
+        gdestination.connect()
+        
+        criteria = ['Before 1-Oct-2008']
+        #criteria = ['ALL']
+        ids = gsource.search(criteria)
+        
+        #get 30 emails
+        for index in range(9, 20):
+            
+            print("email nb %d\n" % (index))
+        
+            the_id = ids[index]
+            
+            source_email = gsource.fetch(the_id, gsource.GET_ALL_INFO)
+            
+            existing_labels = source_email[the_id][gsource.GMAIL_LABELS]
+            
+            # get labels
+            test_labels = []
+            for elem in existing_labels:
+                test_labels.append(elem)
+                
+            dest_id = gdestination.store_email(the_id, source_email[the_id][gsource.EMAIL_BODY], \
+                                               source_email[the_id][gsource.IMAP_FLAGS] , \
+                                               source_email[the_id][gsource.IMAP_INTERNALDATE], test_labels)
+            
+            #retrieve email from destination email account
+            dest_email = gdestination.fetch(dest_id, gsource.GET_ALL_INFO)
+            
+            #check that it has the same
+            # do the checkings
+            self.assertEquals(dest_email[dest_id][gsource.IMAP_FLAGS], source_email[the_id][gsource.IMAP_FLAGS])
+            self.assertEquals(dest_email[dest_id][gsource.EMAIL_BODY], source_email[the_id][gsource.EMAIL_BODY])
+            self.assertEquals(dest_email[dest_id][gsource.GMAIL_LABELS], source_email[the_id][gsource.GMAIL_LABELS])
+            
+        
+    def test_get_all_info(self):
         """
            Get all info from one email
         """
         storage_dir = '/tmp/gmail_bk'
         gsync_utils.delete_all_under(storage_dir)
-        has_ssl = True
-        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd, has_ssl)
+        gimap   = gsync.GIMAPFetcher('imap.gmail.com', 993, self.login, self.passwd)
         
         gstorer = gsync.GmailStorer(storage_dir)
         

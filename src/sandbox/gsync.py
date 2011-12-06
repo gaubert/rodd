@@ -23,29 +23,39 @@ class GIMAPFetcher(object):
     
     IMAP_INTERNALDATE = 'INTERNALDATE'
     IMAP_FLAGS        = 'FLAGS'
-    IMAP_BODY_PEEK    = 'BODY.PEEK[]'
     
-    EMAIL_BODY        = 'RFC822'
+    EMAIL_BODY        = 'BODY[]'
     
-    GET_ALL_INFO = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, EMAIL_BODY, IMAP_FLAGS, IMAP_BODY_PEEK]
+    #to be removed
+    EMAIL_BODY_OLD        = 'RFC822' #set msg as seen
+    IMAP_BODY_PEEK    = 'BODY.PEEK[]' #get body without setting msg as seen
+    
+    
+    #GET_IM_UID_RE
+    APPENDUID = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
+    
+    APPENDUID_RE = re.compile(APPENDUID)
+    
+    GET_ALL_INFO = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS]
 
     GET_ALL_BUT_DATA = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS]
  
 
-    def __init__(self, host, port, login, password, ssl, use_uid = True):
+    def __init__(self, host, port, login, password, readonly_folder = True):
         '''
             Constructor
         '''
-        self.host     = host
-        self.port     = port
-        self.login    = login
-        self.password = password
-        self.ssl      = ssl
-        self.use_uid  = use_uid
+        self.host            = host
+        self.port            = port
+        self.login           = login
+        self.password        = password
+        self.ssl             = True
+        self.use_uid         = True
+        self.readonly_folder = readonly_folder
         
-        self.server   = None
+        self.server          = None
     
-    def connect(self, go_to_all_folder = True, readonly_folder = True):
+    def connect(self, go_to_all_folder = True):
         """
            connect to the IMAP server
         """
@@ -60,7 +70,7 @@ class GIMAPFetcher(object):
         
         # set to GMAIL_ALL dir by default and in readonly
         if go_to_all_folder:
-            self.server.select_folder(self._all_mail_folder, readonly = readonly_folder)
+            self.server.select_folder(self._all_mail_folder, readonly = self.readonly_folder)
     
     def find_all_mail_folder(self):
         """
@@ -121,6 +131,22 @@ class GIMAPFetcher(object):
         """
         return self.server.fetch(a_ids, a_attributes)
     
+    def _build_labels_str(self, a_labels):
+        """
+           Create IMAP label string from list of given labels
+           a_labels: List of labels
+        """
+        # add GMAIL LABELS 
+        labels_str = None
+        if a_labels and len(a_labels) > 0:
+            labels_str = '('
+            for label in a_labels:
+                labels_str += '%s ' %(label)
+            labels_str = '%s%s' % (labels_str[:-1],')')
+        
+        return labels_str
+        
+    
     def store_email(self, a_id, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 
@@ -131,26 +157,24 @@ class GIMAPFetcher(object):
         
         res = self.server.append(self._all_mail_folder, a_body, a_flags, a_internal_time)
         
-        result_uid = int(re.search('^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$', res).group(1))
-
+        # check res otherwise Exception
+        if '(Success)' not in res:
+            raise Exception("GIMAPFetcher cannot restore email in %s account." %(self.login))
         
-        # add GMAIL LABELS 
-        if len(a_labels) > 0:
+        result_uid = int(GIMAPFetcher.APPENDUID_RE.search(res).group(1))
+        
+        labels_str = self._build_labels_str(a_labels)
+        
+        if labels_str:  
+            #has labels so update email  
+            ret_code, data = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
+        
+            # check if it is ok otherwise exception
+            if ret_code != 'OK':
+                raise Exception("Cannot add Labels %s to email with uid %d. Error:%s" % (labels_str, result_uid, data))
+        
+        return result_uid
             
-            labels_str = '('
-            for label in a_labels:
-                labels_str += '%s ' %(label)
-            labels_str = '%s%s' % (labels_str[:-1],')')
-            
-            #labels_str = '("'+'" "'.join(a_labels)+'")'
-            r, d = self.server._imap.uid('STORE', result_uid, '+X-GM-LABELS', labels_str)
-
-        
-        
-        return res
-        
-        
-    
 class GmailStorer(object):
     '''
        Store emails
@@ -213,5 +237,30 @@ class GmailStorer(object):
         
         return res
         
+class GSyncer(object):
+    """
+       Main object operating over gmail
+    """ 
     
+    def __init__(self, db_root_dir, host , port, login , passwd):
+        """
+           constructor
+        """   
+        self.db_root_dir = db_root_dir
+        
+        #create dir if it doesn't exist
+        gsync_utils.makedirs(self.db_root_dir)
+        
+        
+        # create source and try to connect
+        self.src = gsync.GIMAPFetcher(host, port, login, passwd)
+        self.src.connect()
+    
+    def sync(self):
+        """
+           sync with db on disk
+        """
+        
+        # get all id
+        self.src.search()
     
