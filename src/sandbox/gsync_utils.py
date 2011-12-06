@@ -8,6 +8,32 @@ import os
 import datetime
 import calendar
 
+def get_ym_from_datetime(a_datetime):
+    """
+       return year month from datetime
+    """
+    if a_datetime:
+        return a_datetime.strftime('%Y-%m')
+    
+    return None
+
+MONTH_CONV = { 1: 'Jan', 4: 'Apr', 6: 'Jun', 7: 'Jul', 10: 'Oct' , 12: 'Dec',
+               2: 'Feb', 5: 'May', 8: 'Aug', 9: 'Sep', 11: 'Nov',
+               3: 'Mar'}
+
+def datetime2imapdate(a_datetime):
+    """
+       Transfrom in date format for IMAP Request
+    """
+    if a_datetime:
+        
+        month = MONTH_CONV[a_datetime.month]
+        
+        pattern = '%%d-%s-%%Y' %(month) 
+        
+        return a_datetime.strftime(pattern)
+    
+
 def e2datetime(a_epoch):
     """
         convert epoch time in datetime

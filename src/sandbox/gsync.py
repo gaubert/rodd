@@ -6,6 +6,7 @@ Created on Nov 16, 2011
 import json
 import gzip
 import re
+import datetime
 import time
 from imapclient import IMAPClient
 import gsync_utils as gsync_utils
@@ -23,6 +24,7 @@ class GIMAPFetcher(object):
     
     IMAP_INTERNALDATE = 'INTERNALDATE'
     IMAP_FLAGS        = 'FLAGS'
+    IMAP_ALL          = 'ALL'
     
     EMAIL_BODY        = 'BODY[]'
     
@@ -253,7 +255,7 @@ class GSyncer(object):
         
         
         # create source and try to connect
-        self.src = gsync.GIMAPFetcher(host, port, login, passwd)
+        self.src = GIMAPFetcher(host, port, login, passwd)
         self.src.connect()
     
     def sync(self):
@@ -261,6 +263,31 @@ class GSyncer(object):
            sync with db on disk
         """
         
-        # get all id
-        self.src.search()
+        # get all id in All Mail
+        ids = self.src.search(GIMAPFetcher.IMAP_ALL)
+        
+        #ids[0] should be the oldest so get the date and start from here
+        res  = self.src.fetch(ids[0], GIMAPFetcher.GET_ALL_BUT_DATA )
+        
+        current_date = res[GIMAPFetcher.IMAP_INTERNALDATE]
+        
+        #go to the first day of the month
+        current_date.replace(day=1)
+        
+        # the next date
+        next_date += datetime.timedelta(months=1)
+        
+        # create db dir for the retrieved month
+        curr_dir = gsync_utils.get_ym_from_datetime(current_date)
+        
+        db_dir = '%s/%s' %(self.db_root_dir, curr_dir)
+        
+        #create storer
+        gstorer = GmailStorer(db_dir)
+        
+        #search before the next month
+        ids = self.src.search('Before %s' % (gsync_utils.datetime2imapdate(next_date))
+                              
+        #loop over all ids, get email store email
+        
     

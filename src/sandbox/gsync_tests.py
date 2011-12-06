@@ -62,7 +62,7 @@ class TestGSync(unittest.TestCase):
         except ssl.SSLError, err:
             self.assertEquals(str(err), '[Errno 1] _ssl.c:480: error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol')
     
-    def test_gsync_get_capabilities(self):
+    def ztest_gsync_get_capabilities(self):
         """
            Test simple retrieval
         """
@@ -254,7 +254,7 @@ class TestGSync(unittest.TestCase):
                 
             self.assertEquals(labels, j_results['labels'])
         
-    def test_restore_one_email(self):
+    def ztest_restore_one_email(self):
         """
            get one email from one account and restore it
         """
@@ -299,7 +299,7 @@ class TestGSync(unittest.TestCase):
         """
         pass
         
-    def test_restore_10_emails(self):
+    def ztest_restore_10_emails(self):
         """
            Restore 10 emails
         """
@@ -344,7 +344,7 @@ class TestGSync(unittest.TestCase):
             self.assertEquals(dest_email[dest_id][gsource.GMAIL_LABELS], source_email[the_id][gsource.GMAIL_LABELS])
             
         
-    def test_get_all_info(self):
+    def ztest_get_all_info(self):
         """
            Get all info from one email
         """
@@ -372,7 +372,14 @@ class TestGSync(unittest.TestCase):
                                res[the_id][gimap.IMAP_INTERNALDATE],\
                                res[the_id][gimap.IMAP_FLAGS], compress = True)
         
+    def test_syncer(self):
+        """
+           Test with the Syncer object
+        """
+        syncer = gsync.GSyncer('/tmp/db_dir', 'imap.gmail.com', 993, self.login, self.passwd)
         
+        syncer.sync()
+            
         
         
         
