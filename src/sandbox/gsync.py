@@ -296,7 +296,7 @@ class GSyncer(object):
         dummy_date = a_current_date.replace(day=1)
         
         # the next date = current date + 1 month
-        return a_current_date + datetime.timedelta(days=31)
+        return dummy_date + datetime.timedelta(days=31)
     
     def sync(self):
         """
@@ -313,6 +313,7 @@ class GSyncer(object):
         
         now_date = datetime.datetime.now() + datetime.timedelta(days=1)
         
+        #create next date strating to the first day of the current month and adding one month
         next_date    = self._get_next_date(current_date)
         
         while next_date < now_date:
