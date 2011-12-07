@@ -269,13 +269,13 @@ class GSyncer(object):
         #ids[0] should be the oldest so get the date and start from here
         res  = self.src.fetch(ids[0], GIMAPFetcher.GET_ALL_BUT_DATA )
         
-        current_date = res[GIMAPFetcher.IMAP_INTERNALDATE]
+        current_date = res[ids[0]][GIMAPFetcher.IMAP_INTERNALDATE]
         
         #go to the first day of the month
-        current_date.replace(day=1)
+        current_date = current_date.replace(day=1)
         
         # the next date
-        next_date += datetime.timedelta(months=1)
+        next_date = current_date + datetime.timedelta(days=31)
         
         # create db dir for the retrieved month
         curr_dir = gsync_utils.get_ym_from_datetime(current_date)
@@ -286,8 +286,25 @@ class GSyncer(object):
         gstorer = GmailStorer(db_dir)
         
         #search before the next month
-        ids = self.src.search('Before %s' % (gsync_utils.datetime2imapdate(next_date))
+        imap_req = 'Before %s' % (gsync_utils.datetime2imapdate(next_date))
+        
+        ids = self.src.search(imap_req)
                               
         #loop over all ids, get email store email
+        for id in ids:
+            
+            #retrieve email from destination email account
+            data      = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
+            
+            file_path = gstorer.store_email(data[id][GIMAPFetcher.GMAIL_ID], \
+                               data[id][GIMAPFetcher.EMAIL_BODY], \
+                               data[id][GIMAPFetcher.GMAIL_THREAD_ID], \
+                               data[id][GIMAPFetcher.GMAIL_LABELS], \
+                               data[id][GIMAPFetcher.IMAP_INTERNALDATE], \
+                               data[id][GIMAPFetcher.IMAP_FLAGS], \
+                               compress = False)
+            
+            print("Stored email %d in %s" %(id, file_path))
+            
         
     
