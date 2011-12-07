@@ -263,7 +263,7 @@ class GSyncer(object):
            sync between 2 dates
         """
         #for the moment compress = False
-        compress = False
+        #compress = False
         
         #create storer
         gstorer = GmailStorer(storage_dir)
@@ -295,7 +295,9 @@ class GSyncer(object):
         """
         if start_month_beginning:
             dummy_date   = a_current_date.replace(day=1)
-        
+        else:
+            dummy_date   = a_current_date
+            
         # the next date = current date + 1 month
         return dummy_date + datetime.timedelta(days=31)
     
@@ -318,6 +320,8 @@ class GSyncer(object):
         
         while next_date < now_date:
             # create db dir for the retrieved month
+            
+            print("***** Create a backup for %s /n ******" % (gsync_utils.get_ym_from_datetime(current_date)))
             
             db_dir = '%s/%s' %(self.db_root_dir, gsync_utils.get_ym_from_datetime(current_date))
             
