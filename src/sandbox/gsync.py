@@ -289,11 +289,12 @@ class GSyncer(object):
             
             print("Stored email %d in %s" %(id, file_path))
         
-    def _get_next_date(self, a_current_date):
+    def _get_next_date(self, a_current_date, start_month_beginning = False):
         """
            return the next date necessary to build the imap req
         """
-        dummy_date = a_current_date.replace(day=1)
+        if start_month_beginning:
+            dummy_date   = a_current_date.replace(day=1)
         
         # the next date = current date + 1 month
         return dummy_date + datetime.timedelta(days=31)
@@ -302,7 +303,6 @@ class GSyncer(object):
         """
            sync with db on disk
         """
-        
         # get all id in All Mail
         ids = self.src.search(GIMAPFetcher.IMAP_ALL)
         
@@ -314,7 +314,7 @@ class GSyncer(object):
         now_date = datetime.datetime.now() + datetime.timedelta(days=1)
         
         #create next date strating to the first day of the current month and adding one month
-        next_date    = self._get_next_date(current_date)
+        next_date    = self._get_next_date(current_date, start_month_beginning = True)
         
         while next_date < now_date:
             # create db dir for the retrieved month
