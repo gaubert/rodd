@@ -154,10 +154,7 @@ class TestGSync(unittest.TestCase):
         
         res          = gimap.fetch(the_id, [gimap.GMAIL_ID, gimap.EMAIL_BODY, gimap.GMAIL_THREAD_ID, gimap.GMAIL_LABELS])
         
-        file_path = gstorer.store_email(res[the_id][gimap.GMAIL_ID], \
-                           res[the_id][gimap.EMAIL_BODY], \
-                           res[the_id][gimap.GMAIL_THREAD_ID], \
-                           res[the_id][gimap.GMAIL_LABELS])
+        file_path = gstorer.store_email(res[the_id])
         
         j_results = gstorer.restore_email(file_path)
         
@@ -194,10 +191,7 @@ class TestGSync(unittest.TestCase):
             
             res          = gimap.fetch(the_id, [gimap.GMAIL_ID, gimap.EMAIL_BODY, gimap.GMAIL_THREAD_ID, gimap.GMAIL_LABELS])
             
-            file_path = gstorer.store_email(res[the_id][gimap.GMAIL_ID], \
-                               res[the_id][gimap.EMAIL_BODY], \
-                               res[the_id][gimap.GMAIL_THREAD_ID], \
-                               res[the_id][gimap.GMAIL_LABELS])
+            file_path = gstorer.store_email(res[the_id])
             
             print("restore email index %d\n" % (index))
             j_results = gstorer.restore_email(file_path)
@@ -236,10 +230,7 @@ class TestGSync(unittest.TestCase):
             
             res          = gimap.fetch(the_id, [gimap.GMAIL_ID, gimap.EMAIL_BODY, gimap.GMAIL_THREAD_ID, gimap.GMAIL_LABELS])
             
-            file_path = gstorer.store_email(res[the_id][gimap.GMAIL_ID], \
-                               res[the_id][gimap.EMAIL_BODY], \
-                               res[the_id][gimap.GMAIL_THREAD_ID], \
-                               res[the_id][gimap.GMAIL_LABELS], compress = True)
+            file_path = gstorer.store_email(res[the_id], compress = True)
             
             print("restore email index %d\n" % (index))
             j_results = gstorer.restore_email(file_path, compress = True)
@@ -365,12 +356,7 @@ class TestGSync(unittest.TestCase):
         res = gimap.fetch(the_id, gimap.GET_ALL_INFO)
             
         #print(res)
-        file_path = gstorer.store_email(res[the_id][gimap.GMAIL_ID], \
-                               res[the_id][gimap.EMAIL_BODY], \
-                               res[the_id][gimap.GMAIL_THREAD_ID], \
-                               res[the_id][gimap.GMAIL_LABELS],\
-                               res[the_id][gimap.IMAP_INTERNALDATE],\
-                               res[the_id][gimap.IMAP_FLAGS], compress = True)
+        file_path = gstorer.store_email(res[the_id], compress = True)
         
     def test_syncer(self):
         """

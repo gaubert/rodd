@@ -11,6 +11,19 @@ import time
 from imapclient import IMAPClient
 import gsync_utils as gsync_utils
 
+class MonkeyIMAPClient(IMAPClient):
+    """
+       Need to extend the IMAPClient to do more things such as compression
+    """
+    
+    def __init__(self, host, port=None, use_uid=True, ssl=False)
+        """
+           constructor
+        """
+        super(MonkeyIMAPClient, self).__init__(host, port, use_uid, ssl)
+        
+        
+
 class GIMAPFetcher(object):
     '''
     IMAP Class reading the information
@@ -61,7 +74,7 @@ class GIMAPFetcher(object):
         """
            connect to the IMAP server
         """
-        self.server = IMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
+        self.server = MonkeyIMAPClient(self.host, port = self.port, use_uid= self.use_uid, ssl= self.ssl)
         
         self.server.login(self.login, self.password)
         
@@ -195,7 +208,7 @@ class GmailStorer(object):
         gsync_utils.makedirs(a_storage_dir)
         
 
-    def store_email(self, id, email, thread_ids, labels, internal_date, flags, compress = False):
+    def old_store_email(self, id, email, thread_ids, labels, internal_date, flags, compress = False):
         """
            store a json structure with all email elements in a file
            If compress is True, use gzip compression
@@ -215,6 +228,38 @@ class GmailStorer(object):
                     'labels'        : labels,
                     'internal_date' : gsync_utils.datetime2e(internal_date),
                     'flags'         : flags}
+        
+        json.dump(json_obj, f_desc, ensure_ascii = False)
+        
+        f_desc.flush()
+        
+        f_desc.close()
+        
+        return path
+    
+    def store_email(self, email_info, compress = False):
+        """
+           store a json structure with all email elements in a file
+           If compress is True, use gzip compression
+        """
+        path = "%s/%s.eml" % (self._top_dir, id)
+        
+        if compress:
+            path = '%s.gz' % (path)
+            f_desc = gzip.open(path, 'wb')
+        else:
+            f_desc = open(path, 'w')
+            
+        #change that by externalizing the IMAP keywords
+        gimap = GIMAPFetcher
+            
+        #create json structure
+        json_obj= { 'id'            : email_info[gimap.GMAIL_ID],
+                    'email'         : email_info[gimap.EMAIL_BODY],
+                    'thread_ids'    : email_info[gimap.GMAIL_THREAD_ID],
+                    'labels'        : email_info[gimap.GMAIL_LABELS],
+                    'internal_date' : gsync_utils.datetime2e(email_info[gimap.IMAP_INTERNALDATE]),
+                    'flags'         : email_info[gimap.IMAP_FLAGS]}
         
         json.dump(json_obj, f_desc, ensure_ascii = False)
         
