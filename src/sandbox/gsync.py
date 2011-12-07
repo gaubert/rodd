@@ -257,36 +257,19 @@ class GSyncer(object):
         # create source and try to connect
         self.src = GIMAPFetcher(host, port, login, passwd)
         self.src.connect()
-    
-    def sync(self):
+        
+    def _sync_between(self, begin_date, end_date, storage_dir, compress = True):
         """
-           sync with db on disk
+           sync between 2 dates
         """
-        
-        # get all id in All Mail
-        ids = self.src.search(GIMAPFetcher.IMAP_ALL)
-        
-        #ids[0] should be the oldest so get the date and start from here
-        res  = self.src.fetch(ids[0], GIMAPFetcher.GET_ALL_BUT_DATA )
-        
-        current_date = res[ids[0]][GIMAPFetcher.IMAP_INTERNALDATE]
-        
-        #go to the first day of the month
-        current_date = current_date.replace(day=1)
-        
-        # the next date
-        next_date = current_date + datetime.timedelta(days=31)
-        
-        # create db dir for the retrieved month
-        curr_dir = gsync_utils.get_ym_from_datetime(current_date)
-        
-        db_dir = '%s/%s' %(self.db_root_dir, curr_dir)
+        #for the moment compress = False
+        compress = False
         
         #create storer
-        gstorer = GmailStorer(db_dir)
+        gstorer = GmailStorer(storage_dir)
         
         #search before the next month
-        imap_req = 'Before %s' % (gsync_utils.datetime2imapdate(next_date))
+        imap_req = 'Before %s' % (gsync_utils.datetime2imapdate(end_date))
         
         ids = self.src.search(imap_req)
                               
@@ -302,9 +285,47 @@ class GSyncer(object):
                                data[id][GIMAPFetcher.GMAIL_LABELS], \
                                data[id][GIMAPFetcher.IMAP_INTERNALDATE], \
                                data[id][GIMAPFetcher.IMAP_FLAGS], \
-                               compress = False)
+                               compress = compress)
             
             print("Stored email %d in %s" %(id, file_path))
+        
+    def _get_next_date(self, a_current_date):
+        """
+           return the next date necessary to build the imap req
+        """
+        dummy_date = a_current_date.replace(day=1)
+        
+        # the next date = current date + 1 month
+        return a_current_date + datetime.timedelta(days=31)
+    
+    def sync(self):
+        """
+           sync with db on disk
+        """
+        
+        # get all id in All Mail
+        ids = self.src.search(GIMAPFetcher.IMAP_ALL)
+        
+        #ids[0] should be the oldest so get the date and start from here
+        res  = self.src.fetch(ids[0], GIMAPFetcher.GET_ALL_BUT_DATA )
+        
+        current_date = res[ids[0]][GIMAPFetcher.IMAP_INTERNALDATE]
+        
+        now_date = datetime.datetime.now() + datetime.timedelta(days=1)
+        
+        next_date    = self._get_next_date(current_date)
+        
+        while next_date < now_date:
+            # create db dir for the retrieved month
+            
+            db_dir = '%s/%s' %(self.db_root_dir, gsync_utils.get_ym_from_datetime(current_date))
+            
+            self._sync_between(current_date, next_date, db_dir)
+            
+            current_date = next_date
+            next_date    = self._get_next_date(current_date)
+        
+        #will have to do up to now_date
             
         
     
