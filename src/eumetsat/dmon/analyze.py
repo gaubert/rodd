@@ -85,26 +85,12 @@ class Analyzer(object):
         now = datetime.datetime.now()
         
         Analyzer.LOG.info("Before to remove records")
-        #self.print_db_logfile(database)
         
         for rec in [ r for r in database \
                     if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
                    ]:
             database.delete(rec)
             #Analyzer.LOG.info("deleted %s" % (rec) )         
-
-    def print_db_logfile(self, database): #pylint: disable-msg=R0201
-        """
-          print database in log file for debuging purposes
-        """
-        Analyzer.LOG.info('--BEG---%s----------------------------------------------------------------------' % (time_utils.datetime_to_time(datetime.datetime.now())))
-        for rec in database:
-            Analyzer.LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
-                                                                                            time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
-                                                                                            time_utils.datetime_to_time(rec['announced']), time_utils.datetime_to_time(rec['blocked']), \
-                                                                                            time_utils.datetime_to_time(rec['last_update'])) )
-        Analyzer.LOG.info('--END-------------------------------------------------------------------------')
-           
 
     def analyze(self, database, line, filename):
         """
@@ -393,7 +379,7 @@ def analyze_with_text_display_from_tailed_file(self, a_file_paths):
                         
                         self.analyze(self.mem_db, line, filename)
                         
-                        self.print_db_logfile(self.mem_db)
+                        #self.print_db_logfile(self.mem_db)
                         
                         stop_accepting +=1 
                         if stop_accepting > 1000:

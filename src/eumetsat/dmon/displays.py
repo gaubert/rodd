@@ -23,6 +23,7 @@ class CurseDisplay(object):
            constructor
         """
         self._full_screen = curses.initscr()
+        
         #get screen size
         self._maxy, self._maxx = self._full_screen.getmaxyx()
         
@@ -39,8 +40,9 @@ class CurseDisplay(object):
         # to have non blocking getch
         self._full_screen.nodelay(1)
           
-        self._active_pad   = curses.newpad(1000, 1000)
-        self._finished_pad = curses.newpad(1000, 1000)
+        self._total_pad    = curses.newpad(100,300)
+        self._active_pad   = curses.newpad(500, 500)
+        self._finished_pad = curses.newpad(500, 500)
         
         #used to colorized elems that have changed since last update on screen
         self._previous_display_time = None
@@ -63,12 +65,17 @@ class CurseDisplay(object):
         """
            print on screen
         """
+        
         #constants to be put in files
         nb_max_active_records   = 70
         nb_max_finished_records = 30
         
-        active_pad   = curses.newpad(1000, 1000)
-        finished_pad = curses.newpad(1000, 1000)
+        # get min max screen size
+        self._maxy, self._maxx = self._full_screen.getmaxyx()
+        
+        total_pad    = curses.newpad(100,300)
+        active_pad   = curses.newpad(500, 500)
+        finished_pad = curses.newpad(500, 500)
         
         header_active   = "-ACTIVE-----------------------------------------------------------------------------------------------------------------------------------------------------------"
         header_finished = "-FINISHED---------------------------------------------------------------------------------------------------------------------------------------------------------"
@@ -87,8 +94,6 @@ class CurseDisplay(object):
         #set x 
         x_active   = 3
         x_finished = 3
-        
-        analyze_utils.get_active_jobs(a_db, self._previous_snapshot )
                       
         CurseDisplay.LOG.info("------ start Printing on screen ------")
         
@@ -105,10 +110,11 @@ class CurseDisplay(object):
             for record in a_db._last_update[index]:
              
                 rec = record
-                CurseDisplay.LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
-                                                                                            time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
-                                                                                            time_utils.datetime_to_time(rec['announced']), time_utils.datetime_to_time(rec['blocked']), \
-                                                                                            time_utils.datetime_to_time(rec['last_update'])) )
+                
+                #CurseDisplay.LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
+                #                                                                            time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
+                #                                                                            time_utils.datetime_to_time(rec['announced']), time_utils.datetime_to_time(rec['blocked']), \
+                #                                                                            time_utils.datetime_to_time(rec['last_update'])) )
                 #reduce filename and jobname size to 50
                 filename = record['filename']
                 if filename:
@@ -181,8 +187,34 @@ class CurseDisplay(object):
                         finished_printed_records += 1
             
             
-        finished_pad.noutrefresh(1, 1, int(round((self._maxy-2)*(2.00/3)))+1 , 1, self._maxy-2, self._maxx-2)
-        active_pad.noutrefresh(1, 1, 1, 1, int(round(self._maxy-2)*(2.00/3)) , self._maxx-2)
+        
+        #active pad take 2/3 of the space available
+        # noutrefresh(a, b, minrow, mincol, maxrow, maxcol) with a and b the starting point in the pad
+        # with the 4 coordinates the position in the full screen
+        
+        results = analyze_utils.get_active_jobs(a_db, self._previous_snapshot)
+        self._previous_snapshot = results['since_last_print']['prev_snapshot']
+        
+        first_line = "Active transfers: %s Finished transfers: %s Blocked transfers : %s Active jobs: %s Total nb entries: %s" % (str(results['active_file_transfers']).ljust(3), \
+                                                                                        str(results['finished_file_transfers']).ljust(3), \
+                                                                                        str(results['blocked_file_transfers']).ljust(3), str(results['nb_jobs']).ljust(3), str(results['total_nb_of_transfers']).ljust(3))
+        
+        sec_line   = "New entries     : %s Finished transfers: %s Cleaned entries   : %s [Since last refresh (2s)]" % (str(results['since_last_print']['deleted']).ljust(3), \
+                                                                                             str(results['since_last_print']['new']).ljust(3), \
+                                                                                             str(results['since_last_print']['finished']).ljust(3))
+        
+        total_pad.addstr(1, 1, first_line , curses.A_BOLD)
+        
+        total_pad.addstr(2, 1, sec_line, curses.A_BOLD)
+        
+        total_pad.addstr(3, 1,"")
+        
+        total_pad.noutrefresh(1, 1, 1, 1, 2, self._maxx-2)
+        
+        active_pad.noutrefresh(1, 1, 4, 1, int(round(self._maxy-2)*(2.00/3))+1, self._maxx-2)
+        
+        finished_pad.noutrefresh(1, 1, int(round((self._maxy-2)*(2.00/3)))+2, 1, self._maxy-2, self._maxx-2)
+        
         
         curses.doupdate()
         

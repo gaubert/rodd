@@ -23,6 +23,8 @@ TELLICASTLOG_HEADER_PATTERN = r'Lvl:Date[ ]*Time[ ]*\(UTC\)[ ]*:Message'
 TELLICASTLOG_RE           = re.compile(TELLICASTLOG_PATTERN)
 TELLICASTLOG_HEADER_RE    = re.compile(TELLICASTLOG_HEADER_PATTERN)
 
+
+
 #DIRMON PATTERNS for the different dirmon events
 DIRMON_ADDING_MSG_PATTERN = r'Adding file \'(?P<file>.*)\' to job \'(?P<job>.*)\', last modified: .*, size: (?P<size>\d+)'
 DIRMON_MSG_ADDING_RE      = re.compile(DIRMON_ADDING_MSG_PATTERN)
@@ -150,6 +152,9 @@ class TellicastLogParser(object):
             elif self._app_type == "tc-recv":
                 extra_result = self._parse_tcrecv_msg(result['msg'])
                 result.update(extra_result)
+        else:
+            #for the moment raise an exception
+            raise InvalidTellicastlogFormatError("Tellicastlog parser: Unkown line format %s" %(a_line))
         
         return result
             
@@ -419,6 +424,7 @@ class TellicastLogParser(object):
                     
                    }
         else:
+            #try to eat the potential header
             header_matched = TELLICASTLOG_HEADER_RE.match(a_line)
             
             if not header_matched:
