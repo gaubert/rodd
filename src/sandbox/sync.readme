@@ -3,6 +3,7 @@
 - Fix issue with internal date when restored on an account
 - Add support for compression in the imap communication
 - Send a fix for that to the imap guy and add a way to STORE esoteric keywords like the ones in GMAIL
+- Optimize storage on metadata file
 
 => Thinking
 
@@ -10,3 +11,8 @@
 => the database needs an index file for each month directory
 => each email should also have a metadata file that contains => header info and the data file
 => 2 syncing ways => checking info such as labels mainly and syncing only data
+
+
+=> In Dir: One full metadata file or multiple metadata: ID, FLAG, LABELS
+Structure as we want to be able to write it in streaming mode
+ID: json list

@@ -8,6 +8,9 @@ import gzip
 import re
 import datetime
 import time
+import os
+
+import spickle
 from imapclient import IMAPClient
 import gsync_utils as gsync_utils
 
@@ -16,7 +19,7 @@ class MonkeyIMAPClient(IMAPClient):
        Need to extend the IMAPClient to do more things such as compression
     """
     
-    def __init__(self, host, port=None, use_uid=True, ssl=False)
+    def __init__(self, host, port=None, use_uid=True, ssl=False):
         """
            constructor
         """
@@ -207,71 +210,126 @@ class GmailStorer(object):
         
         gsync_utils.makedirs(a_storage_dir)
         
-
-    def old_store_email(self, id, email, thread_ids, labels, internal_date, flags, compress = False):
+    def _save_in_metadata(self, a_id, a_m_bulk):
         """
-           store a json structure with all email elements in a file
-           If compress is True, use gzip compression
+           save the metadata
         """
-        path = "%s/%s.eml" % (self._top_dir, id)
+        # add in the metadata struct
+        self._metadata[a_id] = a_m_bulk
         
-        if compress:
-            path = '%s.gz' % (path)
-            f_desc = gzip.open(path, 'wb')
-        else:
-            f_desc = open(path, 'w')
+        #store it on disk
+        json.dump(json_obj,)
         
-        #create json structure
-        json_obj= { 'id'            : id,
-                    'email'         : email,
-                    'thread_ids'    : thread_ids,
-                    'labels'        : labels,
-                    'internal_date' : gsync_utils.datetime2e(internal_date),
-                    'flags'         : flags}
-        
-        json.dump(json_obj, f_desc, ensure_ascii = False)
-        
-        f_desc.flush()
-        
-        f_desc.close()
-        
-        return path
-    
     def store_email(self, email_info, compress = False):
         """
            store a json structure with all email elements in a file
            If compress is True, use gzip compression
         """
-        path = "%s/%s.eml" % (self._top_dir, id)
+        meta_path = "%s/%s.meta" % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
+        data_path = "%s/%s.eml" % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
         
         if compress:
-            path = '%s.gz' % (path)
-            f_desc = gzip.open(path, 'wb')
+            data_path = '%s.gz' % (data_path)
+            data_desc = gzip.open(data_path, 'wb')
         else:
-            f_desc = open(path, 'w')
+            data_desc = open(data_path, 'w')
             
-        #change that by externalizing the IMAP keywords
-        gimap = GIMAPFetcher
+        meta_desc = open(meta_path, 'w')
+        
+        date = email_info[GIMAPFetcher.IMAP_INTERNALDATE]
             
         #create json structure
-        json_obj= { 'id'            : email_info[gimap.GMAIL_ID],
-                    'email'         : email_info[gimap.EMAIL_BODY],
-                    'thread_ids'    : email_info[gimap.GMAIL_THREAD_ID],
-                    'labels'        : email_info[gimap.GMAIL_LABELS],
-                    'internal_date' : gsync_utils.datetime2e(email_info[gimap.IMAP_INTERNALDATE]),
-                    'flags'         : email_info[gimap.IMAP_FLAGS]}
+        data_obj= { 'id'            : email_info[GIMAPFetcher.GMAIL_ID],
+                    'email'         : email_info[GIMAPFetcher.EMAIL_BODY],
+                    'thread_ids'    : email_info[GIMAPFetcher.GMAIL_THREAD_ID],
+                    'labels'        : email_info[GIMAPFetcher.GMAIL_LABELS],
+                    'internal_date' : gsync_utils.datetime2e(email_info[GIMAPFetcher.IMAP_INTERNALDATE]),
+                    'flags'         : email_info[GIMAPFetcher.IMAP_FLAGS]}
         
-        json.dump(json_obj, f_desc, ensure_ascii = False)
+        json.dump(data_obj, data_desc, ensure_ascii = False)
         
-        f_desc.flush()
+        meta_obj = { 'id'     : email_info[GIMAPFetcher.GMAIL_ID],
+                     'labels' : email_info[GIMAPFetcher.GMAIL_LABELS],
+                     'flags'  : email_info[GIMAPFetcher.IMAP_FLAGS]}
         
-        f_desc.close()
+        json.dump(meta_obj, meta_desc, ensure_ascii = False)
         
-        return path
+        meta_desc.flush()
+        meta_desc.flush()
         
-    def restore_email(self, file_path, compress = False):
+        data_desc.flush()
+        data_desc.close()
+        
+        return email_info[GIMAPFetcher.GMAIL_ID]
+    
+    
+    def _get_db_files_from_id(self, id):
         """
-           Restore an email
+           build data and metadata file from the given id
+        """
+        meta_p = "%s/%s.meta" % (self._top_dir, id)
+        data_p = "%s/%s.eml" % (self._top_dir, id)
+        
+        # check if it compressed or not
+        if os.path.exists('%s.gz' % (data_p)):
+            data_fd = gzip.open('%s.gz' % (data_p), 'r')
+        else:
+            data_fd = open(data_p)
+            
+        
+        return open(meta_p), data_fd
+    
+    def _get_data_file_from_id(self, id):
+        """
+           Return data file from the id
+        """
+        data_p = "%s/%s.eml" % (self._top_dir, id)
+        
+        # check if it compressed or not
+        if os.path.exists('%s.gz' % (data_p)):
+            data_fd = gzip.open('%s.gz' % (data_p), 'r')
+        else:
+            data_fd = open(data_p)
+            
+        
+        return data_fd
+    
+    def _get_metadata_file_from_id(self, id):
+        """
+           metadata file
+        """
+        meta_p = "%s/%s.meta" % (self._top_dir, id)
+        
+        return open(meta_p)
+        
+    
+    def restore_email(self, id):
+        """
+           Restore email info from info stored on disk
+        """
+        
+        data_fd = self._get_data_file_from_id(id)
+        
+        res = json.load(data_fd)
+        
+        res['internal_date'] =  gsync_utils.e2datetime(res['internal_date'])
+        
+        return res
+    
+    def restore_metadata(self, id):
+        """
+           Get metadata info from DB
+        """
+        meta_fd = self._get_metadata_file_from_id(id)
+        
+        metadata = json.load(meta_fd)
+        
+        return metadata
+        
+        
+    def old_restore_email_from_file(self, file_path, compress = False):
+        """
+           Restore an email from disc
         """
         if compress:
             f_desc = gzip.open(file_path, 'r')
@@ -324,13 +382,7 @@ class GSyncer(object):
             #retrieve email from destination email account
             data      = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
             
-            file_path = gstorer.store_email(data[id][GIMAPFetcher.GMAIL_ID], \
-                               data[id][GIMAPFetcher.EMAIL_BODY], \
-                               data[id][GIMAPFetcher.GMAIL_THREAD_ID], \
-                               data[id][GIMAPFetcher.GMAIL_LABELS], \
-                               data[id][GIMAPFetcher.IMAP_INTERNALDATE], \
-                               data[id][GIMAPFetcher.IMAP_FLAGS], \
-                               compress = compress)
+            file_path = gstorer.store_email(data[id], compress = compress)
             
             print("Stored email %d in %s" %(id, file_path))
         
