@@ -50,7 +50,7 @@ class TestGSync(unittest.TestCase):
         self.gsync_login, self.gsync_passwd = read_password_file('/homespace/gaubert/.ssh/gsync_passwd')
         
     
-    def test_gsync_connect_error(self):
+    def ztest_gsync_connect_error(self):
         """
            Test connect error (connect to a wrong port). Too long to check
         """
@@ -62,7 +62,7 @@ class TestGSync(unittest.TestCase):
         except ssl.SSLError, err:
             self.assertEquals(str(err), '[Errno 1] _ssl.c:480: error:140770FC:SSL routines:SSL23_GET_SERVER_HELLO:unknown protocol')
     
-    def test_gsync_get_capabilities(self):
+    def ztest_gsync_get_capabilities(self):
         """
            Test simple retrieval
         """
@@ -72,7 +72,7 @@ class TestGSync(unittest.TestCase):
         
         self.assertEquals(('IMAP4REV1', 'UNSELECT', 'IDLE', 'NAMESPACE', 'QUOTA', 'ID', 'XLIST', 'CHILDREN', 'X-GM-EXT-1', 'XYZZY', 'SASL-IR', 'AUTH=XOAUTH') , gimap.get_capabilities())
     
-    def test_gsync_check_gmailness(self):
+    def ztest_gsync_check_gmailness(self):
         """
            Test simple retrieval
         """
@@ -206,7 +206,7 @@ class TestGSync(unittest.TestCase):
                 
             self.assertEquals(labels, j_results['labels'])
         
-    def test_gsync_store_gzip_email_and_read(self):
+    def ztest_gsync_store_gzip_email_and_read(self):
         """
            Retrieve emails store them it on disk and read it
         """

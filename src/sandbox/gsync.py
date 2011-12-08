@@ -210,15 +210,22 @@ class GmailStorer(object):
         
         gsync_utils.makedirs(a_storage_dir)
         
-    def _save_in_metadata(self, a_id, a_m_bulk):
+    def store_index(self, index_obj):
         """
-           save the metadata
+           Store the index file that create the IMAP_ID:GM_ID relation
         """
-        # add in the metadata struct
-        self._metadata[a_id] = a_m_bulk
         
-        #store it on disk
-        json.dump(json_obj,)
+        index_path = "%s/index.dx" % (self._top_dir)
+        fd = open(index_path, "w")
+        
+        json.dump(data_obj, fd , ensure_ascii = False)
+        
+    def load_index(self):
+        """ load the index of the current dir """
+        
+        index_path = "%s/index.dx" % (self._top_dir)
+        
+        return json.load( open(index_path) )
         
     def store_email(self, email_info, compress = False):
         """
@@ -398,12 +405,12 @@ class GSyncer(object):
         # the next date = current date + 1 month
         return dummy_date + datetime.timedelta(days=31)
     
-    def sync(self):
+    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL):
         """
            sync with db on disk
         """
         # get all id in All Mail
-        ids = self.src.search(GIMAPFetcher.IMAP_ALL)
+        ids = self.src.search(imap_req)
         
         #ids[0] should be the oldest so get the date and start from here
         res  = self.src.fetch(ids[0], GIMAPFetcher.GET_ALL_BUT_DATA )
@@ -416,8 +423,8 @@ class GSyncer(object):
         next_date    = self._get_next_date(current_date, start_month_beginning = True)
         
         while next_date < now_date:
-            # create db dir for the retrieved month
             
+            # create db dir for the retrieved month
             print("***** Create a backup for %s /n ******" % (gsync_utils.get_ym_from_datetime(current_date)))
             
             db_dir = '%s/%s' %(self.db_root_dir, gsync_utils.get_ym_from_datetime(current_date))
@@ -428,6 +435,45 @@ class GSyncer(object):
             next_date    = self._get_next_date(current_date)
         
         #will have to do up to now_date
+        
+    @classmethod
+    def check_email_on_disk(cls, a_storage_dir, a_id):
+        """
+           Factory method to create the object if it exists
+        """
+        # look for a_storage_dir/a_id.meta
+        if os.path.exists('%s/%s.meta' % (a_storage_dir, a_id)):
+            gs = GmailStorer(a_storage_dir)
+            metadata = gs.restore_metadata(id) 
+            return gs, metadata
+        
+        return None, None
+        
+    def new_sync(self, imap_req = GIMAPFetcher.IMAP_ALL):
+        """
+           sync with db on disk
+        """
+        # get all id in All Mail
+        ids = self.src.search(imap_req)
+        
+        for id in ids:
+            #ids[0] should be the oldest so get the date and start from here
+            curr = self.src.fetch(ids[0], GIMAPFetcher.GET_ALL_BUT_DATA )
+            
+            yy_mon = gsync_utils.get_ym_from_datetime(curr[id][GIMAPFetcher.IMAP_INTERNALDATE])
+            
+            dir  = '%s/%s' % (self.db_root_dir, \
+                              yy_mon)
+            
+            gs, metadata = GSyncer.check_email_on_disk(dir, curr[id][GIMAPFetcher.GMAIL_ID)
+            
+            #if on disk check that the data is not different
+            if metadata:
+                pass
+            else:
+               # store data on disk within year month dir 
+                                                                
+        
             
         
     
