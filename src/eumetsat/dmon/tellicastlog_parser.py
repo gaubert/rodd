@@ -12,7 +12,7 @@ import eumetsat.dmon.common.time_utils as common_time
 # needs to be eaten by the regular expression
 TELLICASTLOG_GEMS_HEADER  = r'\s*(send.log:|dirmon.log:|recv.log:)?.*'
 
-TELLICASTLOG_LVL          = r'(?P<lvl>(ERR||MSG|VRB|WRN))'
+TELLICASTLOG_LVL          = r'(?P<lvl>(ERR|MSG|VRB|WRN))'
 TELLICASTLOG_DATE         = r'(?P<datetime>(?P<date>(?P<year>(18|19|[2-5][0-9])\d\d)[-/.](?P<month>(0[1-9]|1[012]|[1-9]))[-/.](?P<day>(0[1-9]|[12][0-9]|3[01]|[1-9])))([tT ]?(?P<time>([0-1][0-9]|2[0-3]|[0-9])([:]?([0-5][0-9]|[0-9]))?([:]([0-5][0-9]|[0-9]))?([.]([0-9])+)?))?)'
 TELLICASTLOG_MSG          = r'(?P<msg>.*)'
 

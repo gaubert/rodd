@@ -123,7 +123,7 @@ class Analyzer(object):
                 for rec in records:
                     #simply delete it at the moment
                     database.delete(rec)
-                    analyze_utils.print_rec_in_logfile()
+                    analyze_utils.print_rec_in_logfile(rec)
             
         elif the_type == 'dirmon':
             result = Analyzer.d_parser.parse_one_line(line)
@@ -244,12 +244,15 @@ class Analyzer(object):
                                         finished_time_insert = datetime.datetime.now(), \
                                         last_update= datetime.datetime.now()) 
             else:
+                
+                Analyzer.LOG.info("result = %s \n" % (result))
+                
                 # no status so it should be WRN or ERR
                 self.warn_err_db.insert(lvl = result.get('lvl', None),\
                                         msg = result.get('msg', None),\
                                         created = datetime.datetime.now())
                 
-                Analyzer.LOG.info("Insert message in error or warn db %s" %(result))
+                #Analyzer.LOG.info("Insert message in error or warn db %s" %(result))
          
                     
     def print_on_display(self, a_display, a_last_time_display):  #pylint: disable-msg=R0201
