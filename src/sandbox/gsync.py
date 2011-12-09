@@ -402,7 +402,7 @@ class GSyncer(object):
         # the next date = current date + 1 month
         return dummy_date + datetime.timedelta(days=31)
     
-    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL):
+    def old_sync(self, imap_req = GIMAPFetcher.IMAP_ALL):
         """
            sync with db on disk
         """
@@ -441,12 +441,44 @@ class GSyncer(object):
         # look for a_storage_dir/a_id.meta
         if os.path.exists('%s/%s.meta' % (a_storage_dir, a_id)):
             gs = GmailStorer(a_storage_dir)
-            metadata = gs.restore_metadata(id) 
+            metadata = gs.restore_metadata(a_id) 
             return gs, metadata
         
         return None, None
+    
+    def _metadata_needs_update(self, curr_metadata, new_metadata):
+        """
+           Needs update
+        """
+        if curr_metadata['id'] != new_metadata['X-GM-MSGID']:
+            raise Exception("Gmail id has changed for %s" % (id))
+                
+        #check flags   
+        prev_set = set(new_metadata['FLAGS'])    
         
-    def new_sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress = True):
+        for flag in curr_metadata['flags']:
+            if flag not in prev_set:
+                return True
+            else:
+                prev_set.remove(flag)
+        
+        if len(prev_set) > 0:
+            return True
+        
+        #check labels
+        prev_labels = set(new_metadata['X-GM-LABELS'])
+        for label in curr_metadata['labels']:
+            if label not in prev_labels:
+                return True
+            else:
+                prev_labels.remove(label)
+        
+        if len(prev_labels) > 0:
+            return True
+        
+        return False
+        
+    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress = True):
         """
            sync with db on disk
         """
@@ -456,30 +488,43 @@ class GSyncer(object):
         
         for id in ids:
             #ids[0] should be the oldest so get the date and start from here
-            curr = self.src.fetch(ids[0], GIMAPFetcher.GET_ALL_BUT_DATA )
+            curr = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA )
             
             yy_mon = gsync_utils.get_ym_from_datetime(curr[id][GIMAPFetcher.IMAP_INTERNALDATE])
             
             dir  = '%s/%s' % (self.db_root_dir, \
                               yy_mon)
             
-            gstorer, metadata = GSyncer.check_email_on_disk(dir, curr[id][GIMAPFetcher.GMAIL_ID])
+            gstorer, curr_metadata = GSyncer.check_email_on_disk(dir, curr[id][GIMAPFetcher.GMAIL_ID])
             
             #if on disk check that the data is not different
-            if metadata:
-                pass
+            if curr_metadata:
+                
+                new_metadata = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA)
+                
+                if self._metadata_needs_update(curr_metadata, new_metadata[id]):
+                    #restore everything at the moment
+                    #retrieve email from destination email account
+                    data = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
+            
+                    gid  = gstorer.store_email(data[id], compress = compress)
+                    
+                    print("Treated %s\n" %(gid))
+                    
+                    #update local index id gid => index per directory to be thought out
             else:
+                
                 # store data on disk within year month dir 
                 gstorer =  GmailStorer(dir)  
                 
                 #retrieve email from destination email account
-                data      = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
+                data = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
             
-                gid = gstorer.store_email(data[id], compress = compress)
+                gid  = gstorer.store_email(data[id], compress = compress)
                 
                 #update local index id gid => index per directory to be thought out
-                                     
-        
+                print("Treated %s\n" %(gid))                     
+            
             
         
     

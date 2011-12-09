@@ -27,3 +27,8 @@ Fetch all requested ID:
           store on disk:
              if dir doesn't exist create it
              store email
+             
+             
+'X-GM-LABELS': ('ECMWF-Archive/ecmwf-simdat',)
+'FLAGS': ('\\Seen',)
+X-GM-MSGID': 1150164015313936029L
