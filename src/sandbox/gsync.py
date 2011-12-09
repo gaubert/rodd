@@ -487,6 +487,9 @@ class GSyncer(object):
         ids = self.src.search(imap_req)
         
         for id in ids:
+            
+            print("Treated imap id %s\n" %(id))
+            
             #ids[0] should be the oldest so get the date and start from here
             curr = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA )
             
@@ -509,7 +512,7 @@ class GSyncer(object):
             
                     gid  = gstorer.store_email(data[id], compress = compress)
                     
-                    print("Treated %s\n" %(gid))
+                    print("Treated gmail %s\n" %(gid))
                     
                     #update local index id gid => index per directory to be thought out
             else:
@@ -523,7 +526,7 @@ class GSyncer(object):
                 gid  = gstorer.store_email(data[id], compress = compress)
                 
                 #update local index id gid => index per directory to be thought out
-                print("Treated %s\n" %(gid))                     
+                print("Treated gmail %s\n" %(gid))                     
             
             
         

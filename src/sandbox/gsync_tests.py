@@ -337,7 +337,7 @@ class TestGSync(unittest.TestCase):
         """
            Test with the Syncer object
         """
-        syncer = gsync.GSyncer('/tmp/db_dir', 'imap.gmail.com', 993, self.login, self.passwd)
+        syncer = gsync.GSyncer('/tmp/gmail_bk', 'imap.gmail.com', 993, self.login, self.passwd)
         
         syncer.sync()
             
