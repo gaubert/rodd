@@ -60,6 +60,8 @@ class CurseDisplay(object):
             return "QUIT"
         elif char in [ord('s')]:
             return "STOPACCEPTING"
+        elif char in [ord('r')]:
+            return "RESTARTACCEPTING"
     
     def print_screen(self, a_db, a_current_display_time):
         """

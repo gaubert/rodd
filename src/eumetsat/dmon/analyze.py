@@ -16,6 +16,7 @@ import eumetsat.dmon.common.mem_db as mem_db
 import eumetsat.dmon.common.utils as utils
 import eumetsat.dmon.common.log_utils  as log_utils
 import eumetsat.dmon.common.time_utils as time_utils
+import eumetsat.dmon.common.analyze_utils as analyze_utils
 
 import eumetsat.dmon.displays as displays
 
@@ -53,6 +54,10 @@ class Analyzer(object):
         self.mem_db.create_index('last_update')
         self.mem_db.create_index('jobname')
         
+        self.warn_err_db = mem_db.Base('errors')
+        self.warn_err_db.create('lvl', 'msg', 'created')
+        self.warn_err_db.create_index('created')
+        
         #self.display = displays.TextDisplay()
         self.display = displays.CurseDisplay()
         
@@ -89,8 +94,7 @@ class Analyzer(object):
         for rec in [ r for r in database \
                     if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
                    ]:
-            database.delete(rec)
-            #Analyzer.LOG.info("deleted %s" % (rec) )         
+            database.delete(rec)       
 
     def analyze(self, database, line, filename):
         """
@@ -111,6 +115,7 @@ class Analyzer(object):
                                 metadata = result['metadata'], \
                                 created  = now, \
                                 last_update= now)
+                
             elif result['action'] == 'delete':
                 
                 #look for a file name x in the db in order to delete it
@@ -118,10 +123,7 @@ class Analyzer(object):
                 for rec in records:
                     #simply delete it at the moment
                     database.delete(rec)
-                    Analyzer.LOG.info('*********** Delete fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
-                                                                                            time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
-                                                                                            time_utils.datetime_to_time(rec['announced']), time_utils.datetime_to_time(rec['blocked']), \
-                                                                                            time_utils.datetime_to_time(rec['last_update'])) )
+                    analyze_utils.print_rec_in_logfile()
             
         elif the_type == 'dirmon':
             result = Analyzer.d_parser.parse_one_line(line)
@@ -240,7 +242,14 @@ class Analyzer(object):
                         # update info with finished time
                         database.update(rec, finished = result['time'], \
                                         finished_time_insert = datetime.datetime.now(), \
-                                        last_update= datetime.datetime.now())   
+                                        last_update= datetime.datetime.now()) 
+            else:
+                # no status so it should be WRN or ERR
+                self.warn_err_db.insert(lvl = result.get('lvl', None),\
+                                        msg = result.get('msg', None),\
+                                        created = datetime.datetime.now())
+                
+                Analyzer.LOG.info("Insert message in error or warn db %s" %(result))
          
                     
     def print_on_display(self, a_display, a_last_time_display):  #pylint: disable-msg=R0201
@@ -309,8 +318,11 @@ class Analyzer(object):
                     if kb_input and kb_input == 'QUIT':
                         break # quit loop
                     elif kb_input and kb_input == 'STOPACCEPTING':
-                        Analyzer.LOG.error("Stop Accepting")
+                        Analyzer.LOG.error("*********** Stop Accepting")
                         self._accepting_new = False
+                    elif kb_input and kb_input == 'RESTARTACCEPTING':
+                        Analyzer.LOG.error("*********** Restart Accepting")
+                        self._accepting_new = True
                         
             else:
                 #force update

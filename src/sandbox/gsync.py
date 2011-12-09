@@ -10,7 +10,6 @@ import datetime
 import time
 import os
 
-import spickle
 from imapclient import IMAPClient
 import gsync_utils as gsync_utils
 
@@ -218,7 +217,7 @@ class GmailStorer(object):
         index_path = "%s/index.dx" % (self._top_dir)
         fd = open(index_path, "w")
         
-        json.dump(data_obj, fd , ensure_ascii = False)
+        json.dump(index_obj, fd , ensure_ascii = False)
         
     def load_index(self):
         """ load the index of the current dir """
@@ -242,9 +241,7 @@ class GmailStorer(object):
             data_desc = open(data_path, 'w')
             
         meta_desc = open(meta_path, 'w')
-        
-        date = email_info[GIMAPFetcher.IMAP_INTERNALDATE]
-            
+             
         #create json structure
         data_obj= { 'id'            : email_info[GIMAPFetcher.GMAIL_ID],
                     'email'         : email_info[GIMAPFetcher.EMAIL_BODY],
@@ -449,10 +446,11 @@ class GSyncer(object):
         
         return None, None
         
-    def new_sync(self, imap_req = GIMAPFetcher.IMAP_ALL):
+    def new_sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress = True):
         """
            sync with db on disk
         """
+        
         # get all id in All Mail
         ids = self.src.search(imap_req)
         
@@ -465,14 +463,22 @@ class GSyncer(object):
             dir  = '%s/%s' % (self.db_root_dir, \
                               yy_mon)
             
-            gs, metadata = GSyncer.check_email_on_disk(dir, curr[id][GIMAPFetcher.GMAIL_ID)
+            gstorer, metadata = GSyncer.check_email_on_disk(dir, curr[id][GIMAPFetcher.GMAIL_ID])
             
             #if on disk check that the data is not different
             if metadata:
                 pass
             else:
-               # store data on disk within year month dir 
-                                                                
+                # store data on disk within year month dir 
+                gstorer =  GmailStorer(dir)  
+                
+                #retrieve email from destination email account
+                data      = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
+            
+                gid = gstorer.store_email(data[id], compress = compress)
+                
+                #update local index id gid => index per directory to be thought out
+                                     
         
             
         
