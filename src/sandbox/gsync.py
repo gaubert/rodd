@@ -488,7 +488,7 @@ class GSyncer(object):
         
         for id in ids:
             
-            print("Treated imap id %s\n" %(id))
+            print("Process imap id %s\n" %(id))
             
             #ids[0] should be the oldest so get the date and start from here
             curr = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA )
@@ -503,6 +503,8 @@ class GSyncer(object):
             #if on disk check that the data is not different
             if curr_metadata:
                 
+                print("metadata for %s already exists. Check if different" % (curr[id][GIMAPFetcher.GMAIL_ID]))
+                
                 new_metadata = self.src.fetch(id, GIMAPFetcher.GET_ALL_BUT_DATA)
                 
                 if self._metadata_needs_update(curr_metadata, new_metadata[id]):
@@ -512,7 +514,7 @@ class GSyncer(object):
             
                     gid  = gstorer.store_email(data[id], compress = compress)
                     
-                    print("Treated gmail %s\n" %(gid))
+                    print("metadata needed update for gmail %s\n" %(gid))
                     
                     #update local index id gid => index per directory to be thought out
             else:
@@ -526,7 +528,7 @@ class GSyncer(object):
                 gid  = gstorer.store_email(data[id], compress = compress)
                 
                 #update local index id gid => index per directory to be thought out
-                print("Treated gmail %s\n" %(gid))                     
+                print("Added new metadata gmail %s\n" %(gid))                     
             
             
         
