@@ -269,7 +269,7 @@ class TestGSync(unittest.TestCase):
         for elem in existing_labels:
             test_labels.append(elem)
             
-        dest_id = gdestination.store_email(the_id, source_email[the_id][gsource.EMAIL_BODY],\
+        dest_id = gdestination.push_email(source_email[the_id][gsource.EMAIL_BODY],\
                                            source_email[the_id][gsource.IMAP_FLAGS] , \
                                            source_email[the_id][gsource.IMAP_INTERNALDATE], test_labels)
         
@@ -320,7 +320,7 @@ class TestGSync(unittest.TestCase):
             for elem in existing_labels:
                 test_labels.append(elem)
                 
-            dest_id = gdestination.store_email(the_id, source_email[the_id][gsource.EMAIL_BODY], \
+            dest_id = gdestination.push_email(source_email[the_id][gsource.EMAIL_BODY], \
                                                source_email[the_id][gsource.IMAP_FLAGS] , \
                                                source_email[the_id][gsource.IMAP_INTERNALDATE], test_labels)
             

@@ -158,13 +158,13 @@ class GIMAPFetcher(object):
         if a_labels and len(a_labels) > 0:
             labels_str = '('
             for label in a_labels:
-                labels_str += '%s ' %(label)
+                labels_str += '%s ' % (label)
             labels_str = '%s%s' % (labels_str[:-1],')')
         
         return labels_str
         
     
-    def store_email(self, a_id, a_body, a_flags, a_internal_time, a_labels):
+    def push_email(self, a_body, a_flags, a_internal_time, a_labels):
         """
            Push a complete email body 
         """
@@ -451,7 +451,7 @@ class GSyncer(object):
            Needs update
         """
         if curr_metadata['id'] != new_metadata['X-GM-MSGID']:
-            raise Exception("Gmail id has changed for %s" % (id))
+            raise Exception("Gmail id has changed for %s" % (curr_metadata['id']))
                 
         #check flags   
         prev_set = set(new_metadata['FLAGS'])    
