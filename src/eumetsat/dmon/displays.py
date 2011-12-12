@@ -197,9 +197,9 @@ class CurseDisplay(object):
         results = analyze_utils.get_active_jobs(a_db, self._previous_snapshot)
         self._previous_snapshot = results['since_last_print']['prev_snapshot']
         
-        first_line = "Active transfers: %s Finished transfers: %s Blocked transfers : %s Active jobs: %s Total nb entries: %s" % (str(results['active_file_transfers']).ljust(3), \
-                                                                                        str(results['finished_file_transfers']).ljust(3), \
-                                                                                        str(results['blocked_file_transfers']).ljust(3), str(results['nb_jobs']).ljust(3), str(results['total_nb_of_transfers']).ljust(3))
+        first_line = "Active transfers: %s Blocked transfers : %s Active jobs: %s Total nb entries: %s Finished entries in db: %s " % (str(results['active_file_transfers']).ljust(3), \
+                                                                                        str(results['blocked_file_transfers']).ljust(3), str(results['nb_jobs']).ljust(3), \
+                                                                                        str(results['total_nb_of_transfers']).ljust(3), str(results['finished_file_transfers']).ljust(3))
         
         sec_line   = "New entries     : %s Finished transfers: %s Cleaned entries   : %s [Since last refresh (2s)]" % (str(results['since_last_print']['deleted']).ljust(3), \
                                                                                              str(results['since_last_print']['new']).ljust(3), \

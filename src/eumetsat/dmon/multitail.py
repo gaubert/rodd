@@ -2,6 +2,8 @@
 Created on Nov 3, 2011
 
 @author: guillaume.aubert@eumetsat.int
+
+@version: 1.0.2-2011-12-12T12:26:00
 '''
 import time
 import select
@@ -35,10 +37,18 @@ class MultiFileTailer(object):
         
         for ind in xrange(0, len(file_list)):
             name = file_list[ind].name
-            size = os.path.getsize(name)
-            #file is smaller so it rotated
-            #reopen it
-            if size < file_sizes[ind]:
+            
+            curr_pos = file_list[ind].tell()
+            file_list[ind].seek(0, 2) #go to the end of file
+            size  = file_list[ind].tell()
+            
+            #reposition to curr position
+            file_list[ind].seek(curr_pos)
+            
+            # if there are still thing to read size > curr_pos
+            #file with the same name is smaller so it rotated
+            #reopen it only if there are no more to read on current one
+            if (size > curr_pos) and (size < file_sizes[ind]):
                 file_list[ind].close()
                 fdesc = open(name,'r')
                 res_flist.append(fdesc)

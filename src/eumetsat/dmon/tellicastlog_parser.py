@@ -6,7 +6,7 @@ Created on Nov 2, 2011
 import re
 import os
 import datetime
-import eumetsat.dmon.common.time_utils as common_time
+import eumetsat.dmon.common.time_utils as time_utils
 
 # potential gems header that is added (dirmon.log: Entry detected: or send.log:  Entry detected: or recv.log:  Entry detected:)
 # needs to be eaten by the regular expression
@@ -398,7 +398,7 @@ class TellicastLogParser(object):
             the_sec      = 0
             the_microsec = 0
               
-        return datetime.datetime(the_year, the_month, the_day,  the_h, the_min, the_sec, the_microsec, tzinfo = common_time.UTC_TZ)
+        return datetime.datetime(the_year, the_month, the_day,  the_h, the_min, the_sec, the_microsec, tzinfo = time_utils.UTC_TZ)
    
        
     def _parse_line(self, a_line):
