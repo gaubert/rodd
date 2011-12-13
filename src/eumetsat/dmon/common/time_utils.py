@@ -42,9 +42,9 @@ STDDATE    = "STDDATE"
 
 #11.321.08.30.45.454
 #simplistic regular expression to recognise the date format
-GEMSDATE_RE   = re.compile("\d\d\.\d\d\d\.\d\d\.\d\d\.\d\d(?P<millisec>(\.\d{0,3})?)")
-SIMPLEDATE_RE = re.compile("\d\d\d\d-\d\d\-\d\d\ \d\d:\d\d:\d\d(\.\d{0,3})?")
-STDDATE_RE    = re.compile("\d\d\d\d-\d\d\-\d\d\T\d\d:\d\d:\d\d(\.\d{0,3})?")
+GEMSDATE_RE   = re.compile("\d\d\.\d\d\d\.\d\d\.\d\d\.\d\d(\.(?P<millisec>\d{0,3}))?")
+SIMPLEDATE_RE = re.compile("\d\d\d\d-\d\d\-\d\d\ \d\d:\d\d:\d\d(\.(?P<millisec>\d{0,3}))?")
+STDDATE_RE    = re.compile("\d\d\d\d-\d\d\-\d\d\T\d\d:\d\d:\d\d(\.(?P<millisec>\d{0,3}))?")
 
 SUPPORTED_DATE_FORMATS_LIST = [ 'gems: yy.dayofyear.HH.MM.SS', 'simple: yyyy-mm-dd HH:MM:SS', 'standard: yyyy-mm-ddTHH:MM:SS' ]
 
@@ -120,12 +120,26 @@ def guess_date_format(a_date):
     for type, regexpr in GUESS_DATE_MAP.items():
         matched = regexpr.match(a_date)
         if matched:
-            gi = matched.groupdict()
-            print(gi)
             return type
     
     # no type found so raise an exception
     raise Exception("%s is not in a know date format %s" % (a_date, SUPPORTED_DATE_FORMATS_LIST))
+
+def extract_milliseconds(a_date_str):
+    """
+       Get milliseconds 
+    """
+    for type, regexpr in GUESS_DATE_MAP.items():
+        matched = regexpr.match(a_date_str)
+        if matched:
+            millisec = matched.groupdict().get('millisec', 0)
+            if not millisec:
+                millisec = 0
+                
+            pos = a_date_str.rfind('.')
+            return a_date_str[:pos] if pos != -1 else a_date_str, millisec
+    
+    return a_date_str, 0
 
     
 def convert_date_str_to_datetime(a_date_str):
@@ -134,8 +148,13 @@ def convert_date_str_to_datetime(a_date_str):
     """
     date_pattern = PATTERN_DATE_MAP.get(guess_date_format(a_date_str), None)
     
-    if date_pattern:        
-        return datetime.datetime.strptime(a_date_str, date_pattern)
+    if date_pattern:
+        
+        short_date_str, millisec = extract_milliseconds(a_date_str)
+        
+        dt = datetime.datetime.strptime(short_date_str, date_pattern)
+                
+        return dt + datetime.timedelta(milliseconds=int(millisec))
     else:
         raise Exception("No date pattern found for %s\n" %(a_date_str))
     

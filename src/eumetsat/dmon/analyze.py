@@ -11,7 +11,6 @@ import re
 import eumetsat.dmon.common.mem_db as mem_db
 import eumetsat.dmon.common.utils as utils
 import eumetsat.dmon.common.log_utils  as log_utils
-import eumetsat.dmon.common.time_utils as time_utils
 import eumetsat.dmon.common.analyze_utils as analyze_utils
 
 import multitail
