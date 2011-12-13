@@ -31,6 +31,7 @@ class CurseDisplay(object):
         curses.cbreak()
         curses.start_color()
         curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
+        
         #curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLUE)
         self._full_screen.keypad(1)
         
@@ -40,9 +41,7 @@ class CurseDisplay(object):
         # to have non blocking getch
         self._full_screen.nodelay(1)
           
-        self._total_pad    = curses.newpad(100,300)
-        self._active_pad   = curses.newpad(500, 500)
-        self._finished_pad = curses.newpad(500, 500)
+        
         
         #used to colorized elems that have changed since last update on screen
         self._previous_display_time = None

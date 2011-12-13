@@ -345,6 +345,11 @@ class GmailStorer(object):
         res['internal_date'] =  gsync_utils.e2datetime(res['internal_date'])
         
         return res
+    
+class GSyncIndexer(object):
+    """
+       Indexer maintaining the association between 
+    """
         
 class GSyncer(object):
     """
