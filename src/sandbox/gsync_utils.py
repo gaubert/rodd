@@ -7,6 +7,8 @@ import os
 
 import datetime
 import calendar
+import fnmatch
+from pip import main
 
 def get_ym_from_datetime(a_datetime):
     """
@@ -102,3 +104,34 @@ def delete_all_under(path,delete_top_dir=False):
     
     if delete_top_dir:
         os.rmdir(path)
+    
+        
+def dirwalk(a_dir, a_wildcards= '*'):
+    """
+     Walk a directory tree, using a generator.
+     This implementation returns only the files in all the subdirectories.
+     Beware, this is a generator.
+     
+     Args:
+         a_dir: A root directory from where to list
+         a_wildcards: Filtering wildcards a la unix
+    """
+
+    #iterate over files in the current dir
+    for the_file in fnmatch.filter(sorted(os.listdir(a_dir)), a_wildcards):
+        fullpath = os.path.join(a_dir, the_file)
+        if not os.path.isdir(fullpath):
+            yield fullpath
+    
+    sub_dirs = os.walk(a_dir).next()[1]
+    #iterate over sub_dirs
+    for sub_dir in sub_dirs:
+        fullpath = os.path.join(a_dir, sub_dir)
+        for p_elem in dirwalk(fullpath, a_wildcards):
+            yield p_elem
+        
+            
+if __name__ == '__main__':
+  
+  for item in dirwalk('/tmp/gmail_bk','*.meta'):
+      print(item)    

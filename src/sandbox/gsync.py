@@ -9,6 +9,7 @@ import re
 import datetime
 import time
 import os
+import itertools
 
 from imapclient import IMAPClient
 import gsync_utils as gsync_utils
@@ -49,14 +50,15 @@ class GIMAPFetcher(object):
     
     
     #GET_IM_UID_RE
-    APPENDUID = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
+    APPENDUID        = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
     
-    APPENDUID_RE = re.compile(APPENDUID)
+    APPENDUID_RE     = re.compile(APPENDUID)
     
-    GET_ALL_INFO = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS]
+    GET_ALL_INFO     = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS]
 
     GET_ALL_BUT_DATA = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS]
  
+    GET_GMAIL_ID     = [ GMAIL_ID ]
 
     def __init__(self, host, port, login, password, readonly_folder = True):
         '''
@@ -225,6 +227,19 @@ class GmailStorer(object):
         index_path = "%s/index.dx" % (self._top_dir)
         
         return json.load( open(index_path) )
+    
+    def get_all_existing_gmail_ids(self):
+        """
+           get all existing gmail_ids from the database
+        """
+        gmail_ids = set()
+        iter = gsync_utils.dirwalk(self._top_dir, "*.meta")
+        
+        for filepath in iter:
+            gmail_ids.add(long(os.path.splitext(os.path.basename(filepath))[0]))
+        
+        return gmail_ids
+            
         
     def store_email(self, email_info, compress = False):
         """
@@ -482,16 +497,13 @@ class GSyncer(object):
             return True
         
         return False
-        
-    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress = True):
+    
+    def _create_update_sync(self, imap_ids, compress):
         """
-           sync with db on disk
+           First part of the double pass strategy: 
+           create and update emails in db
         """
-        
-        # get all id in All Mail
-        ids = self.src.search(imap_req)
-        
-        for id in ids:
+        for id in imap_ids:
             
             print("Process imap id %s\n" %(id))
             
@@ -519,7 +531,7 @@ class GSyncer(object):
             
                     gid  = gstorer.store_email(data[id], compress = compress)
                     
-                    print("metadata needed update for gmail %s\n" %(gid))
+                    print("update email with imap id %s and gmail id %s\n" % (id, gid))
                     
                     #update local index id gid => index per directory to be thought out
             else:
@@ -533,7 +545,54 @@ class GSyncer(object):
                 gid  = gstorer.store_email(data[id], compress = compress)
                 
                 #update local index id gid => index per directory to be thought out
-                print("Added new metadata gmail %s\n" %(gid))                     
+                print("Create and store email  with imap id %s, gmail id %s\n" % (id, gid))    
+       
+    
+    
+    def _delete_sync(self, imap_ids):
+        """
+           delete emails from the database if necessary
+        """ 
+        gstorer = GmailStorer(self.db_root_dir)
+        
+        #get gmail_ids from db
+        db_gmail_ids = gstorer.get_all_existing_gmail_ids()
+        
+        #calculate the list elements to delete
+        #query 10 items in one query
+        for ten_imap_id in itertools.izip(*[iter(imap_ids)]*10):
+            data = self.src.fetch(ten_imap_id, GIMAPFetcher.GET_GMAIL_ID)
+            
+            imap_gmail_ids = set()
+            
+            for key in data:
+                imap_gmail_ids.add(data[key][GIMAPFetcher.GMAIL_ID])
+            
+            db_gmail_ids -= imap_gmail_ids
+            
+            #quit loop if db set is already empty
+            if len(db_gmail_ids) == 0:
+                break
+        
+        for gm_id in db_gmail_ids:
+            #need to delete gm_id
+            print("delete gm_id %s" % (gm_id))
+        
+        
+        
+    def sync(self, imap_req = GIMAPFetcher.IMAP_ALL, compress = True):
+        """
+           sync with db on disk
+        """
+        # get all imap ids in All Mail
+        imap_ids = self.src.search(imap_req)
+        
+        # create new emails in db and update existing emails
+        #self._create_update_sync(imap_ids, compress)
+        
+        #delete supress emails from DB since last sync
+        self._delete_sync(imap_ids)
+                         
             
             
         
