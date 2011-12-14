@@ -75,11 +75,12 @@ class Analyzer(object):
         
         records = database(filename = result['file'])
         
+        l_rec = []
         for rec in records:
             if rec['metadata'].get('ftp_user') == msg_type:
-                return [rec]
+                l_rec.append(rec)
         
-        return []
+        return l_rec
 
     def remove_expired_records(self, database): #pylint: disable-msg=R0201
         """
@@ -281,7 +282,7 @@ class Analyzer(object):
         for f_path in a_file_paths:
             files.append(open(f_path, 'r'))
         
-        f_iter = multitail.MultiFileTailer.tail(files)
+        f_iter = multitail.MultiFileTailer.tail(files, delay=0.4, go_to_the_end = False)
         
         last_time_display = None
         on_error = False
@@ -353,7 +354,7 @@ class Analyzer(object):
                 print("Exiting gracefully")
                 return 0  #pylint: disable-msg=W0150
 
-def analyze_with_text_display_from_tailed_file(self, a_file_paths):
+    def analyze_with_text_display_from_tailed_file(self, a_file_paths):
         """
            Analyze from an aggregated file containing xferlog, dirmon.log and send.log
         """
@@ -361,7 +362,7 @@ def analyze_with_text_display_from_tailed_file(self, a_file_paths):
         for f_path in a_file_paths:
             files.append(open(f_path, 'r'))
         
-        f_iter = multitail.MultiFileTailer.tail(files)
+        f_iter = multitail.MultiFileTailer.tail(files, delay=0.4, go_to_the_end = False)
         
         #elem_1 = ("('Thu Dec  1 09:30:07 2011 0 141.38.1.11 3165 /home/eumetsat/data/dwd/groups/gts01-VHDL13_DWHG_010800-1112010930-afsv--29-ia5.tmp b _ i r dwd ftp 0 * c', 'xferlog')", '/tmp/test.file')
         #elem_2 = ("(\"VRB:2011-12-01 09:30:34.307:Adding file '/home/eumetsat/data/dwd/groups/DWD-DWDintern/gts01-VHDL13_DWHG_010800-1112010930-afsv--29-ia5' to job 'DWD-DWDintern-58556-2011-12-01-09-30-34-295', last modified: 2011-12-01 09:30:07, size: 3165\", 'dirmon.log')",'/tmp/test.file')
@@ -445,6 +446,7 @@ if __name__ == '__main__':
     
     analyzer = Analyzer() #pylint: disable-msg=C0103
     
-    #sys.exit(analyzer.analyze_with_text_display_from_tailed_file(['/tmp/analyse/logfile.log']))
+    sys.exit(analyzer.analyze_with_text_display_from_tailed_file(['/tmp/res.txt']))
 
-    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))
+    #sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))
+    #sys.exit(analyzer.analyze_from_tailed_file(['/tmp/res.txt']))

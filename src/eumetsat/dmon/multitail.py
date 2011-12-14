@@ -77,7 +77,7 @@ class MultiFileTailer(object):
         return (res_flist, res_fsize)
             
     @classmethod
-    def tail(cls, a_files, delay=0.4):
+    def tail(cls, a_files, delay=0.4, go_to_the_end = True):
         """\
         Iterator generator that returns lines as data is added to the file.
 
@@ -93,8 +93,11 @@ class MultiFileTailer(object):
             
             # get file size and store it in sizes
             sizes.append(os.path.getsize(the_file.name))
-            #go the end of files
-            the_file.seek(0, 2) 
+            
+            if go_to_the_end:
+                #go the end of files
+                the_file.seek(0, 2) 
+            
             #set it non blocking
             file_num = the_file.fileno()
             old_flags = fcntl.fcntl(file_num, fcntl.F_GETFL)
