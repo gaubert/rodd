@@ -3,19 +3,22 @@ Created on Nov 3, 2011
 
 @author: guillaume.aubert@eumetsat.int
 
-@version: 1.0.2-2011-12-12T12:26:00
+@version: 1.1.0-2011-12-14T15:07:00
 '''
 import time
 import select
 import fcntl
 import os
+import sys
 
 class MultiFileTailer(object):
     '''
        Does a tail on multiple files
     '''
     
-    LINE_TERMINATORS = ('\r\n', '\n', '\r')
+    LINE_TERMINATORS  = ('\r\n', '\n', '\r')
+    READ_BUFFER       = 8192 #read by block of X bits max
+    SELECT_ITERATIONS = 25   #number of iteration before to check if file has rotated
 
 
     def __init__(self,):
@@ -27,11 +30,10 @@ class MultiFileTailer(object):
     @classmethod
     def check_file_rotation(cls, file_list, file_sizes):
         """
-           Check if the files have rotated and reopen the new file if necessary
+           Check if the files have rotated and reopen the new file if necessary.
+           Rotates only if there nothing else to read in the current file
            return a type ( file_list, corresponding file_size ) 
         """
-        size = -1
-        
         res_flist = []
         res_fsize = []
         
@@ -39,24 +41,38 @@ class MultiFileTailer(object):
             name = file_list[ind].name
             
             curr_pos = file_list[ind].tell()
-            file_list[ind].seek(0, 2) #go to the end of file
-            size  = file_list[ind].tell()
             
-            #reposition to curr position
-            file_list[ind].seek(curr_pos)
+            # get total file size to see if the file has changed: rotation
+            curr_file_size = os.path.getsize(name)
             
             # if there are still thing to read size > curr_pos
             #file with the same name is smaller so it rotated
             #reopen it only if there are no more to read on current one
-            if (size > curr_pos) and (size < file_sizes[ind]):
-                file_list[ind].close()
-                fdesc = open(name,'r')
-                res_flist.append(fdesc)
-                res_fsize.append(os.path.getsize(name))
+            if curr_file_size < file_sizes[ind]: #file rotated
+                
+                # check that there if no more to read
+                #go to end pos of the open file to have its size
+                file_list[ind].seek(0, 2)
+                end_of_curr_file_pos = file_list[ind].tell()
+                
+                #reposition to real curr_pos
+                file_list[ind].seek(curr_pos)
+                
+                #open new file if no more to read
+                if end_of_curr_file_pos <= curr_pos:
+                    file_list[ind].close()
+                    fdesc = open(name,'r')
+                    res_flist.append(fdesc)
+                    res_fsize.append(os.path.getsize(name))
+                else:
+                    #update list
+                    res_flist.append(file_list[ind])
+                    res_fsize.append(end_of_curr_file_pos)
+                    
             else:
                 #update list
                 res_flist.append(file_list[ind])
-                res_fsize.append(size)
+                res_fsize.append(curr_file_size)
                 
         return (res_flist, res_fsize)
             
@@ -97,8 +113,12 @@ class MultiFileTailer(object):
             
             if len(rlist) > 0:
                 for a_file in rlist:              
-                    data = a_file.read(4096)
-                    if len(data) < 1:
+                    data = a_file.read(cls.READ_BUFFER)
+                    if len(data) < 1: #no more to read
+                        #check if file has rotated
+                        if select_iteration > cls.SELECT_ITERATIONS:#every x iterations check that has not rotated
+                            (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
+                            select_iteration = 0
                         continue
                     
                     file_buffer[a_file.name] = file_buffer[a_file.name] + data
@@ -111,34 +131,37 @@ class MultiFileTailer(object):
                         file_buffer[a_file.name] = file_buffer[a_file.name][pos + 1:]
                         
                         yield(the_line, os.path.basename(a_file.name))
-                    
-                        
-                    #every ten iteration check that has not rotated
-                    if select_iteration > 15:
-                        (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
-                        select_iteration = 0
-                        
-                        #leave line reading loop
-                        break
             else:
-                time.sleep(delay)
                 (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
             
-            time.sleep(delay)
+            time.sleep(delay) #sleep time to no eat all resources
    
         
-        
-        
+def usage():
+    """
+       print usage
+    """
+    print >> sys.stderr, "multitail.py file1 file2 file3 file4"
         
 
 if __name__ == '__main__':
+    
+    files = []
+        
 
-    File_send = open('/tmp/analyse/logfile.log')
-    #file_send = open('/tmp/weather.txt')
-    File_send1 = open('/tmp/weather.txt')
-    File_send2 = open('/tmp/weather.txt')
-
-    lines = MultiFileTailer.tail([File_send, File_send1, File_send2])
-
-    for line in lines:
-        print(line)
+    try:
+        #open files
+        for file in sys.argv:
+            files.append(open(file, 'r'))
+    
+        for line in MultiFileTailer.tail(files):
+            print >> sys.stdout, line
+            
+    except KeyboardInterrupt:
+            #CTRL^C pressed so silently quit
+            pass
+    except Exception, exc:
+        print >> sys.stderr, exc
+        sys.exit(1) 
+    
+    sys.exit(0)
