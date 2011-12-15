@@ -153,7 +153,7 @@ class Analyzer(object):
                         r_job = database(jobname = result['job'])
                                           
                         #if job reconcile both info
-                        if r_job:
+                        if r_job and not r_job[0]['filename']:
                             
                             #update filename info
                             database.update(rec, queued = result['time'], \
@@ -304,8 +304,8 @@ class Analyzer(object):
                     # sometimes the tail can eat (bug) part of the line
                     # ignore this exception
                     try:
-                        self._line_file.write("('%s', '%s')\n" % (line, filename) )
-                        self._line_file.flush()
+                        #self._line_file.write("('%s', '%s')\n" % (line, filename) )
+                        #self._line_file.flush()
                         
                         self.analyze(self.mem_db, line, filename)
                         
@@ -364,10 +364,6 @@ class Analyzer(object):
         
         f_iter = multitail.MultiFileTailer.tail(files, delay=0.4, go_to_the_end = False)
         
-        #elem_1 = ("('Thu Dec  1 09:30:07 2011 0 141.38.1.11 3165 /home/eumetsat/data/dwd/groups/gts01-VHDL13_DWHG_010800-1112010930-afsv--29-ia5.tmp b _ i r dwd ftp 0 * c', 'xferlog')", '/tmp/test.file')
-        #elem_2 = ("(\"VRB:2011-12-01 09:30:34.307:Adding file '/home/eumetsat/data/dwd/groups/DWD-DWDintern/gts01-VHDL13_DWHG_010800-1112010930-afsv--29-ia5' to job 'DWD-DWDintern-58556-2011-12-01-09-30-34-295', last modified: 2011-12-01 09:30:07, size: 3165\", 'dirmon.log')",'/tmp/test.file')
-        #elem_3  = ("('VRB:2011-12-01 13:27:48.478:Adding file '/home/eumetsat/data/retim/groups/retim-4211/LFPW00071746.20111201132655_P4211PT1842_RAFARAPID.2287.b' to job 'retim-4211-14543-2011-12-01-13-27-48-467', last modified: 2011-12-01 13:27:15, size: 2287', 'dirmon.log')", '/tmp/test.file')
-        #f_iter = [elem_3]
         last_time_display = None
         on_error = False
         
@@ -394,7 +390,7 @@ class Analyzer(object):
                         
                         self.analyze(self.mem_db, line, filename)
                         
-                        #self.print_db_logfile(self.mem_db)
+                        analyze_utils.print_db_logfile(self.mem_db)
                         
                         stop_accepting +=1 
                         if stop_accepting > 1000:
@@ -446,7 +442,7 @@ if __name__ == '__main__':
     
     analyzer = Analyzer() #pylint: disable-msg=C0103
     
-    sys.exit(analyzer.analyze_with_text_display_from_tailed_file(['/tmp/res.txt']))
+    #sys.exit(analyzer.analyze_with_text_display_from_tailed_file(['/tmp/res.txt']))
 
-    #sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))
+    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))
     #sys.exit(analyzer.analyze_from_tailed_file(['/tmp/res.txt']))
