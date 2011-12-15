@@ -282,7 +282,7 @@ class Analyzer(object):
         for f_path in a_file_paths:
             files.append(open(f_path, 'r'))
         
-        f_iter = multitail.MultiFileTailer.tail(files, delay=0.4, go_to_the_end = False)
+        f_iter = multitail.MultiFileTailer.tail(files, delay=0.4, go_to_the_end = True)
         
         last_time_display = None
         on_error = False
