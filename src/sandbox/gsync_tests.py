@@ -339,7 +339,7 @@ class TestGSync(unittest.TestCase):
         """
         syncer = gsync.GSyncer('/tmp/gmail_bk', 'imap.gmail.com', 993, self.login, self.passwd)
         
-        syncer.sync()
+        syncer.sync(imap_req = "Since 1-Nov-2011 Before 6-Nov-2011")
             
         
         

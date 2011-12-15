@@ -50,15 +50,17 @@ class GIMAPFetcher(object):
     
     
     #GET_IM_UID_RE
-    APPENDUID        = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
+    APPENDUID         = '^[APPENDUID [0-9]* ([0-9]*)] \(Success\)$'
     
-    APPENDUID_RE     = re.compile(APPENDUID)
+    APPENDUID_RE      = re.compile(APPENDUID)
     
-    GET_ALL_INFO     = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS]
+    GET_ALL_INFO      = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_BODY_PEEK, IMAP_FLAGS]
 
-    GET_ALL_BUT_DATA = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS]
+    GET_ALL_BUT_DATA  = [ GMAIL_ID, GMAIL_THREAD_ID, GMAIL_LABELS, IMAP_INTERNALDATE, IMAP_FLAGS]
  
-    GET_GMAIL_ID     = [ GMAIL_ID ]
+    GET_GMAIL_ID      = [ GMAIL_ID ]
+    
+    GET_GMAIL_ID_DATE = [ GMAIL_ID,  IMAP_INTERNALDATE]
 
     def __init__(self, host, port, login, password, readonly_folder = True):
         '''
@@ -203,6 +205,9 @@ class GmailStorer(object):
     LABELS_FLAG="#LABELS:"
     EMAIL_FLAG="#EMAIL:"
     
+    DATA_FNAME     = "%s/%s.eml"
+    METADATA_FNAME = "%s/%s.meta"
+    
     def __init__(self, a_storage_dir):
         """
            Store on disks
@@ -232,22 +237,23 @@ class GmailStorer(object):
         """
            get all existing gmail_ids from the database
         """
-        gmail_ids = set()
+        gmail_ids = {}
         iter = gsync_utils.dirwalk(self._top_dir, "*.meta")
         
         for filepath in iter:
-            gmail_ids.add(long(os.path.splitext(os.path.basename(filepath))[0]))
-        
+            directory, fname = os.path.split(filepath)
+            gmail_ids[long(os.path.splitext(fname)[0])] = os.path.basename(directory)
+    
         return gmail_ids
             
         
-    def store_email(self, email_info, compress = False):
+    def bury_email(self, email_info, compress = False):
         """
            store a json structure with all email elements in a file
            If compress is True, use gzip compression
         """
-        meta_path = "%s/%s.meta" % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
-        data_path = "%s/%s.eml" % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
+        meta_path = self.METADATA_FNAME % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
+        data_path = self.DATA_FNAME % (self._top_dir, email_info[GIMAPFetcher.GMAIL_ID])
         
         if compress:
             data_path = '%s.gz' % (data_path)
@@ -286,8 +292,8 @@ class GmailStorer(object):
         """
            build data and metadata file from the given id
         """
-        meta_p = "%s/%s.meta" % (self._top_dir, id)
-        data_p = "%s/%s.eml" % (self._top_dir, id)
+        meta_p = self.METADATA_FNAME % (self._top_dir, id)
+        data_p = self.DATA_FNAME % (self._top_dir, id)
         
         # check if it compressed or not
         if os.path.exists('%s.gz' % (data_p)):
@@ -302,7 +308,7 @@ class GmailStorer(object):
         """
            Return data file from the id
         """
-        data_p = "%s/%s.eml" % (self._top_dir, id)
+        data_p = self.DATA_FNAME % (self._top_dir, id)
         
         # check if it compressed or not
         if os.path.exists('%s.gz' % (data_p)):
@@ -317,12 +323,12 @@ class GmailStorer(object):
         """
            metadata file
         """
-        meta_p = "%s/%s.meta" % (self._top_dir, id)
+        meta_p = self.METADATA_FNAME % (self._top_dir, id)
         
         return open(meta_p)
         
     
-    def restore_email(self, id):
+    def unbury_email(self, id):
         """
            Restore email info from info stored on disk
         """
@@ -335,7 +341,7 @@ class GmailStorer(object):
         
         return res
     
-    def restore_metadata(self, id):
+    def unbury_metadata(self, id):
         """
            Get metadata info from DB
         """
@@ -344,22 +350,28 @@ class GmailStorer(object):
         metadata = json.load(meta_fd)
         
         return metadata
-        
-        
-    def old_restore_email_from_file(self, file_path, compress = False):
+    
+    def delete_emails(self, emails_info):
         """
-           Restore an email from disc
+           Delete all emails and metadata with ids
         """
-        if compress:
-            f_desc = gzip.open(file_path, 'r')
-        else:
-            f_desc = open(file_path,'r')
-        
-        res = json.load(f_desc)
-        
-        res['internal_date'] =  gsync_utils.e2datetime(res['internal_date'])
-        
-        return res
+        for (id, date_dir) in emails_info:
+            
+            the_dir = '%s/%s' % (self._top_dir, date_dir)
+            
+            data_p      = self.DATA_FNAME % (the_dir, id)
+            comp_data_p = '%s.gz' % (data_p)
+            metadata_p  = self.METADATA_FNAME % (the_dir, id)
+            
+            #delete files if they exists
+            if os.path.exists(data_p):
+                os.remove(data_p)
+                
+            if os.path.exists(comp_data_p):
+                os.remove(comp_data_p)
+                
+            if os.path.exists(metadata_p):
+                os.remove(metadata_p)
     
 class GSyncIndexer(object):
     """
@@ -371,7 +383,7 @@ class GSyncer(object):
        Main object operating over gmail
     """ 
     
-    def __init__(self, db_root_dir, host , port, login , passwd):
+    def __init__(self, db_root_dir, host, port, login, passwd):
         """
            constructor
         """   
@@ -406,7 +418,7 @@ class GSyncer(object):
             #retrieve email from destination email account
             data      = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
             
-            file_path = gstorer.store_email(data[id], compress = compress)
+            file_path = gstorer.bury_email(data[id], compress = compress)
             
             print("Stored email %d in %s" %(id, file_path))
         
@@ -421,37 +433,6 @@ class GSyncer(object):
             
         # the next date = current date + 1 month
         return dummy_date + datetime.timedelta(days=31)
-    
-    def old_sync(self, imap_req = GIMAPFetcher.IMAP_ALL):
-        """
-           sync with db on disk
-        """
-        # get all id in All Mail
-        ids = self.src.search(imap_req)
-        
-        #ids[0] should be the oldest so get the date and start from here
-        res  = self.src.fetch(ids[0], GIMAPFetcher.GET_ALL_BUT_DATA )
-        
-        current_date = res[ids[0]][GIMAPFetcher.IMAP_INTERNALDATE]
-        
-        now_date = datetime.datetime.now() + datetime.timedelta(days=1)
-        
-        #create next date strating to the first day of the current month and adding one month
-        next_date    = self._get_next_date(current_date, start_month_beginning = True)
-        
-        while next_date < now_date:
-            
-            # create db dir for the retrieved month
-            print("***** Create a backup for %s /n ******" % (gsync_utils.get_ym_from_datetime(current_date)))
-            
-            db_dir = '%s/%s' %(self.db_root_dir, gsync_utils.get_ym_from_datetime(current_date))
-            
-            self._sync_between(current_date, next_date, db_dir)
-            
-            current_date = next_date
-            next_date    = self._get_next_date(current_date)
-        
-        #will have to do up to now_date
         
     @classmethod
     def check_email_on_disk(cls, a_storage_dir, a_id):
@@ -461,7 +442,7 @@ class GSyncer(object):
         # look for a_storage_dir/a_id.meta
         if os.path.exists('%s/%s.meta' % (a_storage_dir, a_id)):
             gs = GmailStorer(a_storage_dir)
-            metadata = gs.restore_metadata(a_id) 
+            metadata = gs.unbury_metadata(a_id) 
             return gs, metadata
         
         return None, None
@@ -542,7 +523,7 @@ class GSyncer(object):
                 #retrieve email from destination email account
                 data = self.src.fetch(id, GIMAPFetcher.GET_ALL_INFO)
             
-                gid  = gstorer.store_email(data[id], compress = compress)
+                gid  = gstorer.bury_email(data[id], compress = compress)
                 
                 #update local index id gid => index per directory to be thought out
                 print("Create and store email  with imap id %s, gmail id %s\n" % (id, gid))    
@@ -556,11 +537,19 @@ class GSyncer(object):
         gstorer = GmailStorer(self.db_root_dir)
         
         #get gmail_ids from db
-        db_gmail_ids = gstorer.get_all_existing_gmail_ids()
+        db_gmail_ids_info = gstorer.get_all_existing_gmail_ids()
+        
+        #create a set of keys
+        db_gmail_ids = set(db_gmail_ids_info.keys())
         
         #calculate the list elements to delete
         #query 10 items in one query
-        for ten_imap_id in itertools.izip(*[iter(imap_ids)]*10):
+        for ten_imap_id in itertools.izip_longest(fillvalue=None,*[iter(imap_ids)]*10):
+            
+            # if None in list remove it
+            if None in ten_imap_id: 
+                ten_imap_id = [ id for id in ten_imap_id if id != None ]
+            
             data = self.src.fetch(ten_imap_id, GIMAPFetcher.GET_GMAIL_ID)
             
             imap_gmail_ids = set()
@@ -576,7 +565,8 @@ class GSyncer(object):
         
         for gm_id in db_gmail_ids:
             #need to delete gm_id
-            print("delete gm_id %s" % (gm_id))
+            print("gm_id %s not in imap. Delete it" % (gm_id))
+            gstorer.delete_emails([(gm_id, db_gmail_ids_info[gm_id])])
         
         
         
@@ -588,10 +578,16 @@ class GSyncer(object):
         imap_ids = self.src.search(imap_req)
         
         # create new emails in db and update existing emails
-        #self._create_update_sync(imap_ids, compress)
+        self._create_update_sync(imap_ids, compress)
         
         #delete supress emails from DB since last sync
         self._delete_sync(imap_ids)
+    
+    def remote_sync(self):
+        """
+           Sync with a remote source (IMAP mirror or cloud storage area)
+        """
+        #sync remotely 
                          
             
             
