@@ -6,6 +6,8 @@ Created on Nov 8, 2011
 import sys
 import unittest
 import base64
+import shutil
+import os
 
 import ssl
 import gsync
@@ -333,16 +335,46 @@ class TestGSync(unittest.TestCase):
             self.assertEquals(dest_email[dest_id][gsource.EMAIL_BODY], source_email[the_id][gsource.EMAIL_BODY])
             self.assertEquals(dest_email[dest_id][gsource.GMAIL_LABELS], source_email[the_id][gsource.GMAIL_LABELS])
         
-    def test_syncer(self):
+    def test_few_days_syncer(self):
         """
            Test with the Syncer object
         """
         syncer = gsync.GSyncer('/tmp/gmail_bk', 'imap.gmail.com', 993, self.login, self.passwd)
         
-        syncer.sync()
+        syncer.sync(imap_req = "Since 1-Nov-2011 Before 4-Nov-2011")
+        
+        storage_dir = "%s/%s" % ('/tmp/gmail_bk', '2011-11')
+        
+        gs, metadata = gsync.GSyncer.check_email_on_disk(storage_dir, 1384313269332005293)
+        
+        self.assertEquals(metadata['id'], 1384313269332005293)
+        
+        gs, metadata = gsync.GSyncer.check_email_on_disk(storage_dir, 1384403887202624608)
+        
+        self.assertEquals(metadata['id'], 1384403887202624608)
             
+        gs, metadata = gsync.GSyncer.check_email_on_disk(storage_dir, 1384486067720566818)
         
+        self.assertEquals(metadata['id'], 1384486067720566818)
         
+    def test_few_days_syncer_with_deletion(self):
+        """
+           check that there was a deletion
+        """
+        #copy test email in dest dir
+        storage_dir = "%s/%s" % ('/tmp/gmail_bk', '2011-11')
+        
+        shutil.copyfile('../../etc/gsync-test/2384403887202624608.eml.gz','%s/2384403887202624608.eml.gz' % (storage_dir))
+        shutil.copyfile('../../etc/gsync-test/2384403887202624608.meta','%s/2384403887202624608.meta' % (storage_dir))
+        
+        syncer = gsync.GSyncer('/tmp/gmail_bk', 'imap.gmail.com', 993, self.login, self.passwd)
+        
+        syncer.sync(imap_req = "Since 1-Nov-2011 Before 2-Nov-2011")
+        
+        self.assertFalse(os.path.exists('%s/2384403887202624608.eml.gz' % (storage_dir)))
+        self.assertFalse(os.path.exists('%s/2384403887202624608.meta' % (storage_dir)))
+        self.assertTrue(os.path.exists('%s/1384313269332005293.meta' % (storage_dir)))
+        self.assertTrue(os.path.exists('%s/1384313269332005293.eml.gz' % (storage_dir)))
         
         
         
