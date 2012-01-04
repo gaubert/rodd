@@ -35,6 +35,7 @@ GEMSDATE_PATTERN    = "%y.%j.%H.%M.%S"
 SIMPLEDATE_PATTERN  = '%Y-%m-%d %H:%M:%S'
 STDDATE_PATTERN     = '%Y-%m-%dT%H:%M:%S'
 COMPACTDATE_PATTERN = '%Y%m%d %H:%M:%S'
+TIME_PATTERN        = '%H:%M:%S'
 
 GEMSDATE   = "GEMSDATE"
 SIMPLEDATE = "SIMPLEDATE"
@@ -60,6 +61,12 @@ PATTERN_DATE_MAP = {
                     SIMPLEDATE  : SIMPLEDATE_PATTERN, \
                     STDDATE     : STDDATE_PATTERN
                    }
+
+def get_simple_time_str(a_datetime):
+    """
+       return a simple time value from a datetime
+    """
+    return a_datetime.strftime(TIME_PATTERN)
 
 def gemsdate_to_datetime(a_gemsdate):
     """

@@ -6,6 +6,7 @@ Created on Oct 27, 2011
 import re
 import os
 import datetime
+import eumetsat.dmon.common.time_utils as time_utils
 
 #regular Expression to parse the xferlogs
 #to eat potential header addded by GEMS
@@ -105,7 +106,7 @@ class XferlogParser(object):
         """
            xferlog date to datetime
         """
-        return datetime.datetime.strptime(a_date, '%a %b %d %H:%M:%S %Y')
+        return datetime.datetime.strptime(a_date, '%a %b %d %H:%M:%S %Y').replace(tzinfo = time_utils.UTC_TZ)
     
     def _clean_dwd_filename(self,filename):
         """
@@ -176,6 +177,7 @@ class XferlogParser(object):
                        'metadata' : the_metadata,
                        'file_size' : matched.group('filesize'),
                        'transfer_time' : matched.group('transfer_time'),
+                       'completion_status' : matched.group('completion_status')
                        #'full_msg' : a_line,
                        
                      } 
@@ -190,6 +192,8 @@ if __name__ == '__main__':
     parser = XferlogParser()
     
     res = parser.parse_one_line(line)
+    
+    print(res)
     
     print("Sucess res =%s\n" % (res))
     import sys

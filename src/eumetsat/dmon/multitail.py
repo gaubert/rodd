@@ -3,13 +3,35 @@ Created on Nov 3, 2011
 
 @author: guillaume.aubert@eumetsat.int
 
-@version: 1.1.0-2011-12-14T15:07:00
+@version: 1.1.1-2012-01-03T11:55:00
 '''
 import time
 import select
 import fcntl
 import os
 import sys
+
+import StringIO
+import traceback
+
+def get_exception_traceback():
+    """
+            return the exception traceback (stack info and so on) in a string
+        
+            Args:
+               None
+               
+            Returns:
+               return a string that contains the exception traceback
+        
+            Raises:
+               
+    """
+   
+    the_file = StringIO.StringIO()
+    exception_type, exception_value, exception_traceback = sys.exc_info() #IGNORE:W0702
+    traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
+    return the_file.getvalue()
 
 class MultiFileTailer(object):
     '''
@@ -165,6 +187,7 @@ if __name__ == '__main__':
             pass
     except Exception, exc:
         print >> sys.stderr, exc
+        print >> sys.stderr, 'exception traceback: %s' % (get_exception_traceback())
         sys.exit(1) 
     
     sys.exit(0)

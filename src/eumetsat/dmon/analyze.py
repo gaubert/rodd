@@ -87,7 +87,7 @@ class Analyzer(object):
            remove records that have been finished for more than 60 seconds
         """
         expiry_time = 20 # 20 in seconds
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
         
         Analyzer.LOG.info("Before to remove records")
         
@@ -106,10 +106,11 @@ class Analyzer(object):
         if the_type == 'xferlog' and self._accepting_new:
             result = Analyzer.x_parser.parse_one_line(line)
             
-            if result['action'] == 'push':
+            #file push and action complete
+            if result['action'] == 'push' and result['completion_status'] == 'c':
             
                 #add file in db
-                now = datetime.datetime.now()
+                now = datetime.datetime.utcnow()
                 database.insert(filename = result['file'], \
                                 uplinked = result['time'], \
                                 metadata = result['metadata'], \
@@ -124,6 +125,9 @@ class Analyzer(object):
                     #simply delete it at the moment
                     database.delete(rec)
                     analyze_utils.print_rec_in_logfile(rec)
+            else:
+                # warn in log file
+                Analyzer.LOG.warning("Ignore line %s because it is a COMPLETE push or a delete file" % (line))
             
         elif the_type == 'dirmon':
             result = Analyzer.d_parser.parse_one_line(line)
@@ -141,7 +145,7 @@ class Analyzer(object):
                 if self._accepting_new and len(records) == 0:
                     #no file created so it means that the xferlog message has not been received
                     # add it in the table
-                    now = datetime.datetime.now()
+                    now = datetime.datetime.utcnow()
                     
                     database.insert(filename = result['file'], \
                                     jobname = result['job'], \
@@ -166,7 +170,7 @@ class Analyzer(object):
                             
                         else:
                             #no other record with job name, update record
-                            database.update(rec, jobname = result['job'], queued = result['time'], last_update= datetime.datetime.now())              
+                            database.update(rec, jobname = result['job'], queued = result['time'], last_update= datetime.datetime.utcnow())              
                 
         elif the_type == 'tc-send':
             result = Analyzer.s_parser.parse_one_line(line)
@@ -178,7 +182,7 @@ class Analyzer(object):
                 records = database(jobname = result.get('job', None))
                 
                 if self._accepting_new and len(records) == 0:
-                    now = datetime.datetime.now()
+                    now = datetime.datetime.utcnow()
                     # add a line in the to print table
                     database.insert(jobname = result.get('job', None), \
                                     announced = result['time'],  created = now, last_update= now)
@@ -186,7 +190,7 @@ class Analyzer(object):
                     for rec in records:
                         #found a job so update this line in db
                         database.update(rec, jobname = result.get('job', None), \
-                                        announced = result['time'],last_update= datetime.datetime.now()) 
+                                        announced = result['time'],last_update= datetime.datetime.utcnow()) 
                        
             elif result.get('job_status') == 'blocked':
                 
@@ -194,7 +198,7 @@ class Analyzer(object):
                 records = database(jobname = result.get('job', None))
                 
                 if self._accepting_new and len(records) == 0:
-                    now = datetime.datetime.now()
+                    now = datetime.datetime.utcnow()
                     # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
                     database.insert(jobname = result.get('job', None), \
                                     blocked = result['time'], created = now, last_update= now)
@@ -208,20 +212,20 @@ class Analyzer(object):
                 records = database(jobname = result.get('job', None))
                 
                 if self._accepting_new and len(records) == 0:
-                    now = datetime.datetime.now()
+                    now = datetime.datetime.utcnow()
                     # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
                     # put it in finish at the moment but it should be treated differently
                     database.insert(jobname = result.get('job', None), \
                                     finished = result['time'], \
-                                    finished_time_insert = datetime.datetime.now(), \
+                                    finished_time_insert = datetime.datetime.utcnow(), \
                                     created = now, \
                                     last_update= now)
                 else:
                     for rec in records:
                         # update info with finished time
                         database.update(rec, finished = result['time'], \
-                                        finished_time_insert = datetime.datetime.now(), \
-                                        last_update= datetime.datetime.now())
+                                        finished_time_insert = datetime.datetime.utcnow(), \
+                                        last_update= datetime.datetime.utcnow())
                         
             elif result.get('job_status') == 'finished':
     
@@ -229,11 +233,11 @@ class Analyzer(object):
                 records = database(jobname = result.get('job', None))
                 
                 if self._accepting_new and len(records) == 0:
-                    now = datetime.datetime.now()
+                    now = datetime.datetime.utcnow()
                     # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
                     database.insert(jobname = result.get('job', None), \
                                     finished = result['time'], \
-                                    finished_time_insert = datetime.datetime.now(), \
+                                    finished_time_insert = datetime.datetime.utcnow(), \
                                     created = now, \
                                     last_update= now)
                     
@@ -241,16 +245,16 @@ class Analyzer(object):
                     for rec in records:
                         # update info with finished time
                         database.update(rec, finished = result['time'], \
-                                        finished_time_insert = datetime.datetime.now(), \
-                                        last_update= datetime.datetime.now()) 
+                                        finished_time_insert = datetime.datetime.utcnow(), \
+                                        last_update= datetime.datetime.utcnow()) 
             else:
                 
-                Analyzer.LOG.info("result = %s \n" % (result))
+                Analyzer.LOG.debug("Ignored record = %s \n" % (result))
                 
                 # no status so it should be WRN or ERR
                 self.warn_err_db.insert(lvl = result.get('lvl', None),\
                                         msg = result.get('msg', None),\
-                                        created = datetime.datetime.now())
+                                        created = datetime.datetime.utcnow())
                 
                 #Analyzer.LOG.info("Insert message in error or warn db %s" %(result))
          
@@ -259,7 +263,7 @@ class Analyzer(object):
         """
            Display every x seconds
         """ 
-        current_time = datetime.datetime.now()
+        current_time = datetime.datetime.utcnow()
         if not a_last_time_display:
             a_display.print_screen(self.mem_db, current_time)
             return current_time
