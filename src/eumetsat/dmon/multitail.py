@@ -3,7 +3,7 @@ Created on Nov 3, 2011
 
 @author: guillaume.aubert@eumetsat.int
 
-@version: 1.1.1-2012-01-03T11:55:00
+@version: 1.1.2-2012-01-04T08:43:00
 '''
 import time
 import select
@@ -144,18 +144,19 @@ class MultiFileTailer(object):
                         if select_iteration > cls.SELECT_ITERATIONS:#every x iterations check that has not rotated
                             (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
                             select_iteration = 0
-                        continue
-                    
-                    file_buffer[a_file.name] = file_buffer[a_file.name] + data
-                    
-                    #  process lines within the data
-                    while 1:
-                        pos = file_buffer[a_file.name].find('\n')
-                        if pos < 0: break #pylint: disable-msg=C0321
-                        the_line = file_buffer[a_file.name][:pos]
-                        file_buffer[a_file.name] = file_buffer[a_file.name][pos + 1:]
+                            break #leave loop as the file descriptors in rlist might be closed
+                            
+                    else: # there are data to read
+                        file_buffer[a_file.name] = file_buffer[a_file.name] + data
                         
-                        yield(the_line, os.path.basename(a_file.name))
+                        #  process lines within the data
+                        while 1:
+                            pos = file_buffer[a_file.name].find('\n')
+                            if pos < 0: break #pylint: disable-msg=C0321
+                            the_line = file_buffer[a_file.name][:pos]
+                            file_buffer[a_file.name] = file_buffer[a_file.name][pos + 1:]
+                            
+                            yield(the_line, os.path.basename(a_file.name))
             else:
                 (a_files, sizes) = MultiFileTailer.check_file_rotation(a_files, sizes)
             
