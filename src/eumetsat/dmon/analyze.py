@@ -47,7 +47,7 @@ class Analyzer(object):
         #keep X elements max in collections
         self.mem_db.create('filename', 'uplinked', \
                   'queued', 'jobname', \
-                  'announced', 'blocked', \
+                  'announced', 'blocked', 'channel', \
                   'finished', 'metadata', 'created', 'last_update', 'finished_time_insert', capped_size=1000000)
         
         self.mem_db.create_index('last_update')
@@ -96,7 +96,7 @@ class Analyzer(object):
                    ]:
             database.delete(rec)       
 
-    def analyze(self, database, line, filename):
+    def analyze(self, database, line, filename): #pylint: disable-msg=R0912,R0915
         """
            Analysis from the line and filename
         """
@@ -170,7 +170,9 @@ class Analyzer(object):
                             
                         else:
                             #no other record with job name, update record
-                            database.update(rec, jobname = result['job'], queued = result['time'], last_update= datetime.datetime.utcnow())              
+                            database.update(rec, jobname = result['job'], \
+                                            queued = result['time'], \
+                                            last_update = datetime.datetime.utcnow())              
                 
         elif the_type == 'tc-send':
             result = Analyzer.s_parser.parse_one_line(line)
@@ -185,12 +187,12 @@ class Analyzer(object):
                     now = datetime.datetime.utcnow()
                     # add a line in the to print table
                     database.insert(jobname = result.get('job', None), \
-                                    announced = result['time'],  created = now, last_update= now)
+                                    announced = result['time'],  created = now, last_update= now, channel = result['channel'])
                 else:
                     for rec in records:
                         #found a job so update this line in db
                         database.update(rec, jobname = result.get('job', None), \
-                                        announced = result['time'],last_update= datetime.datetime.utcnow()) 
+                                        announced = result['time'],last_update= datetime.datetime.utcnow(), channel = result['channel']) 
                        
             elif result.get('job_status') == 'blocked':
                 
@@ -201,11 +203,11 @@ class Analyzer(object):
                     now = datetime.datetime.utcnow()
                     # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
                     database.insert(jobname = result.get('job', None), \
-                                    blocked = result['time'], created = now, last_update= now)
+                                    blocked = result['time'], created = now, last_update= now, channel = result['channel'])
                 else:
                     for rec in records:
                         # update info with blocked time
-                        database.update(rec, blocked = result['time']) 
+                        database.update(rec, blocked = result['time'], channel = result['channel']) 
             elif result.get('job_status') == 'aborted':
                 #for the moment treat as finished
                 #get all records concerned by this job
@@ -219,13 +221,13 @@ class Analyzer(object):
                                     finished = result['time'], \
                                     finished_time_insert = datetime.datetime.utcnow(), \
                                     created = now, \
-                                    last_update= now)
+                                    last_update= now, channel = result['channel'])
                 else:
                     for rec in records:
                         # update info with finished time
                         database.update(rec, finished = result['time'], \
                                         finished_time_insert = datetime.datetime.utcnow(), \
-                                        last_update= datetime.datetime.utcnow())
+                                        last_update= datetime.datetime.utcnow(), channel = result['channel'])
                         
             elif result.get('job_status') == 'finished':
     
@@ -239,21 +241,21 @@ class Analyzer(object):
                                     finished = result['time'], \
                                     finished_time_insert = datetime.datetime.utcnow(), \
                                     created = now, \
-                                    last_update= now)
+                                    last_update= now, channel = result['channel'])
                     
                 else:
                     for rec in records:
                         # update info with finished time
                         database.update(rec, finished = result['time'], \
                                         finished_time_insert = datetime.datetime.utcnow(), \
-                                        last_update= datetime.datetime.utcnow()) 
+                                        last_update= datetime.datetime.utcnow(), channel = result['channel']) 
             else:
                 
                 Analyzer.LOG.debug("Ignored record = %s \n" % (result))
                 
                 # no status so it should be WRN or ERR
-                self.warn_err_db.insert(lvl = result.get('lvl', None),\
-                                        msg = result.get('msg', None),\
+                self.warn_err_db.insert(lvl = result.get('lvl', None), \
+                                        msg = result.get('msg', None), \
                                         created = datetime.datetime.utcnow())
                 
                 #Analyzer.LOG.info("Insert message in error or warn db %s" %(result))
@@ -278,7 +280,7 @@ class Analyzer(object):
             else:
                 return a_last_time_display
     
-    def analyze_from_tailed_file(self, a_file_paths):
+    def analyze_from_tailed_file(self, a_file_paths): #pylint: disable-msg=R0912
         """
            Analyze from an aggregated file containing xferlog, dirmon.log and send.log
         """
@@ -358,7 +360,7 @@ class Analyzer(object):
                 print("Exiting gracefully")
                 return 0  #pylint: disable-msg=W0150
 
-    def analyze_with_text_display_from_tailed_file(self, a_file_paths):
+    def analyze_with_text_display_from_tailed_file(self, a_file_paths): #pylint: disable-msg=R0912,C0103,R0914 
         """
            Analyze from an aggregated file containing xferlog, dirmon.log and send.log
         """
@@ -396,7 +398,7 @@ class Analyzer(object):
                         
                         analyze_utils.print_db_logfile(self.mem_db)
                         
-                        stop_accepting +=1 
+                        stop_accepting += 1 
                         if stop_accepting > 1000:
                             self._accepting_new = False
                         

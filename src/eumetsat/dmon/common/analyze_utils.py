@@ -14,12 +14,13 @@ def print_rec_in_logfile(rec):
     """
        Print rec in file
     """
-    LOG.info('*********** Delete fn=%s, jn=%s, cr=%s, up=%s, an=%s, bl=%s, fn=%s, lupdate=%s' % ( rec['filename'], rec['jobname'], \
+    LOG.info('*********** Delete fn=%s, jn=%s, cr=%s, up=%s, an=%s, bl=%s, fn=%s, ch=%s, lupdate=%s' % ( rec['filename'], rec['jobname'], \
                                                                                         time_utils.datetime_to_time(rec['created']), \
                                                                                         time_utils.datetime_to_time(rec['uplinked']), \
                                                                                         time_utils.datetime_to_time(rec['announced']), \
                                                                                         time_utils.datetime_to_time(rec['blocked']), \
                                                                                         time_utils.datetime_to_time(rec['finished']), \
+                                                                                        rec['channel'],\
                                                                                         time_utils.datetime_to_time(rec['last_update'])) )
 
 def print_db_logfile(database): #pylint: disable-msg=R0201
@@ -28,11 +29,14 @@ def print_db_logfile(database): #pylint: disable-msg=R0201
     """
     LOG.info('--BEG-------------------------------------------------------------------------')
     for rec in database:
-        LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
+        #LOG.info('%s' %(rec))
+        LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,fn=%s,ch=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
                                                                         time_utils.datetime_to_time(rec['created']), \
                                                                         time_utils.datetime_to_time(rec['uplinked']), \
                                                                         time_utils.datetime_to_time(rec['announced']), \
                                                                         time_utils.datetime_to_time(rec['blocked']), \
+                                                                        time_utils.datetime_to_time(rec['finished']), \
+                                                                        rec['channel'],\
                                                                         time_utils.datetime_to_time(rec['last_update'])) )
     LOG.info('--END-------------------------------------------------------------------------')    
     

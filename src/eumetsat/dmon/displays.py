@@ -5,8 +5,6 @@ Created on Nov 29, 2011
 '''
 import os
 import curses
-import datetime
-import time
 
 import eumetsat.dmon.common.time_utils as time_utils
 import eumetsat.dmon.common.log_utils  as log_utils
@@ -65,6 +63,8 @@ class CurseDisplay(object):
            print on screen
         """
         
+        #analyze_utils.print_db_logfile(a_db)
+        
         #constants to be put in files
         nb_max_active_records   = 70
         nb_max_finished_records = 30
@@ -72,18 +72,18 @@ class CurseDisplay(object):
         # get min max screen size
         self._maxy, self._maxx = self._full_screen.getmaxyx()
         
-        total_pad    = curses.newpad(100,300)
+        total_pad    = curses.newpad(100, 300)
         active_pad   = curses.newpad(500, 500)
         finished_pad = curses.newpad(500, 500)
         
-        active_stripe   = "-ACTIVE-----------------------------------------------------------------------------------------------------------------------------------------------------------"
-        active_header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |       sent      |"
+        active_stripe   = "-ACTIVE-------------------------------------------------------------------------------------------------------------------------------------------------"
+        active_header   = "                   filename                       |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |"
         
-        finished_stripe = "-FINISHED---------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-        finished_header = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |       sent      |    trans time   |"
+        finished_stripe = "-FINISHED-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        finished_header = "                   filename                       |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |    sent    | trans time |"
         
-        active_template   = "%s|%s|%s|%s|%s|%s|%s|"
-        finished_template = "%s|%s|%s|%s|%s|%s|%s|%s|"
+        active_template   = "%s|%s|%s|%s|%s|%s|%s|%s|"
+        finished_template = "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|"
         
         active_pad.addstr(1, 1, active_stripe)
         active_pad.addstr(2, 1, active_header)
@@ -111,12 +111,6 @@ class CurseDisplay(object):
             
             for record in a_db._last_update[index]:
              
-                #rec = record
-                #CurseDisplay.LOG.info('fn=%s, jn=%s, cr=%s, up=%s,an=%s,bl=%s,lupdate=%s' % ( rec['filename'], rec['jobname'], \
-                #                                                                            time_utils.datetime_to_time(rec['created']), time_utils.datetime_to_time(rec['uplinked']), \
-                #                                                                            time_utils.datetime_to_time(rec['announced']), time_utils.datetime_to_time(rec['blocked']), \
-                #                                                                            time_utils.datetime_to_time(rec['last_update'])) )
-                
                 begin_time = None
                 
                 #reduce filename and jobname size to 50
@@ -127,7 +121,7 @@ class CurseDisplay(object):
                     #will not fail if name < 50
                     filename = filename[:50]
                 else:
-                    filename = "-"
+                    filename = "--"
                 
                 jobname = record['jobname']
                 if jobname:
@@ -135,40 +129,54 @@ class CurseDisplay(object):
                     jobelems = jobname.split('-')
                     jobname  = "%s..-%s" % (jobname[:13], jobelems[-1])
                 else:
-                    jobname = "-"
+                    jobname = "--"
                 
+                channel = record.get('channel', None)
+                if not channel:
+                    channel = "--"
+                else:
+                    #shrink chan name if start with EUMETSAT
+                    if channel.startswith("EUMETSAT Data Channel"):
+                        channel = channel.replace("EUMETSAT Data Channel", "EUM Chan")
+                        
                 uplinked = record.get('uplinked', None)
                 if not uplinked:
-                    uplinked = "-"
+                    uplinked = "--"
                 else:
                     begin_time = uplinked
-                    uplinked   = time_utils.datetime_to_compactdate(uplinked)
+                    uplinked   = time_utils.get_simple_time_str(uplinked)
                     
                 queued   = record.get('queued', None)
                 if not queued:
-                    queued = "-"
+                    queued = "--"
                 else:
                     if not begin_time : begin_time = queued
-                    queued = time_utils.datetime_to_compactdate(queued)
+                    queued = time_utils.get_simple_time_str(queued)
+                    
+                aborted = record.get('aborted', None)
+                if not aborted:
+                    aborted = "--"
+                else:
+                    aborted = time_utils.get_simple_time_str(aborted)
                 
                 annouc   = record.get('announced', None)
                 if not annouc:
-                    annouc = "-"
+                    annouc = "--"
                 else:
-                    annouc = time_utils.datetime_to_compactdate(annouc)
+                    annouc = time_utils.get_simple_time_str(annouc)
                     
                 blocked   = record.get('blocked', None)
                 if not blocked:
-                    blocked = "-"
+                    blocked = "--"
                 else:
-                    blocked = time_utils.datetime_to_compactdate(blocked)
+                    blocked = time_utils.get_simple_time_str(blocked)
                     
                 finished   = record.get('finished', None)
                 total_time = None
                 #active
                 if not finished:
-                    finished   = "-" 
-                    total_time = "-"
+                    finished   = "--" 
+                    total_time = "--"
                            
                 else:
                     if begin_time:
@@ -182,23 +190,23 @@ class CurseDisplay(object):
                         if total_time == 0:
                             total_time = "< 1s"
                     else:
-                        total_time = "-"
+                        total_time = "--"
                     
-                    finished   = time_utils.datetime_to_compactdate(finished)
+                    finished   = time_utils.get_simple_time_str(finished)
                     
                 
                 
                 #add records to be printed in the right area
                 #it means this is active    
-                if finished == "-":
+                if finished == "--":
                     if active_printed_records < nb_max_active_records:
                         
                         #format template
-                        str_to_print = active_template % (filename.ljust(50) if filename != '-' else filename.center(50), \
-                                uplinked.center(17),\
-                              queued.center(17),jobname.center(20), \
-                              blocked.center(17),  annouc.center(17),\
-                              finished.center(17))
+                        str_to_print = active_template % (filename.ljust(50) if filename != '--' else filename.center(50), \
+                                uplinked.center(12),\
+                              queued.center(12),jobname.center(19), channel.center(15),\
+                              blocked.center(12),  annouc.center(12),\
+                              aborted.center(12))
                         
                         #insert record to be printed
                         active_pad.addstr(x_active, 1, str_to_print, color)
@@ -208,11 +216,11 @@ class CurseDisplay(object):
                     #finished
                     if finished_printed_records < nb_max_finished_records:
                         #format template
-                        str_to_print = finished_template % (filename.ljust(50) if filename != '-' else filename.center(50), \
-                                uplinked.center(17),\
-                              queued.center(17),jobname.center(20), \
-                              blocked.center(17),  annouc.center(17),\
-                              finished.center(17), str(total_time).center(17))
+                        str_to_print = finished_template % (filename.ljust(50) if filename != '--' else filename.center(50), \
+                                uplinked.center(12),\
+                              queued.center(12),jobname.center(19), channel.center(15),\
+                              blocked.center(12),  annouc.center(12),\
+                              aborted.center(12), finished.center(12), str(total_time).center(12))
                         
                         #insert record to be printed
                         finished_pad.addstr(x_finished, 1, str_to_print, color )
@@ -228,11 +236,15 @@ class CurseDisplay(object):
         results = analyze_utils.get_active_jobs(a_db, self._previous_snapshot)
         self._previous_snapshot = results['since_last_print']['prev_snapshot']
         
-        first_line = "Active transfers: %s Blocked transfers : %s Active jobs: %s Total nb entries: %s Finished entries in db: %s " % (str(results['active_file_transfers']).ljust(3), \
-                                                                                        str(results['blocked_file_transfers']).ljust(3), str(results['nb_jobs']).ljust(3), \
-                                                                                        str(results['total_nb_of_transfers']).ljust(3), str(results['finished_file_transfers']).ljust(3))
+        first_line = "Active transfers: %s Blocked transfers : %s Active jobs: %s Total nb entries: %s Finished entries in db: %s " \
+                                                                                        % (str(results['active_file_transfers']).ljust(3), \
+                                                                                        str(results['blocked_file_transfers']).ljust(3), \
+                                                                                        str(results['nb_jobs']).ljust(3), \
+                                                                                        str(results['total_nb_of_transfers']).ljust(3), \
+                                                                                        str(results['finished_file_transfers']).ljust(3))
         
-        sec_line   = "New entries     : %s Finished transfers: %s Cleaned entries   : %s [ last refresh time %s ]" % (str(results['since_last_print']['deleted']).ljust(3), \
+        sec_line   = "New entries     : %s Finished transfers: %s Cleaned entries   : %s [ last refresh time %s ]" % \
+                                                                                            (str(results['since_last_print']['deleted']).ljust(3), \
                                                                                              str(results['since_last_print']['new']).ljust(3), \
                                                                                              str(results['since_last_print']['finished']).ljust(3),\
                                                                                              time_utils.get_simple_time_str(a_current_display_time))
@@ -249,13 +261,10 @@ class CurseDisplay(object):
         
         finished_pad.noutrefresh(1, 1, int(round((self._maxy-2)*(2.00/3)))+2, 1, self._maxy-2, self._maxx-2)
         
-        
         curses.doupdate()
         
         #update previous_display_time with the current display time
         self._previous_display_time = a_current_display_time
-        
-        #time.sleep(1)
     
     def reset_screen(self):
         """
@@ -319,7 +328,7 @@ class TextDisplay(object):
                 if jobname:
                     #will not fail if name < 20
                     jobelems = jobname.split('-')
-                    jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
+                    jobname  = "%s..-%s" % (jobname[:13], jobelems[-1])
                 else:
                     jobname = "-"
                 
@@ -327,39 +336,39 @@ class TextDisplay(object):
                 if not uplinked:
                     uplinked = "-"
                 else:
-                    uplinked = time_utils.datetime_to_compactdate(uplinked)
+                    uplinked = time_utils.get_simple_time_str(uplinked)
                     
                 queued   = record.get('queued', None)
                 if not queued:
                     queued = "-"
                 else:
-                    queued = time_utils.datetime_to_compactdate(queued)
+                    queued = time_utils.get_simple_time_str(queued)
                 
                 annouc   = record.get('announced', None)
                 if not annouc:
                     annouc = "-"
                 else:
-                    annouc = time_utils.datetime_to_compactdate(annouc)
+                    annouc = time_utils.get_simple_time_str(annouc)
                     
                 blocked   = record.get('blocked', None)
                 if not blocked:
                     blocked = "-"
                 else:
-                    blocked = time_utils.datetime_to_compactdate(blocked)
+                    blocked = time_utils.get_simple_time_str(blocked)
                     
                 finished = record.get('finished', None)
                 if not finished:
                     finished = "-"
                 else:
-                    finished = time_utils.datetime_to_compactdate(finished)
+                    finished = time_utils.get_simple_time_str(finished)
                     
                 if finished == '-':
-                    active_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
+                    active_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17), \
                                   queued.center(17),jobname.center(20), \
                                   blocked.center(17),  annouc.center(17),\
                                   finished.center(17))
                 else:
-                    finish_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
+                    finish_data += template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17), \
                                   queued.center(17),jobname.center(20), \
                                   blocked.center(17),  annouc.center(17),\
                                   finished.center(17))
@@ -374,72 +383,3 @@ class TextDisplay(object):
            Do nothing
         """
         pass
-    
-    
-
-    def old_print_table(self, a_db):
-        """
-          print a table
-        """
-        header_l = "------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-        header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |     finished    |"
-        template = "%s|%s|%s|%s|%s|%s|%s|"
-        
-        print(header)
-        
-        for record in a_db:
-            
-            #reduce filename and jobname size to 50
-            filename = record['filename']
-            if filename:
-                filename = os.path.basename(filename)
-                
-                #will not fail if name < 50
-                filename = filename[:50]
-            else:
-                filename = "-"
-            
-            jobname = record['jobname']
-            if jobname:
-                #will not fail if name < 20
-                jobelems = jobname.split('-')
-                jobname  = "%s..-%s" %(jobname[:13],jobelems[-1])
-            else:
-                jobname = "-"
-            
-            uplinked = record.get('uplinked', None)
-            if not uplinked:
-                uplinked = "-"
-            else:
-                uplinked = time_utils.datetime_to_compactdate(uplinked)
-                
-            queued   = record.get('queued', None)
-            if not queued:
-                queued = "-"
-            else:
-                queued = time_utils.datetime_to_compactdate(queued)
-            
-            annouc   = record.get('announced', None)
-            if not annouc:
-                annouc = "-"
-            else:
-                annouc = time_utils.datetime_to_compactdate(annouc)
-                
-            blocked   = record.get('blocked', None)
-            if not blocked:
-                blocked = "-"
-            else:
-                blocked = time_utils.datetime_to_compactdate(blocked)
-                
-            finished = record.get('finished', None)
-            if not finished:
-                finished = "-"
-            else:
-                finished = time_utils.datetime_to_compactdate(finished)
-            
-            print(template % (filename.ljust(50) if filename != '-' else filename.center(50), uplinked.center(17),\
-                              queued.center(17),jobname.center(20), \
-                              blocked.center(17),  annouc.center(17),\
-                              finished.center(17)))
-        
-        print(header_l)
