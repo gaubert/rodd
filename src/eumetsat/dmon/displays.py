@@ -80,7 +80,7 @@ class CurseDisplay(object):
         active_header   = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |       sent      |"
         
         finished_stripe = "-FINISHED---------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-        finished_header = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |       sent      | trans time (sec)|"
+        finished_header = "                   filename                       |    uplinked     |      queued     |       jobname      |    blocked      |    announced    |       sent      |    trans time   |"
         
         active_template   = "%s|%s|%s|%s|%s|%s|%s|"
         finished_template = "%s|%s|%s|%s|%s|%s|%s|%s|"
