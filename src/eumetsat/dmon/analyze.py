@@ -45,7 +45,7 @@ class Analyzer(object):
         # create database
         self.mem_db = mem_db.Base('analysis')
         #keep X elements max in collections
-        self.mem_db.create('filename', 'uplinked', \
+        self.mem_db.create('filename', 'uplinked', 'size', \
                   'queued', 'jobname', \
                   'announced', 'blocked', 'channel', \
                   'finished', 'metadata', 'created', 'last_update', 'finished_time_insert', capped_size=1000000)
@@ -60,7 +60,6 @@ class Analyzer(object):
         #self.display = displays.TextDisplay()
         self.display = displays.CurseDisplay()
         
-        self._line_file     = open('/tmp/line_file.file','w')
         self._accepting_new = True
         
     def get_dwd_record(self, database, result, dirmon_dir): #pylint: disable-msg=R0201
@@ -112,6 +111,7 @@ class Analyzer(object):
                 #add file in db
                 now = datetime.datetime.utcnow()
                 database.insert(filename = result['file'], \
+                                size     = result['file_size'], \
                                 uplinked = result['time'], \
                                 metadata = result['metadata'], \
                                 created  = now, \

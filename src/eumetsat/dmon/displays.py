@@ -84,14 +84,14 @@ class CurseDisplay(object):
         active_pad   = curses.newpad(500, 500)
         finished_pad = curses.newpad(500, 500)
         
-        active_stripe   = "-ACTIVE-------------------------------------------------------------------------------------------------------------------------------------------------"
-        active_header   = "                     filename                     |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |"
+        active_stripe   = "-ACTIVE------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        active_header   = "                     filename                     |   size   |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |"
         
-        finished_stripe = "-FINISHED-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-        finished_header = "                     filename                     |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |    sent    | trans time |"
+        finished_stripe = "-FINISHED------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+        finished_header = "                     filename                     |   size   |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |    sent    | trans time |"
         
-        active_template   = "%s|%s|%s|%s|%s|%s|%s|%s|"
-        finished_template = "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|"
+        active_template   = "%s|%s|%s|%s|%s|%s|%s|%s|%s|"
+        finished_template = "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|"
         
         active_pad.addstr(1, 1, active_stripe)
         active_pad.addstr(2, 1, active_header)
@@ -146,6 +146,13 @@ class CurseDisplay(object):
                     #shrink chan name if start with EUMETSAT
                     if channel.startswith("EUMETSAT Data Channel"):
                         channel = channel.replace("EUMETSAT Data Channel", "EUM Chan")
+                        
+                size = record.get('size', None)
+                if not size:
+                    size = "--"
+                else:
+                    size = utils.human_size(size)
+                    CurseDisplay.LOG.info("size %s" %(size))
                         
                 uplinked = record.get('uplinked', None)
                 if not uplinked:
@@ -211,7 +218,7 @@ class CurseDisplay(object):
                         
                         #format template
                         str_to_print = active_template % (filename.ljust(50) if filename != '--' else filename.center(50), \
-                                uplinked.center(12),\
+                                size.center(10), uplinked.center(12),\
                               queued.center(12),jobname.center(19), channel.center(15),\
                               blocked.center(12),  annouc.center(12),\
                               aborted.center(12))
@@ -225,7 +232,7 @@ class CurseDisplay(object):
                     if finished_printed_records < nb_max_finished_records:
                         #format template
                         str_to_print = finished_template % (filename.ljust(50) if filename != '--' else filename.center(50), \
-                                uplinked.center(12),\
+                              size.center(10), uplinked.center(12),\
                               queued.center(12),jobname.center(19), channel.center(15),\
                               blocked.center(12),  annouc.center(12),\
                               aborted.center(12), finished.center(12), str(total_time).center(12))
