@@ -4,11 +4,17 @@ Created on Nov 29, 2011
 @author: guillaume.aubert@eumetsat.int
 '''
 import os
+import collections
 import curses
 
+import eumetsat.dmon.common.utils as utils
 import eumetsat.dmon.common.time_utils as time_utils
 import eumetsat.dmon.common.log_utils  as log_utils
 import eumetsat.dmon.common.analyze_utils as analyze_utils
+
+#set locale to support UTF-8
+import locale
+locale.setlocale(locale.LC_ALL,"")
 
 class CurseDisplay(object):
     '''
@@ -44,6 +50,8 @@ class CurseDisplay(object):
         
         self._previous_snapshot = {}
         
+        self._previous_nb_jobs = collections.deque([0, 0, 0, 0, 0, 0, 0, 0, 0, 0], maxlen = 10)
+        
         
     def check_for_input(self):
         """
@@ -77,10 +85,10 @@ class CurseDisplay(object):
         finished_pad = curses.newpad(500, 500)
         
         active_stripe   = "-ACTIVE-------------------------------------------------------------------------------------------------------------------------------------------------"
-        active_header   = "                   filename                       |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |"
+        active_header   = "                     filename                     |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |"
         
         finished_stripe = "-FINISHED-------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
-        finished_header = "                   filename                       |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |    sent    | trans time |"
+        finished_header = "                     filename                     |  uplinked  |   queued   |      jobname      |    channel    |   blocked  |  announced |  aborted   |    sent    | trans time |"
         
         active_template   = "%s|%s|%s|%s|%s|%s|%s|%s|"
         finished_template = "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|"
@@ -236,6 +244,9 @@ class CurseDisplay(object):
         results = analyze_utils.get_active_jobs(a_db, self._previous_snapshot)
         self._previous_snapshot = results['since_last_print']['prev_snapshot']
         
+        self._previous_nb_jobs.append(results['active_file_transfers'])
+        
+        
         first_line = "Active transfers: %s Blocked transfers : %s Active jobs: %s Total nb entries: %s Finished entries in db: %s " \
                                                                                         % (str(results['active_file_transfers']).ljust(3), \
                                                                                         str(results['blocked_file_transfers']).ljust(3), \
@@ -253,9 +264,11 @@ class CurseDisplay(object):
         
         total_pad.addstr(2, 1, sec_line, curses.A_BOLD)
         
-        total_pad.addstr(3, 1,"")
+        #current version of curse doesn't support UTF-8 so cannot use spark 
+        #third_line = u"nb jobs trend: %s" % (utils.spark_string(self._previous_nb_jobs))
+        #total_pad.addstr(3, 1, third_line.encode("utf-8"))
         
-        total_pad.noutrefresh(1, 1, 1, 1, 2, self._maxx-2)
+        total_pad.noutrefresh(1, 1, 1, 1, 3, self._maxx-2)
         
         active_pad.noutrefresh(1, 1, 4, 1, int(round(self._maxy-2)*(2.00/3))+1, self._maxx-2)
         

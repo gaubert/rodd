@@ -48,7 +48,7 @@ Syntax :
 """
 
 import bisect
-import collections
+import collections_utils
 
 # compatibility with Python 2.3
 try:
@@ -104,7 +104,7 @@ class Base:
         self.capped_size = kw.get("capped_size", -1)
                
         self.fields  = list(fields)
-        self.records = collections.OrderedDict() #add an orderedDict to cap the collection
+        self.records = collections_utils.OrderedDict() #add an orderedDict to cap the collection
         self.next_id = 0
         self.indices = {}
         return self

@@ -14,7 +14,7 @@ ticks = u'▁▂▃▅▆▇'
 def spark_string(ints):
     """Returns a spark string from given iterable of ints."""
     step = ((max(ints)) / float(len(ticks) - 1)) or 1
-    return u' '.join(ticks[int(round(i / step))] for i in ints)
+    return u''.join(ticks[int(round(i / step))] for i in ints)
 
 
 def spark_print(ints, stream=None):
@@ -40,3 +40,11 @@ def get_exception_traceback():
     exception_type, exception_value, exception_traceback = sys.exc_info() #IGNORE:W0702
     traceback.print_exception(exception_type, exception_value, exception_traceback, file = the_file)
     return the_file.getvalue()
+
+
+if __name__ == '__main__': 
+    import collections
+    
+    d = collections.deque([0,25,0,0,35,2,3,125,5,6], maxlen = 10)
+    
+    spark_print(d)
