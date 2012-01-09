@@ -8,6 +8,8 @@ import datetime
 import sys
 import re
 
+import pymongo
+
 import eumetsat.dmon.common.mem_db as mem_db
 import eumetsat.dmon.common.utils as utils
 import eumetsat.dmon.common.log_utils  as log_utils
@@ -18,6 +20,55 @@ import tellicastlog_parser
 import xferlog_parser
 
 import eumetsat.dmon.displays as displays
+
+class Archiver(object):
+    """
+       MongoDB Archiver
+    """
+    LOG = log_utils.LoggerFactory.get_logger('Archiver')
+    
+    def __init__(self):
+        """
+           constructor
+        """
+        self.connection = None
+        self.host = 'localhost'
+        self.port = 27017
+        
+        self.connect(self.host, self.port)
+    
+    def connect(self, host, port):
+        """
+          connect to db
+        """
+        try:
+            self.connection = pymongo.Connection(host, port)
+        except Exception, err:
+            Archiver.LOG.error("Ignore Error. Cannot connection to %s:%s" % (host, port))
+            Archiver.LOG.exception(err)        
+    
+    def archive(self, record):
+        """
+           Archive finished records
+        """   
+        try:
+            if self.connection:
+                db = self.connection.diss
+                Archiver.LOG.info("insert %s in mongodb" % (record))
+                #clean record
+                rec = { 'last_update': record['last_update'], 'created':record['created'], \
+                        'metadata': record['metadata'], 'jobname': record['jobname'], \
+                        'uplinked': record['uplinked'], 'finished': record['finished'],\
+                        'channel': record['channel'], 'finished_time_insert': record['finished_time_insert'], 
+                        'blocked': record['blocked'], 'filename': record['filename'], \
+                        'queued': record['queued'], 'announced': record['announced'], \
+                        'size': record['size']}
+                db.records.insert(rec)
+        except Exception, err:
+            Archiver.LOG.error("Ignore Error. Cannot insert record in mongodb")
+            Archiver.LOG.exception(err) 
+            self.connection = None     
+    
 
 class Analyzer(object):
     """
@@ -59,6 +110,10 @@ class Analyzer(object):
         
         #self.display = displays.TextDisplay()
         self.display = displays.CurseDisplay()
+        
+        #create archiver
+        self.archiver = Archiver()
+        
         
         self._accepting_new = True
         
@@ -124,6 +179,8 @@ class Analyzer(object):
         for rec in [ r for r in database \
                     if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
                    ]:
+            #archive finished record
+            self.archiver.archive(rec)
             database.delete(rec)       
 
     def analyze(self, database, line, filename): #pylint: disable-msg=R0912,R0915
