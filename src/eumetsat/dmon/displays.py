@@ -152,7 +152,6 @@ class CurseDisplay(object):
                     size = "--"
                 else:
                     size = utils.human_size(size)
-                    CurseDisplay.LOG.info("size %s" %(size))
                         
                 uplinked = record.get('uplinked', None)
                 if not uplinked:
@@ -196,7 +195,7 @@ class CurseDisplay(object):
                 else:
                     if begin_time:
                         try:
-                            total_time = '%ss' % ((finished - begin_time).seconds)
+                            total_time = utils.human_time( (finished - begin_time).seconds )
                         except TypeError, err:
                             self.LOG.error("record = %s\n" % (record))
                             self.LOG.exception(err)
@@ -261,7 +260,7 @@ class CurseDisplay(object):
                                                                                         str(results['total_nb_of_transfers']).ljust(3), \
                                                                                         str(results['finished_file_transfers']).ljust(3))
         
-        sec_line   = "New entries     : %s Finished transfers: %s Cleaned entries   : %s [ last refresh time %s ]" % \
+        sec_line   = "New entries     : %s Finished transfers: %s Cleaned entries   : %s [ last refresh %s ]" % \
                                                                                             (str(results['since_last_print']['deleted']).ljust(3), \
                                                                                              str(results['since_last_print']['new']).ljust(3), \
                                                                                              str(results['since_last_print']['finished']).ljust(3),\

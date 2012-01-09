@@ -80,11 +80,42 @@ class Analyzer(object):
                 l_rec.append(rec)
         
         return l_rec
+    
+    @classmethod
+    def _rec_only_updated(cls, rec):
+        """
+           True if Record only updated else False
+        """
+        return rec.get('uplinked', None) \
+               and not rec.get('queued', None) \
+               and not rec.get('announced', None) \
+               and not rec.get('blocked', None) \
+               and not rec.get('finished', None) \
+               and not rec.get('aborted', None)
+        
+    
+    def remove_eat_upload_records(self, database):
+        """
+          remoce .cha and .rcv files that have been only uplinked after 5 min.
+          This to not pollute the monitoring screen with eat files.
+        """
+        expiry_time = 180 # 3 min in seconds
+        now = datetime.datetime.utcnow()
+        
+        for rec in [ r for r in database \
+                     if ( self._rec_only_updated(r) and (r.get('filename', '').endswith('.rcv') or r.get('filename', '').endswith('.cha')) \
+                          and (now - r['created']) > datetime.timedelta(seconds=expiry_time) )\
+                   ]:
+            Analyzer.LOG.info("delete eat record %s" % (r.get('filename', None)))
+            database.delete(rec)
 
     def remove_expired_records(self, database): #pylint: disable-msg=R0201
         """
            remove records that have been finished for more than 60 seconds
         """
+        
+        self.remove_eat_upload_records(database)
+        
         expiry_time = 20 # 20 in seconds
         now = datetime.datetime.utcnow()
         

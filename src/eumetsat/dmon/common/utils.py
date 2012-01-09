@@ -23,6 +23,22 @@ def spark_print(ints, stream=None):
         stream = sys.stdout
     stream.write(spark_string(ints).encode("utf-8"))
     
+def human_time(secs):
+    """
+      format time in secs to human readable values
+    """
+    mins, secs = divmod(secs, 60)
+    hours, mins = divmod(mins, 60)
+    
+    if hours > 0:
+        return '%02dh%02dm%02d' % (hours, mins, secs)
+    elif mins > 0:
+        return '%02dm%02ds' % (mins, secs)
+    else:
+        return '%02ds' % (secs)
+    
+    return '%02d:%02d:%02d' % (hours, mins, secs)
+    
 def human_size(size_bytes):
     """
     format a size in bytes into a 'human' file size, e.g. bytes, KB, MB, GB, TB, PB
@@ -69,8 +85,9 @@ def get_exception_traceback():
 
 
 if __name__ == '__main__': 
-    import collections
+    #import collections
     
-    d = collections.deque([0,25,0,0,35,2,3,125,5,6], maxlen = 10)
+    #d = collections.deque([0,25,0,0,35,2,3,125,5,6], maxlen = 10)
     
-    spark_print(d)
+    #spark_print(d)
+    print(human_time(7465))
