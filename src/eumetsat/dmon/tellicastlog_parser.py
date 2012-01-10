@@ -18,7 +18,7 @@ TELLICASTLOG_MSG          = r'(?P<msg>.*)'
 
 TELLICASTLOG_PATTERN      = TELLICASTLOG_GEMS_HEADER + TELLICASTLOG_LVL + r':' + TELLICASTLOG_DATE + r':' + TELLICASTLOG_MSG
 
-TELLICASTLOG_HEADER_PATTERN = r'Lvl:Date[ ]*Time[ ]*\(UTC\)[ ]*:Message'
+TELLICASTLOG_HEADER_PATTERN = r'Lvl:Date\s*Time\s*\(UTC\)\s*:Message'
 
 TELLICASTLOG_RE           = re.compile(TELLICASTLOG_PATTERN)
 TELLICASTLOG_HEADER_RE    = re.compile(TELLICASTLOG_HEADER_PATTERN)
@@ -153,8 +153,7 @@ class TellicastLogParser(object):
                 extra_result = self._parse_tcrecv_msg(result['msg'])
                 result.update(extra_result)
         else:
-            #for the moment raise an exception
-            raise InvalidTellicastlogFormatError("Tellicastlog parser: Unkown line format %s" %(a_line))
+            result = {}       
         
         return result
             
@@ -177,6 +176,8 @@ class TellicastLogParser(object):
                 elif self._app_type == "tc-recv":
                     extra_result = self._parse_tcrecv_msg(result['msg'])
                     result.update(extra_result)
+            else:
+                result = {}
                 
                 yield result
                 
@@ -429,8 +430,8 @@ class TellicastLogParser(object):
             
             if not header_matched:
                 raise InvalidTellicastlogFormatError("Invalid Tellicast log format for [%s]\n" %(a_line))
-           
-            return
+            
+        return
         
 if __name__ == '__main__':
     
@@ -461,17 +462,8 @@ if __name__ == '__main__':
     
     the_file = ['send.log: Entry detected: MSG:2011-11-30 12:41:42.091:FileBroadcast job "retim-4010-53359-2011-11-30-12-41-04-203.job" on channel "MFRAFRG2" done.']
     
-    result = d_parser.parse_one_line("VRB:2011-12-01 09:30:34.307:Adding file '/home/eumetsat/data/dwd/groups/DWD-DWDintern/gts01-VHDL30_DWSG_010800-1112010930-afsv--25-ia5' to job 'DWD-DWDintern-58556-2011-12-01-09-30-34-295', last modified: 2011-12-01 09:30:07, size: 1581")
+    result = d_parser.parse_one_line("Lvl:Date       Time (UTC)  :Message")
     print(result)
-    dirmon_dir = result['metadata']['dirmon_dir']
-    #special case for DWD (should hopefully disappear in the future
-    if dirmon_dir == 'wmo-ra6' or dirmon_dir.startswith('DWD'):
-        print("DWD")
-    import sys
-    sys.exit(1)
     
-    result = s_parser.parse_one_line('send.log: Entry detected: MSG:2011-11-30 12:41:42.091:FileBroadcast job "retim-4010-53359-2011-11-30-12-41-04-203.job" on channel "MFRAFRG2" done.')
-    print(result)
-        
        
         

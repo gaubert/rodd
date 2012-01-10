@@ -194,18 +194,18 @@ class Analyzer(object):
             result = Analyzer.x_parser.parse_one_line(line)
             
             #file push and action complete
-            if result['action'] == 'push' and result['completion_status'] == 'c':
+            if result.get('action', None) == 'push' and result.get('completion_status', None) == 'c':
             
                 #add file in db
                 now = datetime.datetime.utcnow()
                 database.insert(filename = result['file'], \
-                                size     = result['file_size'], \
+                                size     = long(result['file_size']), \
                                 uplinked = result['time'], \
                                 metadata = result['metadata'], \
                                 created  = now, \
                                 last_update= now)
                 
-            elif result['action'] == 'delete':
+            elif result.get('action', None) == 'delete':
                 
                 #look for a file name x in the db in order to delete it
                 records = database(filename = result['file'])
@@ -220,7 +220,7 @@ class Analyzer(object):
         elif the_type == 'dirmon':
             result = Analyzer.d_parser.parse_one_line(line)
             
-            if result and result.get('job_status', None) == 'created':
+            if result.get('job_status', None) == 'created':
                 
                 dirmon_dir = result['metadata']['dirmon_dir']
                 #special case for DWD (should hopefully disappear in the future
@@ -266,7 +266,7 @@ class Analyzer(object):
             result = Analyzer.s_parser.parse_one_line(line)
             
             # look for job_status == job_announced
-            if result.get('job_status') == 'announced' :
+            if result.get('job_status', None) == 'announced' :
                 
                 # get all records concerned by this job
                 records = database(jobname = result.get('job', None))
@@ -282,7 +282,7 @@ class Analyzer(object):
                         database.update(rec, jobname = result.get('job', None), \
                                         announced = result['time'],last_update= datetime.datetime.utcnow(), channel = result['channel']) 
                        
-            elif result.get('job_status') == 'blocked':
+            elif result.get('job_status', None) == 'blocked':
                 
                 #get all records concerned by this job
                 records = database(jobname = result.get('job', None))
@@ -296,7 +296,7 @@ class Analyzer(object):
                     for rec in records:
                         # update info with blocked time
                         database.update(rec, blocked = result['time'], channel = result['channel']) 
-            elif result.get('job_status') == 'aborted':
+            elif result.get('job_status', None) == 'aborted':
                 #for the moment treat as finished
                 #get all records concerned by this job
                 records = database(jobname = result.get('job', None))
@@ -317,7 +317,7 @@ class Analyzer(object):
                                         finished_time_insert = datetime.datetime.utcnow(), \
                                         last_update= datetime.datetime.utcnow(), channel = result['channel'])
                         
-            elif result.get('job_status') == 'finished':
+            elif result.get('job_status', None) == 'finished':
     
                 #get all records concerned by this job
                 records = database(jobname = result.get('job', None))
