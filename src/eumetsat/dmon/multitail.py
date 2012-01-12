@@ -172,6 +172,12 @@ def usage():
 
 if __name__ == '__main__':
     
+    """
+       Todo: - add format output (default file:line)
+               in the filename if a:filepath a is given as the filename
+             - add epoll support for linux
+    """
+    
     files = []
         
 
