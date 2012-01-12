@@ -21,6 +21,29 @@ import xferlog_parser
 
 import eumetsat.dmon.displays as displays
 
+class DoNothingArchiver(object):
+    """
+       DoNothingArchiver
+    """
+    def __init__(self):
+        """ 
+           cons
+        """
+        pass
+    
+    def connect(self, host, port):
+        """
+           connect method
+        """
+        pass
+    
+    def archive(self, record):
+        """
+           Archive 
+        """
+        pass
+    
+
 class Archiver(object):
     """
        MongoDB Archiver
@@ -89,7 +112,7 @@ class Analyzer(object):
               'send.log'  : 'tc-send',
               'dirmon.log' : 'dirmon'}
         
-    def __init__(self):
+    def __init__(self, enable_archive = False):
         """
            constructor
         """
@@ -112,7 +135,10 @@ class Analyzer(object):
         self.display = displays.CurseDisplay()
         
         #create archiver
-        self.archiver = Archiver()
+        if enable_archive:
+            self.archiver = Archiver()
+        else:
+            self.archiver = DoNothingArchiver()
         
         
         self._accepting_new = True
@@ -532,9 +558,9 @@ class Analyzer(object):
     
 if __name__ == '__main__': 
     
-    log_utils.LoggerFactory.setup_simple_file_handler('/tmp/analyze.log') 
+    log_utils.LoggerFactory.setup_simple_file_handler('/tmp/analyze.log', level = 3) 
     
-    analyzer = Analyzer() #pylint: disable-msg=C0103
+    analyzer = Analyzer(enable_archive = True) #pylint: disable-msg=C0103
     
     #sys.exit(analyzer.analyze_with_text_display_from_tailed_file(['/tmp/res.txt']))
 
