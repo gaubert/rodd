@@ -194,20 +194,24 @@ class Analyzer(object):
         """
            remove records that have been finished for more than 60 seconds
         """
-        
+        #special case to ignore eat files that are uploaded every day
         self.remove_eat_upload_records(database)
         
         expiry_time = 20 # 20 in seconds
+        aborted_expiry_time = 43200 # 12 hours in seconds
         now = datetime.datetime.utcnow()
         
-        Analyzer.LOG.info("Before to remove records")
-        
-        for rec in [ r for r in database \
-                    if ( r.get('finished_time_insert', None) and (now - r['finished_time_insert']) > datetime.timedelta(seconds=expiry_time) )\
-                   ]:
-            #archive finished record
-            self.archiver.archive(rec)
-            database.delete(rec)       
+        for rec in database:
+            #finished records
+            if  rec.get('finished_time_insert', None) and (now - rec['finished_time_insert']) > datetime.timedelta(seconds = expiry_time) :
+                #archive finished record
+                self.archiver.archive(rec)
+                database.delete(rec)
+            #aborted for more than 12 hours records 
+            elif rec.get('aborted', None) and ( now - rec.get('last_update', now) ) > datetime.timedelta(seconds = aborted_expiry_time) :
+                #archive aborted record that was never finished
+                self.archiver.archive(rec)
+                database.delete(rec)
 
     def analyze(self, database, line, filename): #pylint: disable-msg=R0912,R0915
         """
@@ -323,24 +327,23 @@ class Analyzer(object):
                         # update info with blocked time
                         database.update(rec, blocked = result['time'], channel = result['channel']) 
             elif result.get('job_status', None) == 'aborted':
-                #for the moment treat as finished
+                # flag it as aborted and if it is aborted again update the update time
                 #get all records concerned by this job
                 records = database(jobname = result.get('job', None))
                 
                 if self._accepting_new and len(records) == 0:
                     now = datetime.datetime.utcnow()
+                   
                     # no dirmon message received so check in the waiting list and update it or add it in the waiting list if not present
                     # put it in finish at the moment but it should be treated differently
                     database.insert(jobname = result.get('job', None), \
-                                    finished = result['time'], \
-                                    finished_time_insert = datetime.datetime.utcnow(), \
+                                    aborted = result['time'], \
                                     created = now, \
                                     last_update= now, channel = result['channel'])
                 else:
                     for rec in records:
                         # update info with finished time
-                        database.update(rec, finished = result['time'], \
-                                        finished_time_insert = datetime.datetime.utcnow(), \
+                        database.update(rec, aborted = result['time'], \
                                         last_update= datetime.datetime.utcnow(), channel = result['channel'])
                         
             elif result.get('job_status', None) == 'finished':
