@@ -184,7 +184,8 @@ class Analyzer(object):
         now = datetime.datetime.utcnow()
         
         for rec in [ r for r in database \
-                     if ( self._rec_only_updated(r) and (r.get('filename', '').endswith('.rcv') or r.get('filename', '').endswith('.cha')) \
+                     if ( self._rec_only_updated(r) and (r.get('filename', '').endswith('.rcv') or r.get('filename', '').endswith('.cha') \
+                                                         or r.get('filename', '').endswith('.job') or r.get('filename', '').endswith('.ini')) \
                           and (now - r['created']) > datetime.timedelta(seconds=expiry_time) )\
                    ]:
             Analyzer.LOG.info("delete eat record %s" % (r.get('filename', None)))
@@ -563,7 +564,7 @@ if __name__ == '__main__':
     
     log_utils.LoggerFactory.setup_simple_file_handler('/tmp/analyze.log', level = 3) 
     
-    analyzer = Analyzer(enable_archive = True) #pylint: disable-msg=C0103
+    analyzer = Analyzer(enable_archive = False) #pylint: disable-msg=C0103
     
     #sys.exit(analyzer.analyze_with_text_display_from_tailed_file(['/tmp/res.txt']))
 
