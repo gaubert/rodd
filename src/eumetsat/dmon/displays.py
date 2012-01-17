@@ -65,8 +65,25 @@ class CurseDisplay(object):
             return "STOPACCEPTING"
         elif char in [ord('r')]:
             return "RESTARTACCEPTING"
+        elif char in [ord('o')]:
+            return "OLDEST"
+        elif char in [ord('n')]:
+            return "NEWEST"
         
-    def print_screen(self, a_db, a_current_display_time):
+    def get_iter_from_sort_criteria(self, a_db, a_sort_criteria):
+        """
+           get iterator from given sort criteria
+        """
+        if a_sort_criteria == 'NEWEST':
+            return a_db._last_update.get_sorted_iter(sorted, reverse = True)
+        elif a_sort_criteria == 'OLDEST':
+            return a_db._last_update.get_sorted_iter(sorted, reverse = False)
+        else:
+            #default newest first
+            return a_db._last_update.get_sorted_iter(sorted, reverse = True)
+            
+        
+    def print_screen(self, a_db, a_current_display_time, a_sort_criteria):
         """
            print on screen
         """
@@ -108,7 +125,7 @@ class CurseDisplay(object):
         CurseDisplay.LOG.info("------ start Printing on screen ------")
         
         #reverse iteration from the lastest records to the oldest one
-        for index in a_db._last_update.get_sorted_iter(sorted, reverse = True):
+        for index in self.get_iter_from_sort_criteria(a_db, a_sort_criteria):
             
             # if index which is the last_update_time is superior to the previous_display_time
             # meaning was updated since the last display then change color
@@ -313,7 +330,7 @@ class TextDisplay(object):
         """  
         return None
 
-    def print_screen(self, a_db, a_current_time):
+    def print_screen(self, a_db, a_current_time, a_sort_criteria):
         """
           print a table
         """

@@ -142,6 +142,7 @@ class Analyzer(object):
         
         
         self._accepting_new = True
+        self._sort_criteria = 'NEWEST'
         
     def get_dwd_record(self, database, result, dirmon_dir): #pylint: disable-msg=R0201
         """
@@ -385,7 +386,7 @@ class Analyzer(object):
         """ 
         current_time = datetime.datetime.utcnow()
         if not a_last_time_display:
-            a_display.print_screen(self.mem_db, current_time)
+            a_display.print_screen(self.mem_db, current_time, self._sort_criteria)
             return current_time
         else:
             if current_time - a_last_time_display > datetime.timedelta(seconds=2):
@@ -393,7 +394,7 @@ class Analyzer(object):
                 #clean database 
                 self.remove_expired_records(self.mem_db)
                 
-                a_display.print_screen(self.mem_db, current_time)
+                a_display.print_screen(self.mem_db, current_time, self._sort_criteria)
                 return current_time
             else:
                 return a_last_time_display
@@ -428,13 +429,7 @@ class Analyzer(object):
                     # sometimes the tail can eat (bug) part of the line
                     # ignore this exception
                     try:
-                        #self._line_file.write("('%s', '%s')\n" % (line, filename) )
-                        #self._line_file.flush()
-                        
                         self.analyze(self.mem_db, line, filename)
-                        
-                        #self.print_db_logfile(self.mem_db)
-                        
                     except tellicastlog_parser.InvalidTellicastlogFormatError, err:
                         error_str = utils.get_exception_traceback()
                         Analyzer.LOG.error("Parser Exception %s, traceback %s" %(err, error_str))
@@ -450,6 +445,12 @@ class Analyzer(object):
                     elif kb_input and kb_input == 'RESTARTACCEPTING':
                         Analyzer.LOG.error("*********** Restart Accepting")
                         self._accepting_new = True
+                    elif kb_input and kb_input == 'OLDEST':
+                        Analyzer.LOG.error("*********** OLDEST records first")
+                        self._sort_criteria = 'OLDEST'
+                    elif kb_input and kb_input == 'NEWEST':
+                        Analyzer.LOG.error("*********** NEWEST records first")
+                        self._sort_criteria = 'NEWEST'
                         
             else:
                 #force update
