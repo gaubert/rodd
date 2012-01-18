@@ -23,8 +23,6 @@ TELLICASTLOG_HEADER_PATTERN = r'Lvl:Date\s*Time\s*\(UTC\)\s*:Message'
 TELLICASTLOG_RE           = re.compile(TELLICASTLOG_PATTERN)
 TELLICASTLOG_HEADER_RE    = re.compile(TELLICASTLOG_HEADER_PATTERN)
 
-
-
 #DIRMON PATTERNS for the different dirmon events
 DIRMON_ADDING_MSG_PATTERN = r'Adding file \'(?P<file>.*)\' to job \'(?P<job>.*)\', last modified: .*, size: (?P<size>\d+)'
 DIRMON_MSG_ADDING_RE      = re.compile(DIRMON_ADDING_MSG_PATTERN)
@@ -35,9 +33,13 @@ DIRMON_JOB_ACTIVATED_RE      = re.compile(DIRMON_JOB_ACTIVATED_PATTERN)
 DIRMON_JOB_RELEASED_PATTERN = r'Releasing resources for job "(?P<job>.*)" found in directory ".*"\.'
 DIRMON_JOB_RELEASED_RE      = re.compile(DIRMON_JOB_RELEASED_PATTERN)
 
+DIRMON_FILE_DELETED_PATTERN  = r'Old content file "(?P<file>.*)" was deleted from directory ".*".'
+DIRMON_FILE_DELETED_RE       = re.compile(DIRMON_FILE_DELETED_PATTERN)
+
 DIRMON_PATTERNS = { 'adding'     : DIRMON_MSG_ADDING_RE , 
                     'activating' : DIRMON_JOB_ACTIVATED_RE,
                     'releasing'  : DIRMON_JOB_RELEASED_RE,
+                    'deleted'    : DIRMON_FILE_DELETED_RE
                   }
 
 # tc-send patterns
@@ -234,12 +236,23 @@ class TellicastLogParser(object):
         pos = job.rfind('.')
         return job[:pos] if pos != -1 else job
     
-    def _clean_filename(self, filename):
+    def _clean_filename(self, filename, remove_tmp_extension = False):
         """
            split directories from basename
            return (dir, basename)
         """
-        return os.path.split(filename)
+        dirname, the_basename = os.path.split(filename)
+        
+        if remove_tmp_extension:
+            #remove suffix
+            name, ext = os.path.splitext(the_basename)
+            
+            if ext.lower() in ['.tmp','.temp']:
+                return (dirname, name)
+            else:
+                return (dirname, the_basename)
+        else:
+            return (dirname, the_basename)
         
                 
     def _parse_dirmon_msg(self, a_msg):
@@ -267,6 +280,12 @@ class TellicastLogParser(object):
                     return {
                              "job" :  self._clean_jobname(matched.group('job')),
                              "job_status" : "released", 
+                           }
+                elif key == "deleted":
+                    dir_name, the_basename = self._clean_filename(matched.group('file'), remove_tmp_extension = True)
+                    return { "file" : the_basename,
+                             "metadata"  : { 'dirmon_dir' : os.path.basename(dir_name) },
+                             "job_status" : "file_deleted"
                            }
                 else:
                     #security against bugs
@@ -462,7 +481,9 @@ if __name__ == '__main__':
     
     the_file = ['send.log: Entry detected: MSG:2011-11-30 12:41:42.091:FileBroadcast job "retim-4010-53359-2011-11-30-12-41-04-203.job" on channel "MFRAFRG2" done.']
     
-    result = d_parser.parse_one_line("Lvl:Date       Time (UTC)  :Message")
+    test = 'VRB:2012-01-17 05:48:01.922:Old content file "/home/eumetsat/data/saflsa/groups/SAF-LSA-afr/S-LSA_-HDF5_LSASAF_MSG_LST_NAfr_201201170215.bz2.tmp" was deleted from directory "/home/eumetsat/data/saflsa/groups/SAF-LSA-afr".'
+    
+    result = d_parser.parse_one_line(test)
     print(result)
     
        

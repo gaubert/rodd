@@ -131,8 +131,8 @@ class Analyzer(object):
         self.warn_err_db.create('lvl', 'msg', 'created')
         self.warn_err_db.create_index('created')
         
-        #self.display = displays.TextDisplay()
-        self.display = displays.CurseDisplay()
+        self.display = displays.TextDisplay()
+        #self.display = displays.CurseDisplay()
         
         #create archiver
         if enable_archive:
@@ -292,7 +292,17 @@ class Analyzer(object):
                             #no other record with job name, update record
                             database.update(rec, jobname = result['job'], \
                                             queued = result['time'], \
-                                            last_update = datetime.datetime.utcnow())              
+                                            last_update = datetime.datetime.utcnow())  
+                            
+            elif result.get('job_status', None) == 'file_deleted': 
+                #file has been deleted before to be treated
+                # TO Be added in warnings db
+                records = database(filename = result['file'])
+                for rec in records:
+                    #simply delete it at the moment
+                    database.delete(rec)
+                    Analyzer.LOG.warning("file %s deleted before to be jobbed" % (rec['filename']))
+                    analyze_utils.print_rec_in_logfile(rec)           
                 
         elif the_type == 'tc-send':
             result = Analyzer.s_parser.parse_one_line(line)
@@ -399,7 +409,7 @@ class Analyzer(object):
             else:
                 return a_last_time_display
     
-    def analyze_from_tailed_file(self, a_file_paths): #pylint: disable-msg=R0912
+    def analyze_from_tailed_file(self, a_file_paths, a_go_to_the_end = True): #pylint: disable-msg=R0912
         """
            Analyze from an aggregated file containing xferlog, dirmon.log and send.log
         """
@@ -407,7 +417,7 @@ class Analyzer(object):
         for f_path in a_file_paths:
             files.append(open(f_path, 'r'))
         
-        f_iter = multitail.MultiFileTailer.tail(files, delay=0.4, go_to_the_end = True)
+        f_iter = multitail.MultiFileTailer.tail(files, delay=0.4, go_to_the_end = a_go_to_the_end)
         
         last_time_display = None
         on_error = False
@@ -487,5 +497,6 @@ if __name__ == '__main__':
     
     #sys.exit(analyzer.analyze_with_text_display_from_tailed_file(['/tmp/res.txt']))
 
-    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))
-    #sys.exit(analyzer.analyze_from_tailed_file(['/tmp/res.txt']))
+    #sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))
+    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/xferlog_deleted.log'],a_go_to_the_end = False))
+    

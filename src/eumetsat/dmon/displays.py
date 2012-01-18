@@ -6,6 +6,7 @@ Created on Nov 29, 2011
 import os
 import collections
 import curses
+import time
 
 import eumetsat.dmon.common.utils as utils
 import eumetsat.dmon.common.time_utils as time_utils
@@ -409,7 +410,7 @@ class TextDisplay(object):
                                   blocked.center(17),  annouc.center(17),\
                                   finished.center(17))
             
-           
+        time.sleep(2)
         print("%s\n%s" %(active_data, finish_data) )
         
         
