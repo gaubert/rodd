@@ -131,8 +131,8 @@ class Analyzer(object):
         self.warn_err_db.create('lvl', 'msg', 'created')
         self.warn_err_db.create_index('created')
         
-        self.display = displays.TextDisplay()
-        #self.display = displays.CurseDisplay()
+        #self.display = displays.TextDisplay()
+        self.display = displays.CurseDisplay()
         
         #create archiver
         if enable_archive:
@@ -186,7 +186,7 @@ class Analyzer(object):
         
         for rec in [ r for r in database \
                      if ( self._rec_only_updated(r) and (r.get('filename', '').endswith('.rcv') or r.get('filename', '').endswith('.cha') \
-                                                         or r.get('filename', '').endswith('.job') or r.get('filename', '').endswith('.ini')) \
+                                                         or r.get('filename', '').endswith('.job') or r.get('filename', '').endswith('.ini') or r.get('filename', '').endswith('.js')) \
                           and (now - r['created']) > datetime.timedelta(seconds=expiry_time) )\
                    ]:
             Analyzer.LOG.info("delete eat record %s" % (r.get('filename', None)))
@@ -228,14 +228,27 @@ class Analyzer(object):
             #file push and action complete
             if result.get('action', None) == 'push' and result.get('completion_status', None) == 'c':
             
+                # a file could have been before because there could be a dirmon message before that one
+                records = database(filename = result['file'])
+                
                 #add file in db
                 now = datetime.datetime.utcnow()
-                database.insert(filename = result['file'], \
-                                size     = long(result['file_size']), \
-                                uplinked = result['time'], \
-                                metadata = result['metadata'], \
-                                created  = now, \
-                                last_update= now)
+                if len(records) == 0:
+                    database.insert(filename = result['file'], \
+                                    size     = long(result['file_size']), \
+                                    uplinked = result['time'], \
+                                    metadata = result['metadata'], \
+                                    created  = now, \
+                                    last_update= now)
+                else:
+                    for rec in records:                                                              
+                        #update filename info
+                        database.update(rec, \
+                                        size     = long(result['file_size']), \
+                                        uplinked = result['time'], \
+                                        metadata = result['metadata'], \
+                                        last_update= now)  
+                    
                 
             elif result.get('action', None) == 'delete':
                 
@@ -497,6 +510,6 @@ if __name__ == '__main__':
     
     #sys.exit(analyzer.analyze_with_text_display_from_tailed_file(['/tmp/res.txt']))
 
-    #sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))
-    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/xferlog_deleted.log'],a_go_to_the_end = False))
+    sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/logfile.log']))
+    #sys.exit(analyzer.analyze_from_tailed_file(['/tmp/analyse/order.log'],a_go_to_the_end = False))
     
