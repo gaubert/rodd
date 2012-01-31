@@ -260,7 +260,7 @@ class Analyzer(object):
                     analyze_utils.print_rec_in_logfile(rec)
             else:
                 # warn in log file
-                Analyzer.LOG.warning("Ignore line %s because it is a COMPLETE push or a delete file" % (line))
+                Analyzer.LOG.warning("Ignore line %s because it is a not COMPLETE push or it is a delete file" % (line))
             
         elif the_type == 'dirmon':
             result = Analyzer.d_parser.parse_one_line(line)
