@@ -159,6 +159,14 @@ def delete_all_under(a_path, a_delete_top_dir=False):
         os.rmdir(a_path)
 
 
+def extract_all(tarobj):
+    """
+       To implement for python 2.4 and being compliant with PUMA python version
+    """
+    for member in tarobj.getmembers():
+        tarobj.extract(member)
+    
+    
 
 def process_ncep_tars(input_dir, working_dir, output_dir):
     """
@@ -175,7 +183,8 @@ def process_ncep_tars(input_dir, working_dir, output_dir):
     for full_path in dirwalk(input_dir, "*.tar"):
         print("The file %s\n" % (full_path))
         tar = tarfile.open(full_path)
-        tar.extractall()
+        #tar.extractall()
+        extract_all(tar)
         tar.close()
         
         # get basename
