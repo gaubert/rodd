@@ -204,9 +204,7 @@ def process_ncep_tars(input_dir, working_dir, output_dir):
         copy_tree('%s/%s' % (working_dir, bname), destination)
 
         
-    
-
-
 
 if __name__ == '__main__':
+    #input_dir, working_dir, output_dir
     process_ncep_tars('/homespace/gaubert/Data/NCEP/new-tar', '/tmp/ncep-working-dir', '/tmp/ncep-untar')
