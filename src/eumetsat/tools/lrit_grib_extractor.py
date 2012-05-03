@@ -124,7 +124,7 @@ def extract_bufr_from_lrit_file(file_path, prefix, output_dir):
 
 if __name__ == '__main__':
     
-    read_MDD_dir("/homespace/gaubert/MDDs/MDDJuly2011/MDD5")
+    read_MDD_dir("/homespace/gaubert/MDDs/MDDJuly2011/MDD4")
     #read_lrit_file("/homespace/gaubert/MDDs/MDD-April2011/L-000-MSG2__-GTS_________-MDD_5____-000018___-201104040032-__","mdd5_201104040032_seg000018_","/homespace/gaubert/MDDs/MDD-April2011/grib-snd")
     
     

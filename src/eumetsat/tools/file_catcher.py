@@ -9,6 +9,7 @@ import os
 import shutil
 import time
 import fnmatch
+import sys
 
 def makedirs(aPath):
     """ my own version of makedir """
@@ -29,7 +30,7 @@ def find_and_copy_file(patterns, srcs, dest, copied_files_list):
         files = os.listdir(src)
         
         for the_file in files:
-            print("Check %s in %s" % (the_file, src))
+            #print("Check %s in %s" % (the_file, src))
             for pattern in patterns:
                 if fnmatch.fnmatch(the_file, pattern) and not (the_file in copied_files_list):
                     shutil.copyfile('%s/%s' % (src, the_file), '%s/%s' % (dest, the_file))
@@ -45,16 +46,21 @@ def find_and_copy_file(patterns, srcs, dest, copied_files_list):
 
 
 if __name__ == '__main__':
-
-   #src  = '/home/eumetman/data/eumetcast/BMD-RA-VI/'
-   srcs  = ['/tmp/test/']
-   dest = '/tmp/results'
-   patterns = ['R?D*']
-
-   makedirs(dest)
-
-   copied_files_list = []
-   while True:
-       find_and_copy_file(patterns, srcs, dest, copied_files_list)
-       print("sleep 2 seconds\n")
-       time.sleep(2) #sleep 2 seconds
+    
+    if len(sys.argv) != 3:
+        print(" Error: %s needs 2 arguments (and only 2).\n\n Usage:\n   $>python file_catcher.py dir-src dir-dest\n\n For example:\n   $>python file_catcher.py /data/data_share /tmp/results" % (sys.argv[0]))
+        sys.exit(1)
+    else:
+        print("Source directory: %s\nDestination directory: %s\n" % (sys.argv[1], sys.argv[2]))
+        srcs = [sys.argv[1]]
+        dest = sys.argv[2]
+         
+    patterns = ['T_HM*']
+    
+    makedirs(dest)
+    
+    copied_files_list = []
+    while True:
+        find_and_copy_file(patterns, srcs, dest, copied_files_list)
+        print("sleep 7 seconds\n")
+        time.sleep(7) #sleep x seconds
