@@ -192,12 +192,36 @@ def euler_problem_4():
         
     print("largest palindrome is %s\n" % (palindrome))
     
-def euler_problem5():
+def euler_problem_5():
     """
        2520 is the smallest number that can be divided by each of the numbers from 1 to 10 without any remainder.
 
        What is the smallest positive number that is evenly divisible by all of the numbers from 1 to 20?
+       
+       Brute force very slow
     """
+    #brut force
+    factors = range(1,21)
+    factors = factors[::-1]
+    
+    i = 20*2
+    num = -1
+    while True:
+        the_one = True
+        for fac in factors:
+            if i % fac != 0:
+                the_one = False
+                break #leave for loop
+        
+        if the_one:
+            print("Found it, it is %s" % (i))
+            num = i
+            break
+        
+        i += 1
+        #print("Treat i=%s\n" %(i))
+            
+    
 
     
 
@@ -272,7 +296,7 @@ def generate_random_nb_between1_to_7():
 if __name__ == '__main__':
     #euler_problem_1()
     
-    euler_problem_4()
+    euler_problem_5()
     
     #for i in range(0,20):
     #    print("Random number = %s\n" % (generate_random_nb_between1_to_7() ) )
