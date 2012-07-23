@@ -6,6 +6,8 @@ Created on Jan 31, 2012
 import os
 import fnmatch
 import tarfile
+import re
+import sys
 from  shutil import copyfile
 
 
@@ -167,17 +169,28 @@ def extract_all(tarobj):
         tarobj.extract(member)
     
     
+NCEP_PREFIX="ncep_forecast"
+#FILENAME_PATTERN="ncep_forecast_(?P<date>\d{8})_\S*.tar"
+FILENAME_PATTERN="ncep_forecast_(?P<date>\d{8})_africa.html"
+FILENAME_RE = re.compile(FILENAME_PATTERN)
+
 
 def process_ncep_tars(input_dir, working_dir, output_dir):
     """
        Process NCEP tars
     """
+    makedirs(output_dir)
+    makedirs(working_dir)
     
     #cd to working dir
     cd = Chdir(working_dir)
     
-    # copy top html file called africa.html
-    makedirs(output_dir)
+    matched = FILENAME_RE.match('ncep_forecast_20120719_africa.html')
+    if matched:
+        print("date = %s\n" %(matched.group("date")))
+
+    sys.exit(1)
+
     copyfile('%s/africa.html' % (input_dir), '%s/africa.html' % (output_dir))
     
     for full_path in dirwalk(input_dir, "*.tar"):
@@ -207,4 +220,5 @@ def process_ncep_tars(input_dir, working_dir, output_dir):
 
 if __name__ == '__main__':
     #input_dir, working_dir, output_dir
-    process_ncep_tars('/homespace/gaubert/Data/NCEP/new-tar', '/tmp/ncep-working-dir', '/tmp/ncep-untar')
+    #process_ncep_tars('/homespace/gaubert/Data/NCEP/new-tar', '/tmp/ncep-working-dir', '/tmp/ncep-untar')
+    process_ncep_tars('/drives/d/UserData', '/tmp/ncep-working-dir', '/tmp/ncep-untar')
