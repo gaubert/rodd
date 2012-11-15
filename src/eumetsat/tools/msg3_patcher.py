@@ -4,8 +4,32 @@ Created on Nov 14, 2012
 @author: guillaume.aubert@eumetsat.int
 '''
 
+import sys
 import shutil
 import os
+
+def makedirs(a_path):
+    """
+       make all dirs that do not exists i the path.
+       If all dirs alrealdy exists return without any errors
+    
+        Args:
+           a_path: path of dirs to create
+           
+        Returns:
+          Nothing
+           
+        Except:
+          OSError if the dirs cannot be created for some reasons, 
+    """
+    
+    if os.path.isdir(a_path):
+        # it already exists so return
+        return
+    elif os.path.isfile(a_path):
+        raise OSError("a file with the same name as the desired dir, '%s', already exists." % (a_path))
+
+    os.makedirs(a_path)
 
 def dirwalk(dir):
     """
@@ -69,15 +93,29 @@ def modify_file(filepath):
         shutil.move(filepath, "%s/%s" % (dir, name))
     else:
         print("IGNORE %s. No _PAR____ detected." % (filepath))
+        os.remove(filepath)
         fd.close()
     
     
-
+usage="usage: $>msg3_patch src_dir dest_dir"
 
 if __name__ == '__main__':
     
-    src_dir  = "/homespace/gaubert/msg3-data/H"
-    dest_dir = "/tmp/msg3-test"
+    #dummy command line handling
+    if len(sys.argv) != 3:
+        print("Error do not get the correct number of arguments.")
+        print("%s\n" % (usage))
+        sys.exit(1)
+    else:
+        src_dir  = sys.argv[1]
+        dest_dir = sys.argv[2]
+        
+    print("### patching files from %s into %s\n" % (src_dir, dest_dir))
+    
+    #src_dir  = "/homespace/gaubert/msg3-data"
+    #dest_dir = "/tmp/msg3-test"
+    
+    makedirs(dest_dir)
     
     for filepath in dirwalk(src_dir):         
         shutil.copy(filepath, dest_dir)
