@@ -171,37 +171,73 @@ def extract_all(tarobj):
     
 NCEP_PREFIX="ncep_forecast"
 #FILENAME_PATTERN="ncep_forecast_(?P<date>\d{8})_\S*.tar"
-FILENAME_PATTERN="ncep_forecast_(?P<date>\d{8})_africa.html"
-FILENAME_RE = re.compile(FILENAME_PATTERN)
+BOOTSTRAP_PATTERN="ncep_forecast_(?P<date>\d{8})_africa.html"
+BOOTSTRAP_PATTERN = re.compile(BOOTSTRAP_PATTERN)
 
+def find_bootstrap(files):
+    """
+       Find the bootstrap file
+    """
+    
+    for the_file in files:
+        matched = BOOTSTRAP_PATTERN.match(the_file)
+        if matched:
+            return the_file, matched.group("date")
+        
+    raise Exception("Cannot find boot strap file with name in %s\n" % (files))
+
+def get_files(input_dir):
+    """
+       get all files for a specific date
+    """
+    file_rep = { "tars" : [] }
+    
+    files = os.listdir(input_dir)
+    
+    the_file, the_date = find_bootstrap(files)
+    
+    #add index file in file_rep
+    file_rep['index'] = the_file
+    file_rep['date']  = the_date
+    
+    pattern = "ncep_forecast_%s_(?P<name>\S+).tar" % (the_date)
+    
+    the_re  = re.compile(pattern)
+
+    for the_file in files:
+        matched = the_re.match(the_file)
+        if matched:
+            print("matched %s" % (matched.group("name")))
+            file_rep['tars'].append(the_file)
+        
+    return file_rep
 
 def process_ncep_tars(input_dir, working_dir, output_dir):
     """
        Process NCEP tars
     """
+    #make default dirs
     makedirs(output_dir)
     makedirs(working_dir)
+    
+    files_rep = get_files(input_dir)
     
     #cd to working dir
     cd = Chdir(working_dir)
     
-    matched = FILENAME_RE.match('ncep_forecast_20120719_africa.html')
-    if matched:
-        print("date = %s\n" %(matched.group("date")))
-
-    sys.exit(1)
-
-    copyfile('%s/africa.html' % (input_dir), '%s/africa.html' % (output_dir))
+    copyfile('%s/%s' % (input_dir, files_rep['index']), '%s/africa.html' % (output_dir))
     
-    for full_path in dirwalk(input_dir, "*.tar"):
-        print("The file %s\n" % (full_path))
-        tar = tarfile.open(full_path)
+    for the_file in files_rep['tars']:
+        
+        print("The file %s\n" % (the_file))
+        
+        tar = tarfile.open('%s/%s' % (input_dir, the_file))
         #tar.extractall()
         extract_all(tar)
         tar.close()
         
         # get basename
-        (bname, ext) = os.path.splitext(os.path.basename(full_path))
+        (bname, ext) = os.path.splitext(os.path.basename(the_file))
     
         #print("filename = %s, ext = %s\n" % (bname, ext))
         
@@ -220,5 +256,5 @@ def process_ncep_tars(input_dir, working_dir, output_dir):
 
 if __name__ == '__main__':
     #input_dir, working_dir, output_dir
-    #process_ncep_tars('/homespace/gaubert/Data/NCEP/new-tar', '/tmp/ncep-working-dir', '/tmp/ncep-untar')
-    process_ncep_tars('/drives/d/UserData', '/tmp/ncep-working-dir', '/tmp/ncep-untar')
+    process_ncep_tars('/homespace/gaubert/Data/NCEP/ncep_data/20120723', '/tmp/ncep-working-dir', '/tmp/ncep-untar')
+    #process_ncep_tars('/drives/d/UserData', '/tmp/ncep-working-dir', '/tmp/ncep-untar')
