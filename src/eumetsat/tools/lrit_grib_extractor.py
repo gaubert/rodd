@@ -3,7 +3,9 @@ Created on Oct 18, 2010
 
 @author: guillaume.aubert@gmail.com
 '''
+import sys
 import os
+import binascii
 from bitstring import BitString
 
 
@@ -27,7 +29,7 @@ def read_MDD_dir(dir):
     grib_output_dir = "/tmp/mdd5"
     bufr_output_dir = "/tmp/mdd5"
     #output_dir = "%s/gribs" % (dir)
-    prefix     = "mdd5_data_%s"
+    prefix     = "data_%s"
     cpt = 0
     
     for file in dirwalk(dir):
@@ -47,13 +49,38 @@ def extract_grib_from_lrit_file(file_path, prefix, output_dir):
     cpt=0
     
     print("==== Looking for Gribs in %s\n" %(file_path))
+
+    #look for HRAA70 in hex 0x485241413730
+    #f_val = bs.find('0x485241413730', bytealigned=True)
+
+    #print("f_val = %s\n" %(f_val))
+    #bs.pos = f_val
     
     # look for GRIB in hex 0x47524942
     f_val = bs.find('0x47524942', bytealigned=True)
+
+    print("f_val = %s\n" %(f_val))
      
     while f_val:
+
+        begin = bs.pos
+        print("begin = %d\n" % (begin))
+
+        #look for bulletin header
+        bs.pos -= 21*8
+
+        bulletin_header = bs.read(18*8).hex   
+
+        print("Bulletin Header = %s\n" % bulletin_header)
+        l = "%s" % bulletin_header
+        header_name =  binascii.unhexlify(l[2:])
+        header_name = header_name.replace(" ","_")
+        print("Bulletin Header = %s\n" % header_name)
+
+        # look for GRIB in hex 0x47524942
+        f_val = bs.find('0x47524942', bytealigned=True)
         
-        begin= bs.pos
+        bs.pos = begin
         
         print("** Found Grib in pos %s" % (bs.bytepos) )
         
@@ -67,11 +94,13 @@ def extract_grib_from_lrit_file(file_path, prefix, output_dir):
         bs.pos = begin
         read_bits = bs.read(size)
         
-        dest_fp = open("%s/%s_grib_%s.grb" % (output_dir, prefix, cpt), "wb")
+        dest_fp = open("%s/%s_%s_%s.grb" % (output_dir, prefix, bulletin_header, cpt), "wb")
         dest_fp.write(read_bits.tobytes())
         dest_fp.close()
         
         cpt +=1 
+
+        #sys.exit(1)
         
         #look for the next grib
         f_val = bs.find('0x47524942', start=bs.pos, bytealigned=True)
@@ -124,7 +153,9 @@ def extract_bufr_from_lrit_file(file_path, prefix, output_dir):
 
 if __name__ == '__main__':
     
-    read_MDD_dir("/homespace/gaubert/MDDs/MDDJuly2011/MDD4")
+    #read_MDD_dir("/homespace/gaubert/MDDs/MDDJuly2011/MDD4")
+    #read_MDD_dir("/homespace/gaubert/grib-to-extract")
+    read_MDD_dir("/tmp/to-extract")
     #read_lrit_file("/homespace/gaubert/MDDs/MDD-April2011/L-000-MSG2__-GTS_________-MDD_5____-000018___-201104040032-__","mdd5_201104040032_seg000018_","/homespace/gaubert/MDDs/MDD-April2011/grib-snd")
     
     

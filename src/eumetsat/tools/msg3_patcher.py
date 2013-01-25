@@ -114,9 +114,14 @@ if __name__ == '__main__':
     
     #src_dir  = "/homespace/gaubert/msg3-data"
     #dest_dir = "/tmp/msg3-test"
+    try:
+        makedirs(dest_dir)
     
-    makedirs(dest_dir)
+        for filepath in dirwalk(src_dir):         
+            shutil.copy(filepath, dest_dir)
+            modify_file('%s/%s' % (dest_dir, os.path.basename(filepath)))
+    except Exception, err:
+        print("Error: %s" % (err))
+        sys.exit(1)
     
-    for filepath in dirwalk(src_dir):         
-        shutil.copy(filepath, dest_dir)
-        modify_file('%s/%s' % (dest_dir, os.path.basename(filepath)))
+    sys.exit(0)
