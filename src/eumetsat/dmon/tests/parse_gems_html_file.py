@@ -16,18 +16,25 @@ line_re = re.compile(line_expr)
 process_expr = "GTS headers of outgoing file (?P<file>.*): (?P<bulletins>.*)"
 expr_re = re.compile(process_expr)
 
-if __name__ == '__main__':
+
+def parse_gems_html():
+    """
+       Parse the Html GEMS daily file
+    """
     
     fd = open("/Users/gaubert/OneDayOfRMDCNOugoingHeaders.htm")
     #fd = open("/Users/gaubert/simple_bull.html")
     
     res_fd = open("/Users/gaubert/result.csv", "w+")
+    res_fd1 = open("/Users/gaubert/result-by-headers.csv", "w+")
     
     htmlStr = ""
     
+    bull_map = {}
+    
     for line in fd.readlines():
-        if "<td>GTS headers" in line:
-            print("We are in \n")
+        #if "<td>GTS headers" in line:
+            #print("We are in \n")
         matched = line_re.match(line)
         if matched:     
             filename  = matched.group('file')
@@ -45,22 +52,31 @@ if __name__ == '__main__':
                         unique_bull.append(b_info[0])
                         bull_info.append( (b_info[0], b_info[1]) )
                         res_line += ",%s:%s" % (b_info[0], b_info[1])
-            print("filename = %s,\n bull_info = %s\n" % (filename, bull_info))
+                        
+                        #add bulletins 
+                        key = "%s:%s" % (b_info[0], b_info[1])
+                        if key in bulletins:
+                            l = bull_map[key]
+                          
+                            l.append(filename)
+                        else:
+                            bull_map[key] = [filename]
+                        
+            #print("filename = %s,\n bull_info = %s\n" % (filename, bull_info))
             res_line += "\n"
             res_fd.write(res_line)
     
-    #for line in fd.readlines():
-    #    htmlStr += line
-    
-    #events = gems_feeder.GEMSHTMLParser.get_GEMS_events(htmlStr)
-    
-    #for ev in events:
-    #    print("Event: msg %s\n" % (ev['msg']))
+    for bull in bull_map:
+        line = ""
+        for the_list in bull_map[bull]:
+            #for elem in the_list:
+            line += "%s," % the_list
         
-    #    matched = expr_re.match(ev['msg'])
-    #    if matched:     
-    #        filename  = matched.group('file')
-    #        bulletins = matched.group('bulletins')
-    #        print("filename = %s, bulletins = %s\n" % (filename, bulletins))
+        res_fd1.write("%s : %s\n" % (bull, line))
+
     
 
+if __name__ == '__main__':
+    
+    parse_gems_html() 
+   
