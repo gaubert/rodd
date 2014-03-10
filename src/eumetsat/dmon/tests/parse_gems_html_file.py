@@ -27,7 +27,8 @@ def parse_gems_html():
     #res_fd = open("/Users/gaubert/result.csv", "w+")
     #res_fd1 = open("/Users/gaubert/result-by-headers.csv", "w+")
 
-    fd      = open("/home/mobaxterm/DWD-Data/OneDayOfRMDCNOugoingHeaders.htm")
+    #fd      = open("/home/mobaxterm/DWD-Data/OneDayOfRMDCNOugoingHeaders.htm")
+    fd      = open("/home/mobaxterm/DWD-Data/OneDayOfRMDCNOutgoingHeaders-D51-2014.html")
     res_fd  = open("/home/mobaxterm/DWD-Data/result.csv", "w+")
     res_fd1 = open("/home/mobaxterm/DWD-Data/result-by-headers.csv", "w+")
     
@@ -138,14 +139,25 @@ def compare_EUM_DWD():
     print("|  bullID  |        filename")
     print("|----------------------------------------")
 
+    cpt = 0
+
+    ignored = ["SMAA", "UEAA", "UKAA", "ULAA", "USAA", "CSAA", \
+              "IRRA", "IRRD", "IRVA", "IRVD", "IUCA", "IUCD", "IUCE", "IUCH", "IUCI", "IUCL", "IUCN", "IUCS", \
+              "IUFA", "IUFD", "IUFE", "IUFH", "IUFI", "IUFL", "IUHA", "IUHD", "IUHE", "IUHH", "IUHI", "IUHL", "IURA", "IURD", "IURE", "IURH", "IURI", \
+              "IURL", "IUVA", "IUVD", "IUVE", "IUVH", "IUVI", "IUVL"] #ignored extra bullid num
+
     for b_id in sorted(in_dwd_not_in_eum):
         # discard all continuations (T2 = E and ii > 1)
-        if (len(b_id) >= 6 and b_id[1] == "E" and int(b_id[4:6]) > 1) or (dwd_bull_info[b_id].startswith("CONTINUATION")):
+        if (len(b_id) >= 6 and b_id[1] == "E" and int(b_id[4:6]) > 1) or ("CONTINUATION" in dwd_bull_info[b_id]) or ("METEOSAT 6" in dwd_bull_info[b_id]) or ("METEOSAT 5" in dwd_bull_info[b_id]) or ("FROM METEOSAT 7 (00 DEGREES)" in dwd_bull_info[b_id]):
            # discard continuation
            #something to be done
            continue
         else:
-           print("|  %s  |  %s" % (b_id, dwd_bull_info[b_id].strip()))
+           if (b_id[0:4] not in ignored):
+              print("|  %s  |  %s" % (b_id, dwd_bull_info[b_id].strip()))
+              cpt += 1
+
+    print("total meanigful bull_id in DWD list that are not disseminated by EUM = %d" % (cpt))
 
     #print("in_eum_not_in_dwd = %s" % (in_eum_not_in_dwd)) 
     
