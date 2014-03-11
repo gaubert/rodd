@@ -27,11 +27,11 @@ def parse_gems_html():
     #res_fd = open("/Users/gaubert/result.csv", "w+")
     #res_fd1 = open("/Users/gaubert/result-by-headers.csv", "w+")
 
-    #fd      = open("/home/mobaxterm/DWD-Data/OneDayOfRMDCNOugoingHeaders.htm")
-    fd      = open("/home/mobaxterm/DWD-Data/OneDayOfRMDCNOutgoingHeaders-D51-2014.html")
-    res_fd  = open("/home/mobaxterm/DWD-Data/result.csv", "w+")
-    res_fd1 = open("/home/mobaxterm/DWD-Data/result-by-headers.csv", "w+")
-    
+    the_dir = "/home/mobaxterm/DWD-Data/" 
+    #fd      = open("%s/OneDayOfRMDCNOutgoingHeaders-D69-2014.html" % (the_dir))
+    fd      = open("%s/OneDayOfRMDCNOutgoingHeaders-D67-D68-2014.html" % (the_dir))
+    res_fd  = open("%s/result.csv" % (the_dir), "w+")
+    res_fd1 = open("%s/result-by-headers.csv" % (the_dir), "w+")
     
     htmlStr = ""
     
@@ -124,16 +124,23 @@ def compare_EUM_DWD():
     print("total in dwd set %d, nb elem in dwd and not in eum: %d" % (len(set_dwd), len(in_dwd_not_in_eum)))
     print("total in eum set %d, nb elem in eum and not in dwd: %d" % (len(set_eum), len(in_eum_not_in_dwd)))
 
-    #print("Bulletin IDs in EUMETSAT Bulletin outputs and not on the DWD list")
+    print("Bulletin IDs in EUMETSAT Bulletin outputs and not on the DWD list")
 
-    #print("|  bullID  |        filename")
-    #print("|----------------------------------------")
+    print("|  bullID  |        filename")
+    print("|----------------------------------------")
 
-    #for b_id in sorted(in_eum_not_in_dwd):
-    #    print("|  %s  |  %s" % (b_id, eum_bull_info[b_id].strip()))    
+    # list of elements to ignore
+    treated_elements = [ 'IEDX81', 'IEDX82', 'IEOX11', 'IEOX12', 'IEOX13', 'IEOX14' ]
+
+    for b_id in sorted(in_eum_not_in_dwd):
+        if len(b_id) >= 6 and b_id not in treated_elements:
+            print("|  %s  |  %s" % (b_id, eum_bull_info[b_id].strip()))    
 
     print("-------------------------------------------------------------------------------------")
     print("-------------------------------------------------------------------------------------")
+
+    #Sort out the DWD list
+
     print("Bulletin IDs in DWD Bulletin outputs and not on the EUMETSAT list")
 
     print("|  bullID  |        filename")
@@ -159,15 +166,15 @@ def compare_EUM_DWD():
            continue
         else:
            if (b_id[0:4] not in ignored) and b_id not in full_bull_ignored_list:
-              print("|  %s  |  %s" % (b_id, dwd_bull_info[b_id].strip()))
+              #print("|  %s  |  %s" % (b_id, dwd_bull_info[b_id].strip()))
               cpt += 1
 
-    print("total meanigful bull_id in DWD list that are not disseminated by EUM = %d" % (cpt))
+    #print("total meanigful bull_id in DWD list that are not disseminated by EUM = %d" % (cpt))
 
     #print("in_eum_not_in_dwd = %s" % (in_eum_not_in_dwd)) 
     
 
 if __name__ == '__main__':
     
-    #parse_gems_html() 
+    parse_gems_html() 
     compare_EUM_DWD()
