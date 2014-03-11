@@ -144,16 +144,21 @@ def compare_EUM_DWD():
     ignored = ["SMAA", "UEAA", "UKAA", "ULAA", "USAA", "CSAA", \
               "IRRA", "IRRD", "IRVA", "IRVD", "IUCA", "IUCD", "IUCE", "IUCH", "IUCI", "IUCL", "IUCN", "IUCS", \
               "IUFA", "IUFD", "IUFE", "IUFH", "IUFI", "IUFL", "IUHA", "IUHD", "IUHE", "IUHH", "IUHI", "IUHL", "IURA", "IURD", "IURE", "IURH", "IURI", \
-              "IURL", "IUVA", "IUVD", "IUVE", "IUVH", "IUVI", "IUVL"] #ignored extra bullid num
+              "IURL", "IUVA", "IUVD", "IUVE", "IUVH", "IUVI", "IUVL", \
+              "TNAA", "TNCA", "TNDA", "TNIA", "TNKA", "TNLA", "TSAA", "TSCA", "TSDA", "TSIA", "TSKA", "TSLA", "TTAA", \
+              "TTAA", "TTCA", "TTDA", "TTIA", "TTKA", "TTLA", \
+              "TWAA", "TWCA", "TWDA", "TWIA", "TWKA", "TWLA" ] #ignored extra bullid num
+
+    full_bull_ignored_list = [ "IXRN81", "SISC20", "SMSC01", "SMVX21"]
 
     for b_id in sorted(in_dwd_not_in_eum):
         # discard all continuations (T2 = E and ii > 1)
-        if (len(b_id) >= 6 and b_id[1] == "E" and int(b_id[4:6]) > 1) or ("CONTINUATION" in dwd_bull_info[b_id]) or ("METEOSAT 6" in dwd_bull_info[b_id]) or ("METEOSAT 5" in dwd_bull_info[b_id]) or ("FROM METEOSAT 7 (00 DEGREES)" in dwd_bull_info[b_id]):
+        if (len(b_id) >= 6 and b_id[1] == "E" and int(b_id[4:6]) > 1) or ("CONTINUATION" in dwd_bull_info[b_id]) or ("METEOSAT 6" in dwd_bull_info[b_id]) or ("METEOSAT 5" in dwd_bull_info[b_id]) or ("METEOSAT 7 (00 DEGREES)" in dwd_bull_info[b_id]) or ("8 PARALLEL OPS" in dwd_bull_info[b_id]):
            # discard continuation
            #something to be done
            continue
         else:
-           if (b_id[0:4] not in ignored):
+           if (b_id[0:4] not in ignored) and b_id not in full_bull_ignored_list:
               print("|  %s  |  %s" % (b_id, dwd_bull_info[b_id].strip()))
               cpt += 1
 
