@@ -124,13 +124,14 @@ def compare_EUM_DWD():
     print("total in dwd set %d, nb elem in dwd and not in eum: %d" % (len(set_dwd), len(in_dwd_not_in_eum)))
     print("total in eum set %d, nb elem in eum and not in dwd: %d" % (len(set_eum), len(in_eum_not_in_dwd)))
 
-    print("Bulletin IDs in EUMETSAT Bulletin outputs and not on the DWD list")
+    print("\nBulletin IDs in EUMETSAT Bulletin outputs and not on the DWD list")
 
     print("|  bullID  |        filename")
     print("|----------------------------------------")
 
     # list of elements to ignore
-    treated_elements = [ 'IEDX81', 'IEDX82', 'IEOX11', 'IEOX12', 'IEOX13', 'IEOX14' ]
+    #treated_elements = [ 'IEDX81', 'IEDX82', 'IEOX11', 'IEOX12', 'IEOX13', 'IEOX14' ]
+    treated_elements = []
 
     for b_id in sorted(in_eum_not_in_dwd):
         if len(b_id) >= 6 and b_id not in treated_elements:
@@ -169,12 +170,12 @@ def compare_EUM_DWD():
               #print("|  %s  |  %s" % (b_id, dwd_bull_info[b_id].strip()))
               cpt += 1
 
-    #print("total meanigful bull_id in DWD list that are not disseminated by EUM = %d" % (cpt))
+    print("total meanigful bull_id in DWD list that are not disseminated by EUM = %d" % (cpt))
 
-    #print("in_eum_not_in_dwd = %s" % (in_eum_not_in_dwd)) 
+    print("in_eum_not_in_dwd = %s" % (in_eum_not_in_dwd)) 
     
 
 if __name__ == '__main__':
     
-    parse_gems_html() 
+    #parse_gems_html() 
     compare_EUM_DWD()
