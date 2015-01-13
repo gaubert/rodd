@@ -86,7 +86,7 @@ def parse_args():
     
    
     if help:
-        print("Usage:\n   $>python file_catcher.py -s dir-srcs -d dir-dest\n\n For example:\n   $>python file_catcher.py -s /data/data_share -d /tmp/results")
+        print("Usage:\n   $>python file_catcher.py -s dir-srcs -d dir-dest\n\n For example:\n   $>python file_catcher.py -s /data1,/data2 -d /tmp/results -p 'T_HH*,Z_WERT*YTR'")
         sys.exit(0)
         
     if not sources:
@@ -94,7 +94,11 @@ def parse_args():
         sys.exit(1)
     
     if not dest:
-        print("Error: Need sources. See usage with -h")
+        print("Error: Need destinations. See usage with -h")
+        sys.exit(1)
+
+    if not patterns:
+        print("Error: Need file patterns. See usage with -h")
         sys.exit(1)
         
     
