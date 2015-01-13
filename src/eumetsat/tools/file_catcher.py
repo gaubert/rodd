@@ -30,24 +30,28 @@ def find_and_copy_file(patterns, srcs, dest, copied_files_list):
     for src in srcs:
         files = os.listdir(src)
         
-        for the_file in files:
+        for pattern in patterns:
             #print("Check %s in %s" % (the_file, src))
-            for pattern in patterns:
+            for the_file in files:
                 if fnmatch.fnmatch(the_file, pattern) and not (the_file in copied_files_list):
                     #shutil.copyfile('%s/%s' % (src, the_file), '%s/%s' % (dest, the_file))
                     shutil.move('%s/%s' % (src, the_file), '%s/%s' % (dest, the_file))
                     print("Info: Moved %s/%s in %s" % (src, the_file, dest))
                     files_found = True
                     copied_files_list.append(the_file)
+            if not files_found:
+                print("Debug: No files matching %s" % (pattern))
+            else:
+                files_found = False
     
-    if not files_found:
-        print("Info: Could not find any new files matching %s" % (pattern))
+    #if not files_found:
+    #    print("Info: Could not find any new files matching %s" % (patterns))
 
 
 def parse_args():
     """ parse arguments"""
     
-    options, _ = getopt.getopt(sys.argv[1:], 's:d:hw', ['srcs=', 
+    options, _ = getopt.getopt(sys.argv[1:], 'p:s:d:hw', ['patterns=','srcs=', 
                                                              'dests=',
                                                              'help',
                                                              'wait'
@@ -57,12 +61,16 @@ def parse_args():
     wait = False
     sources = None
     dest = None
+    patterns = None
     
     for opt, arg in options:
         if opt in ('-s', '--srcs'):
             sources = arg
         elif opt in ('-d', '--dests'):
             dest = arg
+        elif opt in ('-p', '--patterns'):
+            patterns = arg
+            print("Patt = [%s]" % (patterns))
         elif opt in ('-w', '--wait'):
             wait = True
         elif opt in ('-h', '--help'):
@@ -83,18 +91,22 @@ def parse_args():
         
     
     sources = sources.split(',')
+
+    patterns = patterns.split(',')
     
-    return sources, dest, wait
+    return sources, dest, wait, patterns
        
 
 if __name__ == '__main__':
     
-    srcs, dest, wait = parse_args()
+    srcs, dest, wait , patterns = parse_args()
       
-    patterns = ['T_HM*']
+    #patterns = ['T_HM*']
     seconds  = 3
     
     makedirs(dest)
+
+    print("Info: Patterns = %s\n"%(patterns))
     
     copied_files_list = []
     
