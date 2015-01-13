@@ -23,20 +23,24 @@ def makedirs(aPath):
     
     os.makedirs(aPath)
 
-def find_and_copy_file(patterns, srcs, dest, copied_files_list):
+def find_and_copy_file(patterns, srcs, dest, copied_files_list, move):
 
     files_found = False
     
     for src in srcs:
-        files = os.listdir(src)
+        files = sorted(os.listdir(src))
         
         for pattern in patterns:
             #print("Check %s in %s" % (the_file, src))
             for the_file in files:
                 if fnmatch.fnmatch(the_file, pattern) and not (the_file in copied_files_list):
                     #shutil.copyfile('%s/%s' % (src, the_file), '%s/%s' % (dest, the_file))
-                    shutil.move('%s/%s' % (src, the_file), '%s/%s' % (dest, the_file))
-                    print("Info: Moved %s/%s in %s" % (src, the_file, dest))
+                    if move:
+                       shutil.move('%s/%s' % (src, the_file), '%s/%s' % (dest, the_file))
+                       print("Info: Moved %s/%s in %s" % (src, the_file, dest))
+                    else:
+                       shutil.copyfile('%s/%s' % (src, the_file), '%s/%s' % (dest, the_file))
+                       print("Info: Copied %s/%s in %s" % (src, the_file, dest))
                     files_found = True
                     copied_files_list.append(the_file)
             if not files_found:
@@ -51,14 +55,16 @@ def find_and_copy_file(patterns, srcs, dest, copied_files_list):
 def parse_args():
     """ parse arguments"""
     
-    options, _ = getopt.getopt(sys.argv[1:], 'p:s:d:hw', ['patterns=','srcs=', 
+    options, _ = getopt.getopt(sys.argv[1:], 'p:s:d:hwm', ['patterns=','srcs=', 
                                                              'dests=',
                                                              'help',
-                                                             'wait'
+                                                             'wait',
+                                                             'move'
                                                               ])
     #print 'OPTIONS   :', options
     help = None
     wait = False
+    move = False
     sources = None
     dest = None
     patterns = None
@@ -73,6 +79,8 @@ def parse_args():
             print("Patt = [%s]" % (patterns))
         elif opt in ('-w', '--wait'):
             wait = True
+        elif opt in ('-m', '--move'):
+            move = True
         elif opt in ('-h', '--help'):
             help = True
     
@@ -94,12 +102,12 @@ def parse_args():
 
     patterns = patterns.split(',')
     
-    return sources, dest, wait, patterns
+    return sources, dest, wait, patterns , move
        
 
 if __name__ == '__main__':
     
-    srcs, dest, wait , patterns = parse_args()
+    srcs, dest, wait , patterns, move = parse_args()
       
     #patterns = ['T_HM*']
     seconds  = 3
@@ -114,12 +122,12 @@ if __name__ == '__main__':
         if wait:
             print("Info: Go into waiting recurrent mode. Look for files every %s seconds\n" % (seconds))
             while True:
-                find_and_copy_file(patterns, srcs, dest, copied_files_list)
+                find_and_copy_file(patterns, srcs, dest, copied_files_list, move)
                 print("Info: Sleep %d seconds\n" % (seconds))
                 time.sleep(seconds) #sleep x seconds
                 
         else:
-            find_and_copy_file(patterns, srcs, dest, copied_files_list) 
+            find_and_copy_file(patterns, srcs, dest, copied_files_list, move) 
     except Exception, err:
         print(err)
         sys.exit(1)
