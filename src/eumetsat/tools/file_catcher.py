@@ -28,7 +28,9 @@ def find_and_copy_file(patterns, srcs, dest, copied_files_list, move):
     files_found = False
     
     for src in srcs:
+        print("Info: Listing the directory %s" % (src))
         files = sorted(os.listdir(src))
+        print("Info: Done Listing directory %s" % (src))
         
         for pattern in patterns:
             #print("Check %s in %s" % (the_file, src))
