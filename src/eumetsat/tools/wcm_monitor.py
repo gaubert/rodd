@@ -15,9 +15,9 @@ def previous_quater_dt(dt):
 
 class WCMMonitor(object):
 
-    def __init__(self):
+    def __init__(self, file_pattern):
         #do nothing
-        pass
+        self._file_pattern = file_pattern
 
     def generate_date_pattern(self):
         """
@@ -43,11 +43,24 @@ class WCMMonitor(object):
         while curr_dt > first_dt:
             curr_dt = previous_quater_dt(curr_dt - datetime.timedelta(minutes=1))
             print("curr_dt = %s" % curr_dt )
-            result.append(curr_dt)
+            result.append(curr_dt.strftime('%y%m%d%H%M'))
 
         print("result = %s\n" % (result))
+
+        return result
+
+    def run(self):
+        """
+        Run the monitoring
+        :return: None
+        """
+
+        self.get_list_of_time_since_midnight()
 
 
 if __name__ == '__main__':
     #do something
-    get_list_of_time_since_midnight()
+    file_pattern = "myPattern%S_kkkkk"
+
+    monitor = WCMMonitor(file_pattern)
+
