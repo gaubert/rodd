@@ -54,9 +54,11 @@ class WCMMonitor(object):
         Run the monitoring
         :return: None
         """
+        curr_time = datetime.datetime.now()
 
-        self.get_list_of_time_since_midnight()
+        dates = self.get_list_of_time_since_midnight(curr_time)
 
+        #foreach files look in the dir if the file is here
 
 if __name__ == '__main__':
     #do something
