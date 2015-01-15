@@ -8,6 +8,8 @@ import time
 import smtplib
 import datetime
 
+
+
 def previous_quater_dt(dt):
     #how many secs have passed this hour
     nsecs = dt.minute*60+dt.second+dt.microsecond*1e-6
@@ -16,6 +18,19 @@ def previous_quater_dt(dt):
     return dt - datetime.timedelta(seconds=delta)
 
 class WCMMonitor(object):
+
+    SERVER = "localhost"
+    FROM   = "wcm_monitor@eumetsat.int"
+    TO     = ["guillaume.aubert@eumetsat.int"]
+    SUBJECT = "Potential errors. Data not received"
+
+    MSG_TEMPLATE = """\
+                  From: %s
+                  To: %s
+                  Subject: %s
+
+                  %s
+                  """
 
     def __init__(self, file_pattern, src_dir, sleep_time):
         """
@@ -57,7 +72,7 @@ class WCMMonitor(object):
             #print("curr_dt = %s" % curr_dt )
             result.append(curr_dt.strftime('%y%m%d%H%M'))
 
-        print("result = %s\n" % (result))
+        #print("result = %s\n" % (result))
 
         return result
 
@@ -68,14 +83,14 @@ class WCMMonitor(object):
         """
         curr_time = datetime.datetime.now()
 
-        missing = []
+        missings = []
 
         #get dir of the current day
         the_day_dir = curr_time.strftime('%y%m%d')
 
         dates = self.get_list_of_time_since_midnight(curr_time)
 
-        the_dir = "%s/%s" % (self._src_dir, the_day_dir)
+        the_dir = self._src_dir % (the_day_dir)
 
         the_files = sorted(os.listdir(the_dir))
 
@@ -84,31 +99,41 @@ class WCMMonitor(object):
             filename = file_pattern % (the_date)
             if filename not in the_files:
                 #print("Error: Missing generation of file %s by Cinesat." % (filename))
-                missing.append(filename)
+                missings.append("Error: Missing generation of file %s" % (filename))
 
-        if missing:
-            print("Error: the following files have been generated in time: %s" % (missing))
-            self.send_email()
+        if len(missings) > 0:
+            print("Error: the following files have been generated in time: %s" % (missings))
+            self.send_email(missings)
 
-    def send_email(self):
+    def send_email(self, errors):
+        """
+        :param errors: errors msgs describing the missing files
+        :return: None
+        """
+        text = "The following files have not been generated. Please check Cinestsat and datastream on IPPSVAL.\n %s" % ("\n".join(errors))
 
-        SERVER = "localhost"
-        FROM   = "wcm_service@eumetsat.int"
-        TO     = ["guillaume.aubert@gmail.com"]
-        SUBJECT = "Hello!"
-        TEXT = "This message was sent with Python's smtplib."
+        message = WCMMonitor.MSG_TEMPLATE % (WCMMonitor.FROM, ", ".join(WCMMonitor.TO), WCMMonitor.SUBJECT, text)
 
-        message = """\
-                  From: %s
-                  To: %s
-                  Subject: %s
-
-                  %s
-                  """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
-
-        server = smtplib.SMTP(SERVER)
-        server.sendmail(FROM, TO, message)
+        server = smtplib.SMTP(WCMMonitor.SERVER)
+        server.sendmail(WCMMonitor.FROM, WCMMonitor.TO, WCMMonitor.message)
         server.quit()
+
+    def send_exception_email(self, err):
+
+        """
+        :param errors: errors msgs describing the missing files
+        :return: None
+        """
+        try:
+            text = "ERROR. Unforseen exception %s" % (err)
+
+            message = WCMMonitor.MSG_TEMPLATE % (WCMMonitor.FROM, ", ".join("guillaume.aubert@eumetsat.int"), "Unforseen error on WCM generation Monitor on IPPSVAL", text)
+
+            server = smtplib.SMTP(WCMMonitor.SERVER)
+            server.sendmail(WCMMonitor.FROM, WCMMonitor.TO, WCMMonitor.message)
+            server.quit()
+        except Exception, email_err:
+            print("%s-Fatal-Error. Cannot send Unforseen exception email. Original error triggering email sending %s\n. Error preventing to send the email" % (datetime.datetime.now.strftime("%Y-%m-%d %H:%M:%S"), err, email_err))
 
 
     def run(self):
@@ -116,21 +141,29 @@ class WCMMonitor(object):
          run every x minutes as defined in the object (see constructor)
         :return: None
         """
+        err_number = 0
 
         while True:
-            self.monit()
-            #wait for ever
-            time.sleep(self._sleep_time)
-            print("Info: Wake up at %s" % (datetime.datetime.now.strftime("%Y-%m-%d %H:%M:%S")))
+            try:
+                self.monit()
 
-
+                err_number = 0 #everything is normal
+            except Exception, err:
+                print("Error. Received error: [%s]" % (err))
+                err_number +=1
+                if err_number > 1:
+                    self.send_exception_email(err)
+            finally:
+                print("%s-Info: Will now sleep for %s seconds." % (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self._sleep_time))
+                time.sleep(self._sleep_time)
+                print("%s-Info: Wake up at %s" % (datetime.datetime.now.strftime("%Y-%m-%d %H:%M:%S"), datetime.datetime.now.strftime("%Y-%m-%d %H:%M:%S")))
 
 
 if __name__ == '__main__':
     #do something
-    file_pattern = "myPattern_%s_kkkkk.txt"
-    src_dir = "/tmp/test"
+    file_pattern    = "MET10_IR108_8bit_%s.csi"
+    src_dir_pattern = "/export/home/ipps/cinesat/ape_db/%s/MET10/IR108/8bit"
     sleep_time = 900 # 15 min = 900 seconds
 
-    monitor = WCMMonitor(file_pattern, src_dir, sleep_time)
+    monitor = WCMMonitor(file_pattern, src_dir_pattern, sleep_time)
     monitor.run()
