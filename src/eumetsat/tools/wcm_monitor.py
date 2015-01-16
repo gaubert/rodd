@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 Created on Jan 14, 2015
 
@@ -86,16 +87,25 @@ Subject: %s
         Run the monitoring
         :return: None
         """
-        curr_time = datetime.datetime.now()
+        curr_datetime = datetime.datetime.now()
 
         missings = []
 
         # get dir of the current day
-        the_day_dir = curr_time.strftime('%Y-%m-%d')
+        the_day_dir = curr_datetime.strftime('%Y-%m-%d')
 
-        dates = self.get_list_of_time_since_midnight(curr_time)
+        dates = self.get_list_of_time_since_midnight(curr_datetime)
 
         the_dir = self._src_dir % (the_day_dir)
+
+        #special case around midnight because the target dir is not created before ~ 00:20.
+        #only start the monitoring after 00:30.
+        thresold_time = datetime.time(0, 30, 0)
+
+        if curr_datetime.time() < thresold_time:
+            print("%s-Info: Wait until 00:30 before to monitor in %s" % (the_dir))
+            #leave method
+            return
 
         the_files = sorted(os.listdir(the_dir))
 
