@@ -123,8 +123,7 @@ Subject: %s
         #foreach dates look in the dir if the file is here
         for the_date in sorted(dates):
             filename = file_pattern % (the_date)
-            if filename not in the_files:
-                #print("Error: Missing generation of file %s by Cinesat." % (filename))
+            if filename not in the_files and filename not in self._daily_missings: # file not found
                 self._daily_missings.append(filename)
                 #new file is missing (reset nb warnings sent counter)
                 self._warnings_sent = 0
