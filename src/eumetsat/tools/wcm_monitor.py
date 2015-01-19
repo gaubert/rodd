@@ -12,14 +12,23 @@ import traceback
 
 DEBUG = False
 
+
 def previous_quater_dt(dt):
+    """
+    Get a datetime
+    :param dt: datetime from which to get the previous quater
+    :return: a datetime which is the previous quater of hour
+    """
     # how many secs have passed this hour
     nsecs = dt.minute * 60 + dt.second + dt.microsecond * 1e-6
     delta = nsecs - (nsecs // 900) * 900
-    #time + number of seconds to quarter hour mark.
+    # time + number of seconds to quarter hour mark.
     return dt - datetime.timedelta(seconds=delta)
 
 def get_formatted_ts():
+    """
+    :return: Formatted Timestamp to go into log messages
+    """
     return datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 
 
@@ -38,7 +47,9 @@ Subject: %s
 %s
 """
 
-    def __init__(self, file_pattern, src_dir, sleep_time):
+    MAX_WARNINGS_PER_DAY = 3 #nb of emails sent for one file
+
+    def __init__(self, a_file_pattern, a_src_dir, a_sleep_time):
         """
 
         :param file_pattern:
@@ -46,22 +57,19 @@ Subject: %s
         :param sleep_time: sleeping time in seconds
         :return:
         """
-        self._file_pattern = file_pattern
-        self._src_dir = src_dir
-        self._sleep_time = sleep_time
+        self._file_pattern = a_file_pattern
+        self._src_dir      = a_src_dir
+        self._sleep_time   = a_sleep_time
 
-    def generate_date_pattern(self):
-        """
-           generate the date pattern depending on the time
-        """
-        # get current time
-        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        t = (datetime.datetime.now() - datetime.timedelta(minutes=15)).strftime('%y%m%d%H%M')
+        #send 3 emails and stop to advertise the error
+        self._warnings_sent  = 0
+        self._daily_missings = []
 
-
-    def get_list_of_time_since_midnight(self, the_datetime):
+    @classmethod
+    def get_list_of_time_since_midnight(cls, the_datetime):
         """
          Return as a datetime the list of 15 min time since midnight.
+        :rtype : list of time since midnight
         """
         result = []
 
@@ -71,14 +79,11 @@ Subject: %s
         first_dt = curr_dt.replace(hour=00, minute=00)
 
         curr_dt = previous_quater_dt(curr_dt)
-        #result.append(curr_dt.strftime('%y%m%d%H%M'))
 
         while curr_dt > first_dt:
             curr_dt = previous_quater_dt(curr_dt - datetime.timedelta(minutes=1))
             #print("curr_dt = %s" % curr_dt )
             result.append(curr_dt.strftime('%y%m%d%H%M'))
-
-        #print("result = %s\n" % (result))
 
         return result
 
@@ -88,8 +93,6 @@ Subject: %s
         :return: None
         """
         curr_datetime = datetime.datetime.now()
-
-        missings = []
 
         # get dir of the current day
         the_day_dir = curr_datetime.strftime('%Y-%m-%d')
@@ -102,9 +105,14 @@ Subject: %s
         #only start the monitoring after 00:30.
         thresold_time = datetime.time(0, 30, 0)
 
+        #send daily report at midnight
+        if datetime.time(0,00,00) < curr_datetime.time() < datetime.time(0,15,00):
+            self.send_daily_report(the_dir, the_day_dir)
+            #reset daily missing
+            self._daily_missings = []
+
         if curr_datetime.time() < thresold_time:
-            print("%s-Info: Wait until 00:30 before to monitor in %s" % (the_dir))
-            #leave method
+            print("%s-Info: Wait until 00:30 before to monitor in %s" % (get_formatted_ts(), the_dir))
             return
 
         the_files = sorted(os.listdir(the_dir))
@@ -117,11 +125,13 @@ Subject: %s
             filename = file_pattern % (the_date)
             if filename not in the_files:
                 #print("Error: Missing generation of file %s by Cinesat." % (filename))
-                missings.append(filename)
+                self._daily_missings.append(filename)
+                #new file is missing (reset nb warnings sent counter)
+                self._warnings_sent = 0
 
-        if len(missings) > 0:
-            print("Error: the following files have not been generated in time:\n %s" % ("\n".join(missings)))
-            self.send_email(the_dir, missings)
+        if self._warnings_sent < 3 and len(self._daily_missings) > 0:
+            print("Error: the following files have not been generated in time:\n %s" % ("\n".join(self._daily_missings)))
+            self.send_email(the_dir, self._daily_missings)
         else:
             print("Info: No missing files up to now.")
 
@@ -134,6 +144,24 @@ Subject: %s
             "\n".join(sorted(errors)))
 
         message = WCMMonitor.MSG_TEMPLATE % (WCMMonitor.FROM, ", ".join(WCMMonitor.TO), WCMMonitor.SUBJECT, text)
+
+        server = smtplib.SMTP(WCMMonitor.SERVER)
+        server.sendmail(WCMMonitor.FROM, WCMMonitor.TO, message)
+        server.quit()
+
+    def send_daily_report(self, src_dir, the_day):
+        """
+        :param errors: errors msgs describing the missing files for a complete day
+        :return: None
+        """
+
+        if len(self._daily_missings) > 0:
+            text = "Daily Status for %s.\n The following files have not been generated:\n\nSource dir:%s.\n\n%s" % \
+                   (the_day, src_dir, "\n".join(sorted(self._daily_missings)))
+        else:
+            text = "Daily Status for %s.\n No missing files to report.\n" % the_day
+
+        message = WCMMonitor.MSG_TEMPLATE % (WCMMonitor.FROM, ", ".join(WCMMonitor.TO), "WCM Monitor: Missing Files Summary for %d" % the_day, text)
 
         server = smtplib.SMTP(WCMMonitor.SERVER)
         server.sendmail(WCMMonitor.FROM, WCMMonitor.TO, message)
