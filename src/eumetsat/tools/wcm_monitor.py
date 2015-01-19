@@ -131,6 +131,7 @@ Subject: %s
         if self._warnings_sent < 3 and len(self._daily_missings) > 0:
             print("Error: the following files have not been generated in time:\n %s" % ("\n".join(self._daily_missings)))
             self.send_email(the_dir, self._daily_missings)
+            self._warnings_sent += 1
         else:
             print("Info: No missing files up to now.")
 
