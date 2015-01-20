@@ -106,7 +106,7 @@ Subject: %s
         thresold_time = datetime.time(0, 30, 0)
 
         #send daily report at midnight
-        if datetime.time(0,00,00) < curr_datetime.time() < datetime.time(0,15,00):
+        if datetime.time(0, 00, 00) < curr_datetime.time() < datetime.time(0, 15, 00):
             self.send_daily_report(the_dir, the_day_dir)
             #reset daily missing
             self._daily_missings = []
@@ -159,9 +159,9 @@ Subject: %s
             text = "Daily Status for %s.\n The following files have not been generated:\n\nSource dir:%s.\n\n%s" % \
                    (the_day, src_dir, "\n".join(sorted(self._daily_missings)))
         else:
-            text = "Daily Status for %s.\n No missing files to report.\n" % the_day
+            text = "Daily Status for %s.\n No missing files to report.\n" % (the_day)
 
-        message = WCMMonitor.MSG_TEMPLATE % (WCMMonitor.FROM, ", ".join(WCMMonitor.TO), "WCM Monitor: Missing Files Summary for %d" % the_day, text)
+        message = WCMMonitor.MSG_TEMPLATE % (WCMMonitor.FROM, ", ".join(WCMMonitor.TO), "WCM Monitor: Missing Files Summary for %s" % (the_day), text)
 
         server = smtplib.SMTP(WCMMonitor.SERVER)
         server.sendmail(WCMMonitor.FROM, WCMMonitor.TO, message)
