@@ -25,6 +25,20 @@ def previous_quater_dt(dt):
     # time + number of seconds to quarter hour mark.
     return dt - datetime.timedelta(seconds=delta)
 
+def previous_halfhour_dt(dt):
+    # how many secs have passed this hour
+    nsecs = dt.minute * 60 + dt.second + dt.microsecond * 1e-6
+    delta = nsecs - (nsecs // 1800) * 1800
+    # time + number of seconds to quarter hour mark.
+    return dt - datetime.timedelta(seconds=delta)
+
+def previous_3hourly(dt):
+    """
+    :param dt:
+    :return:
+    """
+
+
 def get_formatted_ts():
     """
     :return: Formatted Timestamp to go into log messages
@@ -35,7 +49,8 @@ def get_formatted_ts():
 class WCMMonitor(object):
     SERVER = "localhost"
     FROM = "wcm_monitor@eumetsat.int"
-    TO = ["guillaume.aubert@eumetsat.int"]
+    #TO = ["guillaume.aubert@eumetsat.int"]
+    TO = ["guillaume.aubert@eumetsat.int", "oriol.espanyol@eumetsat.int"]
     SUBJECT = "Potential errors. Data missing on IPPSVAL"
 
     #formatting must be kept like that
@@ -48,6 +63,10 @@ Subject: %s
 """
 
     MAX_WARNINGS_PER_DAY = 3 #nb of emails sent for one file
+
+    WCM_DIR_PATTERN  = "/export/home/ipps/cinesat/ape_export/europe-youtube/%s/%s/%s"
+    WCM_FILE_PATTERN = "FRAME_YOUTUBE_108_EUROPE_IR108_%s.jpg"
+
 
     def __init__(self, a_file_pattern, a_src_dir, a_sleep_time):
         """
@@ -66,7 +85,7 @@ Subject: %s
         self._daily_missings = []
 
     @classmethod
-    def get_list_of_time_since_midnight(cls, the_datetime):
+    def get_list_of_time_since_midnight(cls, the_datetime, how_long_before):
         """
          Return as a datetime the list of 15 min time since midnight.
         :rtype : list of time since midnight
@@ -74,7 +93,7 @@ Subject: %s
         result = []
 
         # look at the files from - 15 min to let some time for the generation
-        curr_dt = the_datetime - datetime.timedelta(minutes=15)
+        curr_dt = the_datetime - datetime.timedelta(minutes= how_long_before)
 
         first_dt = curr_dt.replace(hour=00, minute=00)
 
@@ -87,6 +106,85 @@ Subject: %s
 
         return result
 
+    THREE_HOURLY_STEPS = ["WCM_IR_wcm5km_%s%s0000.jpg", "WCM_IR_wcm5km_%s%s0300.jpg", "WCM_IR_wcm5km_%s%s0600.jpg"
+                          "WCM_IR_wcm5km_%s%s0900.jpg", "WCM_IR_wcm5km_%s%s1200.jpg", "WCM_IR_wcm5km_%s%s1500.jpg",
+                          "WCM_IR_wcm5km_%s%s1800.jpg", "WCM_IR_wcm5km_%s%s2100.jpg"
+                         ]
+    wcm_step_times = [ datetime.time(1, 0, 00), datetime.time(4, 0, 00), datetime.time(7, 0, 00),
+                       datetime.time(10, 0, 00), datetime.time(13, 0, 00), datetime.time(16, 0, 00),
+                       datetime.time(19, 0, 00), datetime.time(22, 0, 00) ]
+
+    def monit_wcm(self):
+        """
+        Run the monitoring
+        :return: None
+        """
+        curr_datetime = datetime.datetime.now()
+
+        # get dir of the current day
+        t_day   = curr_datetime.strftime('%d')
+        t_month = curr_datetime.strftime('%m')
+        t_year  = curr_datetime.strftime('%Y')
+
+        the_dir = self.WCM_DIR_PATTERN % (t_year, t_month, t_day)
+
+        cpt= 0
+
+
+        #find step
+        while  curr_datetime.time() > self.wcm_step_times[cpt] and  cpt < len(self.wcm_step_times):
+            cpt +=1
+
+
+        the_files = sorted(os.listdir(the_dir))
+
+        while  cpt  > 0:
+             filename = self.THREE_HOURLY_STEPS[cpt] % ()
+             filename = file_pattern % (curr_datetime.strftime('%y'), t_month)
+             if filename not in the_files and filename not in self._daily_missings: # file not found
+                self._daily_missings.append(filename)
+                #new file is missing (reset nb warnings sent counter)
+                self._warnings_sent = 0
+
+
+
+        #special case around midnight because the target dir is not created before ~ 00:20.
+        #only start the monitoring after 00:30.
+        thresold_time = datetime.time(0, 30, 0)
+
+        dates = self.get_list_of_time_since_midnight(curr_datetime, 30)
+
+        #send daily report at midnight
+        if datetime.time(0, 00, 00) < curr_datetime.time() < datetime.time(0, 15, 00):
+            self.send_daily_report(the_dir, the_day_dir)
+            #reset daily missing
+            self._daily_missings = []
+
+        if curr_datetime.time() < thresold_time:
+            print("%s-Info: Wait until 00:30 before to monitor in %s" % (get_formatted_ts(), the_dir))
+            return
+
+        the_files = sorted(os.listdir(the_dir))
+
+        if DEBUG:
+            print("DEBUG: list of files = %s" % (the_files))
+
+        #foreach dates look in the dir if the file is here
+        for the_date in sorted(dates):
+            filename = file_pattern % (the_date)
+            if filename not in the_files and filename not in self._daily_missings: # file not found
+                self._daily_missings.append(filename)
+                #new file is missing (reset nb warnings sent counter)
+                self._warnings_sent = 0
+
+        if self._warnings_sent < 3 and len(self._daily_missings) > 0:
+            print("Error: the following files have not been generated in time:\n %s" % ("\n".join(self._daily_missings)))
+            self.send_email(the_dir, self._daily_missings)
+            self._warnings_sent += 1
+        else:
+            print("Info: No missing files up to now.")
+
+
     def monit(self):
         """
         Run the monitoring
@@ -97,7 +195,7 @@ Subject: %s
         # get dir of the current day
         the_day_dir = curr_datetime.strftime('%Y-%m-%d')
 
-        dates = self.get_list_of_time_since_midnight(curr_datetime)
+        dates = self.get_list_of_time_since_midnight(curr_datetime, 15)
 
         the_dir = self._src_dir % (the_day_dir)
 
@@ -161,7 +259,7 @@ Subject: %s
         else:
             text = "Daily Status for %s.\n No missing files to report.\n" % (the_day)
 
-        message = WCMMonitor.MSG_TEMPLATE % (WCMMonitor.FROM, ", ".join(WCMMonitor.TO), "WCM Monitor: Missing Files Summary for %s" % (the_day), text)
+        message = WCMMonitor.MSG_TEMPLATE % (WCMMonitor.FROM, ", ".join(WCMMonitor.TO), "WCM Monitor: Daily Summary for %s" % (the_day), text)
 
         server = smtplib.SMTP(WCMMonitor.SERVER)
         server.sendmail(WCMMonitor.FROM, WCMMonitor.TO, message)
@@ -221,7 +319,11 @@ Subject: %s
 if __name__ == '__main__':
     # do something
     file_pattern = "MET10_IR108_8bit_%s.csi"
-    src_dir_pattern = "/export/home/ipps/cinesat/ape_db/%s/MET10/IR108/8bit"
+    src_dir_pattern = "/export/home/ipps/cinesat/ape_db/%s-%s-%s/MET10/IR108/8bit"
+
+    wcm_dir_pattern  = "/export/home/ipps/cinesat/ape_export/europe-youtube/%s/%s/%s"
+    wcm_file_pattern = "FRAME_YOUTUBE_108_EUROPE_IR108_%s.jpg"
+
     sleep_time = 900  # 15 min = 900 seconds
 
     monitor = WCMMonitor(file_pattern, src_dir_pattern, sleep_time)
