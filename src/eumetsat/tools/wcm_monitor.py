@@ -62,7 +62,7 @@ Subject: %s
 %s
 """
 
-    MAX_WARNINGS_PER_DAY = 3 #nb of emails sent for one file
+    MAX_WARNINGS_PER_DAY = 1 #nb of emails sent for one file
 
     WCM_DIR_PATTERN  = "/export/home/ipps/cinesat/ape_export/europe-youtube/%s/%s/%s"
     WCM_FILE_PATTERN = "FRAME_YOUTUBE_108_EUROPE_IR108_%s.jpg"
@@ -110,13 +110,14 @@ Subject: %s
                           "WCM_IR_wcm5km_%s%s0900.jpg", "WCM_IR_wcm5km_%s%s1200.jpg", "WCM_IR_wcm5km_%s%s1500.jpg",
                           "WCM_IR_wcm5km_%s%s1800.jpg", "WCM_IR_wcm5km_%s%s2100.jpg"
                          ]
+
     wcm_step_times = [ datetime.time(1, 0, 00), datetime.time(4, 0, 00), datetime.time(7, 0, 00),
                        datetime.time(10, 0, 00), datetime.time(13, 0, 00), datetime.time(16, 0, 00),
                        datetime.time(19, 0, 00), datetime.time(22, 0, 00) ]
 
-    def monit_wcm(self):
+    def monit_wcm(self, the_day):
         """
-        Run the monitoring
+        Check at the end of the day if the WCM has been generated every 3 hrs
         :return: None
         """
         curr_datetime = datetime.datetime.now()
@@ -130,11 +131,9 @@ Subject: %s
 
         cpt= 0
 
-
         #find step
         while  curr_datetime.time() > self.wcm_step_times[cpt] and  cpt < len(self.wcm_step_times):
             cpt +=1
-
 
         the_files = sorted(os.listdir(the_dir))
 
@@ -205,7 +204,8 @@ Subject: %s
 
         #send daily report at midnight
         if datetime.time(0, 00, 00) < curr_datetime.time() < datetime.time(0, 15, 00):
-            self.send_daily_report(the_dir, the_day_dir)
+            yesterday = curr_datetime - datetime.timedelta(days=1)
+            self.send_daily_report(the_dir, yesterday.strftime('%Y-%m-%d'))
             #reset daily missing
             self._daily_missings = []
 
@@ -226,7 +226,7 @@ Subject: %s
                 #new file is missing (reset nb warnings sent counter)
                 self._warnings_sent = 0
 
-        if self._warnings_sent < 3 and len(self._daily_missings) > 0:
+        if self._warnings_sent < self.MAX_WARNINGS_PER_DAY and len(self._daily_missings) > 0:
             print("Error: the following files have not been generated in time:\n %s" % ("\n".join(self._daily_missings)))
             self.send_email(the_dir, self._daily_missings)
             self._warnings_sent += 1
