@@ -34,13 +34,14 @@ def find_and_copy_file(patterns, srcs, dest, copied_files_list, move):
         print("Info: Listing the directory %s" % (src))
         #check if dir content has been cached
         cache_file = "%s.cache" % (src.replace("/","_"))
-        if os.path.isfile("%s/cache_file"):
-           pkl_file = open(cache_file, 'rb')
+        if os.path.isfile("%s/%s" % (CACHING_DIR, cache_file)):
+           print("Read info from cache")
+           pkl_file = open("%s/%s" %(CACHING_DIR, cache_file), 'rb')
            files = pickle.load(pkl_file)
         else:
            files = sorted(os.listdir(src))
            #pickle the files for the next time
-           pkl_file = open(cache_file, 'wb')
+           pkl_file = open("%s/%s" %(CACHING_DIR, cache_file), 'wb')
            pickle.dump(files,pkl_file)
            pkl_file.close()
 
