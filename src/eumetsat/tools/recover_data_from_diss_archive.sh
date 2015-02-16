@@ -38,12 +38,7 @@ FPREV_DATE=${arr[3]}
 DEST_DIR=/drives/c/GuillaumeAubertSpecifics/Data/
 echo "Recovering WCM data for $DATE in $DEST_DIR/$DATE-WCM-Recovered."
 
-#FDATE="20150213"
-#PREV_DATE="2015-02-12"
-#FPREV_DATE="20150212"
-
 #recover data for WCM
-
 #Get MET10 data
 
 python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_2/$EUMDATE -d $DEST_DIR/$DATE-WCM-Recovered/MET10 -p 'H-000-MSG3*IR_108*-'"$FDATE"'*'

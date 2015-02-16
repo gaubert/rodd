@@ -10,7 +10,10 @@ import shutil
 import time
 import fnmatch
 import sys
+import pickle
 import getopt
+
+CACHING_DIR="/tmp/filecatcher_cache"
 
 def makedirs(aPath):
     """ my own version of makedir """
@@ -29,7 +32,18 @@ def find_and_copy_file(patterns, srcs, dest, copied_files_list, move):
     
     for src in srcs:
         print("Info: Listing the directory %s" % (src))
-        files = sorted(os.listdir(src))
+        #check if dir content has been cached
+        cache_file = "%s.cache" % (src.replace("/","_"))
+        if os.path.isfile("%s/cache_file"):
+           pkl_file = open(cache_file, 'rb')
+           files = pickle.load(pkl_file)
+        else:
+           files = sorted(os.listdir(src))
+           #pickle the files for the next time
+           pkl_file = open(cache_file, 'wb')
+           pickle.dump(files,pkl_file)
+           pkl_file.close()
+
         print("Info: Done Listing directory %s" % (src))
         
         for pattern in patterns:
@@ -119,6 +133,7 @@ if __name__ == '__main__':
     seconds  = 3
     
     makedirs(dest)
+    makedirs(CACHING_DIR)
 
     print("Info: Patterns = %s\n"%(patterns))
     
