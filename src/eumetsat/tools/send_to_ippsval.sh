@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TOP_DIR=/drives/c/GuillaumeAubertSpecifics/Data/2015-02-12-WCM-Recovered
+TOP_DIR=/drives/c/GuillaumeAubertSpecifics/Data/2015-02-15-WCM-Recovered
 DEST_DIR=/export/home/ipps/cinesat/ape_import/offline/
 
 for file in $TOP_DIR/*/ ; do 
