@@ -8,6 +8,7 @@ import re
 import os
 import shutil
 import time
+import datetime
 import fnmatch
 import sys
 import pickle
@@ -26,6 +27,19 @@ def makedirs(aPath):
     
     os.makedirs(aPath)
 
+def clean_files_older_than(srcs, days=5):
+   """
+    Clean all files older than x days
+   """
+   now = time.time()
+
+   for src_path in srcs:
+      for f in os.listdir(src_path):
+         f = os.path.join(src_path, f)
+         if os.stat(f).st_mtime < now - days * 86400:
+            if os.path.isfile(f):
+               os.remove(f)
+
 def find_and_copy_file(patterns, srcs, dest, copied_files_list, move):
 
     files_found = False
@@ -34,6 +48,12 @@ def find_and_copy_file(patterns, srcs, dest, copied_files_list, move):
         print("Info: Listing the directory %s" % (src))
         #check if dir content has been cached
         cache_file = "%s.cache" % (src.replace("/","_"))
+        print("original cache file %s" % (cache_file))
+        #if cache file end with today then replace by the current date
+        if cache_file.endswith("today.cache"):
+           cache_file = cache_file.replace("today",datetime.date.today().strftime("%Y-%m-%d"))
+ 
+        print("cache filename %s" %(cache_file))
         if os.path.isfile("%s/%s" % (CACHING_DIR, cache_file)):
            print("Read info from cache")
            pkl_file = open("%s/%s" %(CACHING_DIR, cache_file), 'rb')
@@ -135,6 +155,9 @@ if __name__ == '__main__':
     
     makedirs(dest)
     makedirs(CACHING_DIR)
+
+    #clean caching dir (delete files older than 5 days)
+    clean_files_older_than([CACHING_DIR],5) 
 
     print("Info: Patterns = %s\n"%(patterns))
     

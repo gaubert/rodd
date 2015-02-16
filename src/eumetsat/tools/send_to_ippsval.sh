@@ -1,6 +1,16 @@
 #!/bin/bash
 
-TOP_DIR=/drives/c/GuillaumeAubertSpecifics/Data/2015-02-15-WCM-Recovered
+#MANAGE arguments and compute the dates for the previous day
+if [ "$#" -ne 1 ]; then
+    echo "Error: Illegal number of parameters. $0 requires a date yyyy-mm-dd, .e.g 2015-02-01."
+    echo "Passed arguments: [$@]"
+    exit 1;
+fi
+
+DATE="$1"
+
+TOP_DIR=/drives/c/GuillaumeAubertSpecifics/Data/$DATE-WCM-Recovered
+
 DEST_DIR=/export/home/ipps/cinesat/ape_import/offline/
 
 for file in $TOP_DIR/*/ ; do 
