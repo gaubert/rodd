@@ -27,7 +27,7 @@ def makedirs(aPath):
     
     os.makedirs(aPath)
 
-def clean_files_older_than(srcs, days=5):
+def clean_files_older_than(srcs, days=4):
    """
     Clean all files older than x days
    """
@@ -92,16 +92,18 @@ def find_and_copy_file(patterns, srcs, dest, copied_files_list, move):
 def parse_args():
     """ parse arguments"""
     
-    options, _ = getopt.getopt(sys.argv[1:], 'p:s:d:hwm', ['patterns=','srcs=', 
+    options, _ = getopt.getopt(sys.argv[1:], 'p:s:d:hwmc', ['patterns=','srcs=', 
                                                              'dests=',
                                                              'help',
                                                              'wait',
-                                                             'move'
+                                                             'move',
+                                                             'cleancache'
                                                               ])
     #print 'OPTIONS   :', options
     help = None
     wait = False
     move = False
+    cleancache = False
     sources = None
     dest = None
     patterns = None
@@ -118,6 +120,8 @@ def parse_args():
             wait = True
         elif opt in ('-m', '--move'):
             move = True
+        elif opt in ('-c', '--cleancache'):
+            cleancache = True
         elif opt in ('-h', '--help'):
             help = True
     
@@ -143,12 +147,12 @@ def parse_args():
 
     patterns = patterns.split(',')
     
-    return sources, dest, wait, patterns , move
+    return sources, dest, wait, patterns , move, cleancache
        
 
 if __name__ == '__main__':
     
-    srcs, dest, wait , patterns, move = parse_args()
+    srcs, dest, wait , patterns, move, cleancache = parse_args()
       
     #patterns = ['T_HM*']
     seconds  = 3
@@ -156,8 +160,12 @@ if __name__ == '__main__':
     makedirs(dest)
     makedirs(CACHING_DIR)
 
-    #clean caching dir (delete files older than 5 days)
-    clean_files_older_than([CACHING_DIR],5) 
+    #clean caching dir (delete files older than 2 days)
+    if cleancache:
+       #clean the cache
+       clean_files_older_than([CACHING_DIR],0) 
+    else:
+       clean_files_older_than([CACHING_DIR],2)
 
     print("Info: Patterns = %s\n"%(patterns))
     
