@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+#set -x
 
 #Destination dir on ippsval
 DEST_DIR=/export/home/ipps/cinesat/ape_import/offline/
