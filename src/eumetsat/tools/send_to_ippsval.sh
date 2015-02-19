@@ -1,7 +1,6 @@
 #!/bin/bash
+set -x
 
-#Top source dir
-TOP_DIR=/drives/c/GuillaumeAubertSpecifics/Data/$DATE-WCM-Recovered
 #Destination dir on ippsval
 DEST_DIR=/export/home/ipps/cinesat/ape_import/offline/
 
@@ -13,6 +12,9 @@ if [ "$#" -ne 1 ]; then
 fi
 
 DATE="$1"
+
+#Top source dir
+TOP_DIR=/drives/c/GuillaumeAubertSpecifics/Data/$DATE-WCM-Recovered
 
 
 for file in $TOP_DIR/*/ ; do 
