@@ -1,6 +1,11 @@
 #!/bin/bash
 #set -x
 
+#Dest Dir Change if you wish to get the data copied somewhere else
+DEST_DIR=/drives/c/GuillaumeAubertSpecifics/Data/
+#Dir from where the script has to be run
+SCRIPT_DIR=/home/mobaxterm/Dev/ecli-workspace/rodd/src/eumetsat/tools
+
 #MANAGE arguments and compute the dates for the previous day
 if [ "$#" -ne 1 ]; then
     echo "Error: Illegal number of parameters. $0 requires a date yyyy-mm-dd, .e.g 2015-02-01."
@@ -11,7 +16,7 @@ fi
 DATE="$1"
 
 #go to dir of script for the moment
-cd /home/mobaxterm/Dev/ecli-workspace/rodd/src/eumetsat/tools
+cd $SCRIPT_DIR
 
 #compute date -1 day with python utility
 IN=`./minus_x_days.py $DATE`
@@ -35,7 +40,6 @@ FPREV_DATE=${arr[3]}
 #echo $PREV_DATE
 #echo $FPREV_DATE
 
-DEST_DIR=/drives/c/GuillaumeAubertSpecifics/Data/
 echo "Recovering WCM data for $DATE in $DEST_DIR/$DATE-WCM-Recovered."
 
 #recover data for WCM

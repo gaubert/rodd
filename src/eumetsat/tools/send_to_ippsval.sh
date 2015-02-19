@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#Top source dir
+TOP_DIR=/drives/c/GuillaumeAubertSpecifics/Data/$DATE-WCM-Recovered
+#Destination dir on ippsval
+DEST_DIR=/export/home/ipps/cinesat/ape_import/offline/
+
 #MANAGE arguments and compute the dates for the previous day
 if [ "$#" -ne 1 ]; then
     echo "Error: Illegal number of parameters. $0 requires a date yyyy-mm-dd, .e.g 2015-02-01."
@@ -9,9 +14,6 @@ fi
 
 DATE="$1"
 
-TOP_DIR=/drives/c/GuillaumeAubertSpecifics/Data/$DATE-WCM-Recovered
-
-DEST_DIR=/export/home/ipps/cinesat/ape_import/offline/
 
 for file in $TOP_DIR/*/ ; do 
   if [[ -d "$file" && ! -L "$file" ]]; then
