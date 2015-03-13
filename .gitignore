@@ -4,3 +4,4 @@
 *.class
 dists/disstoolbox-dist/build
 dists/disstoolbox-dist/build/*
+dmon/dissplayer/jobs.sqlite
