@@ -3,8 +3,7 @@ Created on Nov 2, 2011
 
 @author: guillaume.aubert@eumetsat.int
 '''
-import tellicastlog_parser as tellicast
-from sandbox.dmon.tellicastlog_parser import TellicastLogParser
+from eumetsat.dmon.parsers import tellicastlog_parser as tellicast
 
 
 def gap_finder(a_files, a_seconds):

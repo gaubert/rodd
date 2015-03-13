@@ -162,7 +162,7 @@ class TellicastLogParser(object):
   
     def _create_parser_gen(self):
         """
-          Create the parser generator
+          Create the parsers generator
         """
         for line in self._lines:
                     

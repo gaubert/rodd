@@ -16,14 +16,13 @@ import eumetsat.dmon.common.diss_parsing_utils as diss_parsing_utils
 import eumetsat.dmon.common.utils as utils
 
 import gems_feeder
-import xferlog_parser
-import tellicastlog_parser
+from eumetsat.dmon.parsers import tellicastlog_parser, xferlog_parser
 
 X_PARSER = xferlog_parser.XferlogParser()
 S_PARSER = tellicastlog_parser.TellicastLogParser('tc-send')
 
 '''
-   add gems.logging parser
+   add gems.logging parsers
    2011-11-10 09:16:21 W GEMS.logging: Entry detected: [11/11/10 09:15:29.813] WARN: de.eumetsat.GEMS.doftp.FtpHandler@4213a1b2 - could not transfer file [DVB_EU...
    2011-11-10 09:16:21 W GEMS.logging: Entry detected: [11/11/10 09:15:29.813] WARN: de.eumetsat.GEMS.doftp.FtpHandler@4213a1b2 - TransferHandler:putFile(): java...
    2011-11-10 09:16:21 W GEMS.logging: Entry detected: [11/11/10 09:15:29.814] WARN: FtpException: Putfilelist.doProcess FtpException: java.io.IOException: Agent...

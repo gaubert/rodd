@@ -81,7 +81,7 @@ class GEMSGrep(object):
         dir_help += "(Default =. the current dir)".ljust(66)
         dir_help += "The directory will be created if it doesn't exist.".ljust(66)
         
-        parser.add_option("-d", "--dir", metavar="DIR", \
+        parsers.add_option("-d", "--dir", metavar="DIR", \
                           help = dir_help,\
                           dest ="output_dir", default=".")
         """
@@ -122,8 +122,8 @@ class GEMSGrep(object):
         #verbose
         parsed_args['verbose']           = options.verbose
         
-        #add parser itself for error handling
-        parsed_args['parser'] = parser
+        #add parsers itself for error handling
+        parsed_args['parsers'] = parser
         
         return parsed_args
     

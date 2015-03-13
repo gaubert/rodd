@@ -91,10 +91,10 @@ class Tokenizer(object):
        
     def tokenize(self, a_program, a_eatable_token_types = ()):
         """ parse the expression.
-            By default the parser eats space but some extra tokens by have to be eaten
+            By default the parsers eats space but some extra tokens by have to be eaten
         
             Args:
-               a_expression: the expression to parser
+               a_expression: the expression to parsers
                
             Returns:
                return dict containing the different parts of the request (spectrum, ....)

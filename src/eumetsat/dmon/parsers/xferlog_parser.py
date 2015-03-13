@@ -18,15 +18,25 @@ XFERLOG_FILESIZE     = r'(?P<filesize>\S+)'
 XFERLOG_FILENAME     = r'(?P<filename>\S+)'
 XFERLOG_REST         = r'(?P<transfer_type>\S+)\s+(?P<special_action_flag>\S+)\s+(?P<direction>\S+)\s+(?P<access_mode>\S+)\s+(?P<username>\S+)\s+(?P<service_name>\S+)\s+(?P<authentication_method>\S+)\s+(?P<authenticated_user_id>\S+)\s+(?P<completion_status>\S+)'
 
-XFERLOG_PATTERN      =  XFERLOG_GEMS_HEADER + \
-                        XFERLOG_DATE_PATTERN + r'\s+' +\
-                        XFERLOG_TRANSFERTIME + r'\s+' + \
-                        XFERLOG_HOST + r'\s+' +\
-                        XFERLOG_FILESIZE + r'\s+' +\
-                        XFERLOG_FILENAME + r'\s+' +\
-                        XFERLOG_REST
+XFERLOG_WITH_GEMS_PATTERN      =  XFERLOG_GEMS_HEADER + \
+                                  XFERLOG_DATE_PATTERN + r'\s+' +\
+                                  XFERLOG_TRANSFERTIME + r'\s+' + \
+                                  XFERLOG_HOST + r'\s+' +\
+                                  XFERLOG_FILESIZE + r'\s+' +\
+                                  XFERLOG_FILENAME + r'\s+' +\
+                                  XFERLOG_REST
 
-XFERLOG_RE           = re.compile(XFERLOG_PATTERN)
+XFERLOG_NO_GEMS_PATTERN       =   XFERLOG_DATE_PATTERN + r'\s+' +\
+                                  XFERLOG_TRANSFERTIME + r'\s+' + \
+                                  XFERLOG_HOST + r'\s+' +\
+                                  XFERLOG_FILESIZE + r'\s+' +\
+                                  XFERLOG_FILENAME + r'\s+' +\
+                                  XFERLOG_REST
+
+
+XFERLOG_WITH_GEMS_RE         = re.compile(XFERLOG_WITH_GEMS_PATTERN)
+
+XFERLOG_NO_GEMS_RE            = re.compile(XFERLOG_NO_GEMS_PATTERN)
 
 
 class InvalidXferlogFormatError(Exception):
@@ -39,12 +49,13 @@ class XferlogParser(object):
     Receive an xferlog line and create a json document following a predefined structure
     '''
 
-    def __init__(self):
+    def __init__(self, no_gems_header = False):
         '''
         Constructor
         '''
         self._gen   = None
         self._lines = None
+        self.RE = XFERLOG_NO_GEMS_RE if no_gems_header else XFERLOG_WITH_GEMS_RE
         
     def set_lines_to_parse(self, a_lines=None):
         """
@@ -55,7 +66,7 @@ class XferlogParser(object):
         
     def _create_parser_gen(self):
         """
-          Create the parser generator
+          Create the parsers generator
         """
         for line in self._lines:
             result = self._parse_line(line) 
@@ -159,7 +170,7 @@ class XferlogParser(object):
           parse the line
         """
         
-        matched = XFERLOG_RE.match(a_line)
+        matched = self.RE.match(a_line)
         
         if matched:
             

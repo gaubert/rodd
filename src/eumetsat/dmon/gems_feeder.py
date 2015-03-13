@@ -219,7 +219,7 @@ class GEMSExtractor(object):
     
     def _get_gems_data_gen(self):
         """
-          Create the parser generator
+          Create the parsers generator
         """
         GEMSExtractor.log.debug("get session id form gems\n")
         

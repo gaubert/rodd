@@ -9,17 +9,14 @@ import sys
 import re
 
 import pymongo
-
 import eumetsat.dmon.common.mem_db as mem_db
 import eumetsat.dmon.common.utils as utils
 import eumetsat.dmon.common.log_utils  as log_utils
 import eumetsat.dmon.common.analyze_utils as analyze_utils
-
 import multitail
-import tellicastlog_parser
-import xferlog_parser
-
+from eumetsat.dmon.parsers import tellicastlog_parser, xferlog_parser
 import eumetsat.dmon.displays as displays
+
 
 class DoNothingArchiver(object):
     """
