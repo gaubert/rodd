@@ -55,7 +55,9 @@ class DisseminationPlayer(object):
         """
 
         for a_file in self._files:
-            self._parser.set_lines_to_parse(a_file)
+            print("Parsing xferlog file %s" % (a_file) )
+            fd = open(a_file)
+            self._parser.set_lines_to_parse(fd)
             for elem in self._parser:
                 print("time = %s, filename = %s\n" % (elem['time'], elem['file']))
 
@@ -63,7 +65,8 @@ class DisseminationPlayer(object):
                 filepath = self._index.get(elem['file'], None)
                 if filepath:
                     #get time difference
-                    midnight_date = datetime.datetime.combine(elem['time'].date(), self.MIDNIGHT)
+                    midnight_date = utc.localize(datetime.datetime.combine(elem['time'].date(), self.MIDNIGHT))
+                    #print("midnight date = %s ///// elem[time] = %s" % (midnight_date, elem['time']))
                     time_diff = elem['time'] - midnight_date
                     scheduled_date = self._reference_date + time_diff
                     #create job and schedule it with the time difference added to the starting reference time
@@ -72,6 +75,8 @@ class DisseminationPlayer(object):
                     self._scheduler.add_job(copy_job, d_trigger, args=[filepath, self._destination])
                 else:
                     print("Could not find %s\n in Index" % (elem['file']))
+
+        print("Player. %d jobs scheduled.\n" % (len(self._scheduler.get_jobs())))
 
 
     def start(self):
@@ -125,7 +130,7 @@ class Indexer(object):
     def load_index(cls, index_file):
         """
         """
-        print("Index. Load index from %s." % (self._cache_file_path))
+        print("Index. Load index from %s." % (index_file))
         index = pickle.load( open( index_file, "rb" ) )
         print("Index. Index loaded")
         return index
@@ -139,8 +144,8 @@ def test_index():
     """
     :return:
     """
-    top_dir = "e:/IPPS-Data/One-Day-Replay/data/20150311-data"
-    cache_file = "H:/index.cache"
+    top_dir = "e:/IPPS-Data/One-Day-Replay/data/20150311-data/EPS-3"
+    cache_file = "H:/index1.cache"
 
     indexer = Indexer(top_dir, cache_file)
 
@@ -152,9 +157,11 @@ def test_index():
 
     print("Index created")
 
+def test_player():
+    """
 
-if __name__ == '__main__':
-
+    :return:
+    """
     files = ['e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog/xferlog.other.txt']
     index_file = 'H:/index.cache'
     destination = { dir : 'H:/test-dir' }
@@ -164,6 +171,23 @@ if __name__ == '__main__':
     player.add_jobs()
 
     player.start()
+
+def test_parser():
+    """
+
+    :return:
+    """
+    fd = open('e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog/xferlog.other.txt')
+    parser = eumetsat.dmon.parsers.xferlog_parser.XferlogParser(no_gems_header = True)
+    parser.set_lines_to_parse(fd)
+    for elem in parser:
+        print("time = %s, filename = %s\n" % (elem['time'], elem['file']))
+
+if __name__ == '__main__':
+
+    #test_parser()
+    #test_index()
+    test_player()
 
 
 
