@@ -10,6 +10,10 @@ from apscheduler.schedulers.background import BackgroundScheduler, BlockingSched
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ProcessPoolExecutor
 import eumetsat.dmon.parsers.xferlog_parser
+import logging
+
+#Load basic config for logging
+logging.basicConfig()
 
 jobstores = {
     'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
@@ -27,7 +31,8 @@ def copy_job(file_path, destination):
     """
       :return:
     """
-    shutil.copy(file_path,destination['dir'])
+    print("%s... Copy %s to %s" % (str(datetime.datetime.now()), file_path, destination['dir']))
+    shutil.copy(file_path , destination['dir'])
 
 
 class DisseminationPlayer(object):
@@ -39,7 +44,7 @@ class DisseminationPlayer(object):
             :return:
         """
         #ref time = now time plus two minutes
-        self._reference_date = datetime.datetime.now() +  datetime.timedelta(seconds=2*60)
+        self._reference_date = datetime.datetime.now() +  datetime.timedelta(seconds=1*60)
         self._parser = eumetsat.dmon.parsers.xferlog_parser.XferlogParser(no_gems_header = True)
         self._files = files_to_parse
         self._scheduler = BlockingScheduler()
@@ -59,8 +64,7 @@ class DisseminationPlayer(object):
             fd = open(a_file)
             self._parser.set_lines_to_parse(fd)
             for elem in self._parser:
-                print("time = %s, filename = %s\n" % (elem['time'], elem['file']))
-
+                #print("time = %s, filename = %s\n" % (elem['time'], elem['file']))
                 #find file in index
                 filepath = self._index.get(elem['file'], None)
                 if filepath:
@@ -85,6 +89,7 @@ class DisseminationPlayer(object):
         """
         self._scheduler.configure(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=utc)
 
+        print("Start Scheduler")
         self._scheduler.start()
 
 
@@ -162,9 +167,11 @@ def test_player():
 
     :return:
     """
-    files = ['e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog/xferlog.other.txt']
+    files = ['e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog/xferlog.saf.txt', 'e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog/xferlog.ears.txt',
+             'e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog/xferlog.eps-prime.txt'
+            ]
     index_file = 'H:/index.cache'
-    destination = { dir : 'H:/test-dir' }
+    destination = { 'dir' : 'e:/IPPS-Data/One-Day-Replay/test-dir' }
 
     player = DisseminationPlayer(files, index_file, destination)
 
