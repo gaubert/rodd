@@ -8,14 +8,18 @@ import time
 import shutil
 import datetime
 import subprocess
+import json
 import cPickle as pickle
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.schedulers.background import BackgroundScheduler, BlockingScheduler
 #from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.executors.pool import ProcessPoolExecutor
-import eumetsat.dmon.parsers.xferlog_parser
 import logging
+
+import eumetsat.dmon.common.cmdline_utils as cmdline_utils
+import eumetsat.dmon.parsers.xferlog_parser
+
 
 #Load basic config for logging
 logging.basicConfig()
@@ -26,7 +30,7 @@ jobstores = {
 }
 executors = {
     'default': {'type': 'threadpool', 'max_workers': 20},
-    'processpool': ProcessPoolExecutor(max_workers=10)
+    'processpool': ProcessPoolExecutor(max_workers=20)
 }
 job_defaults = {
     'coalesce': False,
@@ -181,6 +185,17 @@ class Indexer(object):
         return index
 
 
+def read_configuration_file(a_filepath):
+    """
+    Read the configuration file
+    :param a_filepath:
+    :return:
+    """
+    json_data=open(a_filepath)
+    data = json.load(json_data)
+
+    return data
+
 def test_index():
     """
 
@@ -207,17 +222,29 @@ def test_player_with_cp():
 
     :return:
     """
-    xferlog_dir = 'e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog'
+
+    #xferlog_dir = 'e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog'
 
     #files = ['xferlog.dwd.txt', 'xferlog.ears.txt', 'xferlog.eps-prime.txt', 'xferlog.hrit-0.txt', 'xferlog.hrit-rss.txt', 'xferlog.other.txt',
     #         'xferlog.saf.txt', 'xferlog.saflsa.txt', 'xferlog.safo3m.txt', 'xferlog.wmora1.txt', 'xferlog.wmora6.txt'
 
-    files = ['xferlog.ears.txt']
+    #files = ['xferlog.ears.txt']
 
-    index_file = 'H:/index.cache'
-    destination = { 'dest-dir' : 'e:/IPPS-Data/One-Day-Replay/test-dir' }
+    #index_file = 'H:/index.cache'
+    #destination = { 'dest-dir' : 'e:/IPPS-Data/One-Day-Replay/test-dir' }
 
-    player = DisseminationPlayer(xferlog_dir, files, index_file, cp_job, destination)
+    conf = read_configuration_file("C:/Dev/ecli-workspace/rodd/etc/diss-player/cp_test.json")
+
+    j_type = None
+
+    if conf["job_type"] == "cp_job":
+        j_type = cp_job
+    elif conf["job_type"] == "scp_job":
+        j_type = scp_job
+    else:
+        raise Exception("Error. Unknown job type %s" % (conf["job_type"]))
+
+    player = DisseminationPlayer(conf['xferlog_dir'], conf['files'] , conf['index_file'], j_type, conf['destination'])
 
     player.add_jobs()
 
@@ -256,11 +283,109 @@ def test_parser():
     for elem in parser:
         print("time = %s, filename = %s\n" % (elem['time'], elem['file']))
 
+
+HELP_USAGE = """ nms_client [options] request files or request
+
+Arguments: a list of request files or an inline request."""
+
+HELP_EPILOGUE = """Examples:
+
+a) Requests examples
+
+- Retrieve shi data with a request stored in a file
+#> nms_client ims_shi.req
+
+b) Pattern examples
+
+#> nms_client shi.req -f "{req_id}_{req_fileprefix}.data"
+will create 546_shi.data.
+
+#> nms_client shi.req -f "{req_id}_{date}.data"
+will create 547_20091224.data.
+
+#> nms_client shi.req -f "{req_id}_{datetime}.data"
+will create 548_20091224-01h12m23s.data
+
+#> nms_client shi-1.req shi-2.req -f "{req_id}_{req_fileprefix}.data"
+will create 549_shi-1.data and 550_shi-2.data
+"""
+
+def parse_args():
+        """ Parse command line arguments
+
+            :returns: a dict that contains the arguments
+
+            :except Exception Error
+
+        """
+        #print sys.argv
+
+        parser = cmdline_utils.CmdLineParser()
+
+        parser.add_option("-c", "--conf", help = "configuration file path in json", \
+                          dest = "dconf", default = None)
+
+        """
+        dir_help =  "Directory where the result files will be stored.".ljust(66)
+        dir_help += "(Default =. the current dir)".ljust(66)
+        dir_help += "The directory will be created if it doesn't exist.".ljust(66)
+
+        parsers.add_option("-d", "--dir", metavar="DIR", \
+                          help = dir_help,\
+                          dest ="output_dir", default=".")
+        """
+
+        # add custom usage and epilogue
+        parser.epilogue = HELP_EPILOGUE
+        parser.usage    = HELP_USAGE
+
+        (options, args) = parser.parse_args() #pylint: disable-msg=W0612
+
+        parsed_args = { }
+
+        # if file check that file exist and read it
+        # otherwise if -i read stdin
+        # otherwise start interactive session
+
+
+        # add from
+        parsed_args['conf_path']              = options.dconf
+
+        #add parsers itself for error handling
+        parsed_args['parsers'] = parser
+
+        return parsed_args
+
+def run_cmd():
+    """
+    Run the command
+    :return:
+    """
+    j_type = None
+
+    parsed_args = parse_args()
+
+    conf = read_configuration_file(parsed_args['conf_path'])
+
+    if conf["job_type"] == "cp_job":
+        j_type = cp_job
+    elif conf["job_type"] == "scp_job":
+        j_type = scp_job
+    else:
+        raise Exception("Error. Unknown job type %s" % (conf["job_type"]))
+
+    player = DisseminationPlayer(conf['xferlog_dir'], conf['files'] , conf['index_file'], j_type, conf['destination'])
+
+    player.add_jobs()
+
+    player.start()
+
+
 if __name__ == '__main__':
 
     #test_parser()
     #test_index()
-    test_player_with_scp()
+    run_cmd()
 
 
 
