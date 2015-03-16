@@ -7,10 +7,11 @@ import gc
 import time
 import shutil
 import datetime
+import subprocess
 import cPickle as pickle
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.schedulers.background import BackgroundScheduler, BlockingScheduler
-from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+#from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.executors.pool import ProcessPoolExecutor
 import eumetsat.dmon.parsers.xferlog_parser
@@ -51,35 +52,43 @@ def ftimer(func, args, kwargs, result = [], number=1, timer=time.time): #IGNORE:
 
     return t1 - t0
 
-def copy_job(file_path, destination):
+def cp_job(file_path, destination):
     """
       :return:
     """
-    print("%s... Copy %s to %s" % (str(datetime.datetime.now()), file_path, destination['dir']))
-    shutil.copy(file_path , destination['dir'])
+    print("%s... cp %s to %s" % (str(datetime.datetime.now()), file_path, destination['dest-dir']))
+    shutil.copy(file_path , destination['dest-dir'])
+
+def scp_job(file_path, destination):
+    """
+      :return:
+    """
+    print("%s... %s %s %s@%s:%s" % (str(datetime.datetime.now()), destination['scp'], file_path, destination['user'], destination['host'], destination['dest-dir']))
+    subprocess.Popen([destination['scp'], file_path, "%s@%s:%s" % (destination['user'], destination['host'], destination['dest-dir'])]).wait()
 
 
 class DisseminationPlayer(object):
 
     MIDNIGHT = datetime.time(0,0,0)
 
-    def __init__(self, dir_files_to_parse, files_to_parse, index_file, destination):
+    def __init__(self, dir_files_to_parse, files_to_parse, index_file, job_func, destination):
         """
             :return:
         """
         #ref time = now time plus two minutes
-        self._reference_date = datetime.datetime.now() +  datetime.timedelta(seconds=2*60)
+        self._reference_date = datetime.datetime.now() +  datetime.timedelta(seconds=30)
         self._parser = eumetsat.dmon.parsers.xferlog_parser.XferlogParser(no_gems_header = True)
         self._dir_files = dir_files_to_parse
         self._files = files_to_parse
+        self._job_func = job_func
         self._scheduler = BlockingScheduler()
 
         res = []
         t = ftimer(Indexer.load_index, [index_file], {}, res)
-        print("read index in %d" % (t))
+        print("Read index in %d seconds." % (t))
         self._index = res[0]
 
-        #destination info (depends on the type of job
+        #destination info (depends on the type of job)
         self._destination = destination
 
 
@@ -107,7 +116,7 @@ class DisseminationPlayer(object):
                     #create job and schedule it with the time difference added to the starting reference time
                     d_trigger = DateTrigger(scheduled_date)
 
-                    self._scheduler.add_job(copy_job, d_trigger, args=[filepath, self._destination])
+                    self._scheduler.add_job(self._job_func, d_trigger, args=[filepath, self._destination])
                 else:
                     print("Could not find %s\n in Index" % (elem['file']))
 
@@ -193,7 +202,28 @@ def test_index():
 
     print("Index created")
 
-def test_player():
+def test_player_with_cp():
+    """
+
+    :return:
+    """
+    xferlog_dir = 'e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog'
+
+    #files = ['xferlog.dwd.txt', 'xferlog.ears.txt', 'xferlog.eps-prime.txt', 'xferlog.hrit-0.txt', 'xferlog.hrit-rss.txt', 'xferlog.other.txt',
+    #         'xferlog.saf.txt', 'xferlog.saflsa.txt', 'xferlog.safo3m.txt', 'xferlog.wmora1.txt', 'xferlog.wmora6.txt'
+
+    files = ['xferlog.ears.txt']
+
+    index_file = 'H:/index.cache'
+    destination = { 'dest-dir' : 'e:/IPPS-Data/One-Day-Replay/test-dir' }
+
+    player = DisseminationPlayer(xferlog_dir, files, index_file, cp_job, destination)
+
+    player.add_jobs()
+
+    player.start()
+
+def test_player_with_scp():
     """
 
     :return:
@@ -202,12 +232,14 @@ def test_player():
 
     files = ['xferlog.dwd.txt', 'xferlog.ears.txt', 'xferlog.eps-prime.txt', 'xferlog.hrit-0.txt', 'xferlog.hrit-rss.txt', 'xferlog.other.txt',
              'xferlog.saf.txt', 'xferlog.saflsa.txt', 'xferlog.safo3m.txt', 'xferlog.wmora1.txt', 'xferlog.wmora6.txt'
-
             ]
-    index_file = 'H:/index.cache'
-    destination = { 'dir' : 'e:/IPPS-Data/One-Day-Replay/test-dir' }
 
-    player = DisseminationPlayer(xferlog_dir, files, index_file, destination)
+    files = ['xferlog.ears.txt']
+
+    index_file = 'H:/index.cache'
+    destination = { 'scp': 'C:\Users\Aubert\AppData\Local\Temp\Aubert_MobaXterm6.5\bin\scp' , 'user' : 'gaubert', 'host' : 'tclxs10', 'dest-dir' : '/tcc1/home/gaubert/test-dir' }
+
+    player = DisseminationPlayer(xferlog_dir, files, index_file, scp_job, destination)
 
     player.add_jobs()
 
@@ -228,7 +260,7 @@ if __name__ == '__main__':
 
     #test_parser()
     #test_index()
-    test_player()
+    test_player_with_scp()
 
 
 
