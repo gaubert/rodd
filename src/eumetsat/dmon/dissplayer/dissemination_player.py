@@ -2,12 +2,16 @@ __author__ = 'guillaume aubert'
 
 from pytz import utc
 import os
+import itertools
+import gc
+import time
 import shutil
 import datetime
 import cPickle as pickle
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.schedulers.background import BackgroundScheduler, BlockingScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.executors.pool import ProcessPoolExecutor
 import eumetsat.dmon.parsers.xferlog_parser
 import logging
@@ -16,7 +20,8 @@ import logging
 logging.basicConfig()
 
 jobstores = {
-    'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
+#    'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
+    'default': MemoryJobStore()
 }
 executors = {
     'default': {'type': 'threadpool', 'max_workers': 20},
@@ -26,6 +31,25 @@ job_defaults = {
     'coalesce': False,
     'max_instances': 3
 }
+
+def ftimer(func, args, kwargs, result = [], number=1, timer=time.time): #IGNORE:W0102
+    """ time a func or object method """
+    it = itertools.repeat(None, number)
+    gc_saved = gc.isenabled()
+
+    try:
+        gc.disable()
+        t0 = timer()
+        for i in it:                  #IGNORE:W0612
+            r = func(*args, **kwargs) #IGNORE:W0142
+            if r is not None:
+                result.append(r)
+                t1 = timer()
+    finally:
+        if gc_saved:
+            gc.enable()
+
+    return t1 - t0
 
 def copy_job(file_path, destination):
     """
@@ -39,16 +63,22 @@ class DisseminationPlayer(object):
 
     MIDNIGHT = datetime.time(0,0,0)
 
-    def __init__(self, files_to_parse, index_file, destination):
+    def __init__(self, dir_files_to_parse, files_to_parse, index_file, destination):
         """
             :return:
         """
         #ref time = now time plus two minutes
-        self._reference_date = datetime.datetime.now() +  datetime.timedelta(seconds=1*60)
+        self._reference_date = datetime.datetime.now() +  datetime.timedelta(seconds=2*60)
         self._parser = eumetsat.dmon.parsers.xferlog_parser.XferlogParser(no_gems_header = True)
+        self._dir_files = dir_files_to_parse
         self._files = files_to_parse
         self._scheduler = BlockingScheduler()
-        self._index = Indexer.load_index(index_file)
+
+        res = []
+        t = ftimer(Indexer.load_index, [index_file], {}, res)
+        print("read index in %d" % (t))
+        self._index = res[0]
+
         #destination info (depends on the type of job
         self._destination = destination
 
@@ -60,8 +90,9 @@ class DisseminationPlayer(object):
         """
 
         for a_file in self._files:
-            print("Parsing xferlog file %s" % (a_file) )
-            fd = open(a_file)
+            f_path = "%s/%s" % (self._dir_files, a_file)
+            print("Parsing xferlog file %s" % f_path )
+            fd = open(f_path)
             self._parser.set_lines_to_parse(fd)
             for elem in self._parser:
                 #print("time = %s, filename = %s\n" % (elem['time'], elem['file']))
@@ -167,13 +198,16 @@ def test_player():
 
     :return:
     """
-    files = ['e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog/xferlog.saf.txt', 'e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog/xferlog.ears.txt',
-             'e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog/xferlog.eps-prime.txt'
+    xferlog_dir = 'e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog'
+
+    files = ['xferlog.dwd.txt', 'xferlog.ears.txt', 'xferlog.eps-prime.txt', 'xferlog.hrit-0.txt', 'xferlog.hrit-rss.txt', 'xferlog.other.txt',
+             'xferlog.saf.txt', 'xferlog.saflsa.txt', 'xferlog.safo3m.txt', 'xferlog.wmora1.txt', 'xferlog.wmora6.txt'
+
             ]
     index_file = 'H:/index.cache'
     destination = { 'dir' : 'e:/IPPS-Data/One-Day-Replay/test-dir' }
 
-    player = DisseminationPlayer(files, index_file, destination)
+    player = DisseminationPlayer(xferlog_dir, files, index_file, destination)
 
     player.add_jobs()
 
