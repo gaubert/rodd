@@ -334,6 +334,7 @@ With:
  - top_data_dir: top directory containing all data files.
  - index_file  : index file that contains the file -> file_path list to avoid find and ls commands for getting the data.
  - destination : information related to the destination that depends on the job_type.
+ - defer_time  : reference time for the scheduler. It is the time zero after which the files are played. If not provide it is 5 seconds.
 
 """
 
@@ -352,16 +353,6 @@ def parse_args():
         parser.add_option("-c", "--conf", help = "configuration file path in json. See help for conf file examples.", \
                           dest = "dconf", default = None)
 
-        """
-        dir_help =  "Directory where the result files will be stored.".ljust(66)
-        dir_help += "(Default =. the current dir)".ljust(66)
-        dir_help += "The directory will be created if it doesn't exist.".ljust(66)
-
-        parsers.add_option("-d", "--dir", metavar="DIR", \
-                          help = dir_help,\
-                          dest ="output_dir", default=".")
-        """
-
         # add custom usage and epilogue
         parser.epilogue = HELP_EPILOGUE
         parser.usage    = HELP_USAGE
@@ -376,7 +367,11 @@ def parse_args():
 
 
         # add from
-        parsed_args['conf_path']              = options.dconf
+        if options.dconf is None:
+            print("Need a configuration file. diss_player -h for more information.")
+            raise Exception("Error. Need a configuration file.")
+        else:
+            parsed_args['conf_path']              = options.dconf
 
         #add parsers itself for error handling
         parsed_args['parsers'] = parser
