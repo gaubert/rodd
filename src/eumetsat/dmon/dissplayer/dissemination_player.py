@@ -75,12 +75,10 @@ class DisseminationPlayer(object):
 
     MIDNIGHT = datetime.time(0,0,0)
 
-    def __init__(self, dir_files_to_parse, files_to_parse, index_file, job_func, destination):
+    def __init__(self, top_data_dir, index_file, dir_files_to_parse, files_to_parse, job_func, destination):
         """
             :return:
         """
-        #ref time = now time plus two minutes
-        self._reference_date = datetime.datetime.now() +  datetime.timedelta(seconds=30)
         self._parser = eumetsat.dmon.parsers.xferlog_parser.XferlogParser(no_gems_header = True)
         self._dir_files = dir_files_to_parse
         self._files = files_to_parse
@@ -88,9 +86,14 @@ class DisseminationPlayer(object):
         self._scheduler = BlockingScheduler()
 
         res = []
-        t = ftimer(Indexer.load_index, [index_file], {}, res)
+        t = ftimer(Indexer.load_index, [top_data_dir, index_file], {}, res)
         print("Read index in %d seconds." % (t))
         self._index = res[0]
+
+        #can now set reference time
+        #ref time = now time plus one minute
+        self._defer_time = 60
+        self._reference_date = datetime.datetime.now() +  datetime.timedelta(seconds=self._defer_time)
 
         #destination info (depends on the type of job)
         self._destination = destination
@@ -101,7 +104,6 @@ class DisseminationPlayer(object):
           Create the jobs from the reference time
         :return:
         """
-
         for a_file in self._files:
             f_path = "%s/%s" % (self._dir_files, a_file)
             print("Parsing xferlog file %s" % f_path )
@@ -133,7 +135,7 @@ class DisseminationPlayer(object):
         """
         self._scheduler.configure(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=utc)
 
-        print("Start Scheduler")
+        print("Start Scheduler. Jobs will start to be played in %d sec." % self._defer_time)
         self._scheduler.start()
 
 
@@ -142,47 +144,38 @@ class Indexer(object):
        Build a file to file path index in order to be quick
     """
 
-    def __init__(self, top_dir, cache_file):
+    def __init__(self):
         """
            :return:
         """
-        self._top_dir = top_dir
-        self._cache_file_path = cache_file
 
-    def create_index(self, recreate = False):
+    @classmethod
+    def load_index(self, top_data_dir, index_file_path, recreate = False):
         """
-           Create the index if a cache file doesn't exist
+           Load or Create the index if a cache file doesn't exist
         :return:
         """
         cache = {}
-        if recreate or not os.path.exists(self._cache_file_path):
-            print("Index. Will create the index. It might take a long time.")
-            fd = open(self._cache_file_path, "w")
-            for path, _, files in os.walk(self._top_dir):
+        if recreate or not os.path.exists(index_file_path):
+            print("File Indexer. Create an index file %s to fastly access all data files from %s. It might take few minutes." % (index_file_path, top_data_dir))
+            fd = open(index_file_path, "w")
+            for path, _, files in os.walk(top_data_dir):
                 for filename in files:
                     filepath = os.path.join(path, filename)
                     cache[filename] = filepath
 
-            print("Index. Store index in %s." % (self._cache_file_path))
+            print("File Indexer. Store index in %s." % (index_file_path))
 
-            pickle.dump(cache, open(self._cache_file_path, "wb"))
+            pickle.dump(cache, open(index_file_path, "wb"))
 
-            print("Index. Indexed cached.")
+            print("File Indexer. Indexed created.")
         else:
-            print("Index. Load index from %s." % (self._cache_file_path))
-            cache = pickle.load( open( self._cache_file_path, "rb" ) )
-            print("Index. Index loaded")
+            print("File Index. Load index from %s." % (index_file_path))
+            cache = pickle.load( open( index_file_path, "rb" ) )
+            print("File Indexer. Index loaded")
 
         return cache
 
-    @classmethod
-    def load_index(cls, index_file):
-        """
-        """
-        print("Index. Load index from %s." % (index_file))
-        index = pickle.load( open( index_file, "rb" ) )
-        print("Index. Index loaded")
-        return index
 
 
 def read_configuration_file(a_filepath):
@@ -284,30 +277,48 @@ def test_parser():
         print("time = %s, filename = %s\n" % (elem['time'], elem['file']))
 
 
-HELP_USAGE = """ nms_client [options] request files or request
+HELP_USAGE = """ diss_player --conf conf_filepath
 
-Arguments: a list of request files or an inline request."""
+Replay dissemination xferlogs.
+Arguments: None"""
 
 HELP_EPILOGUE = """Examples:
 
-a) Requests examples
+a) diss_player --conf /tmp/myconf.json
 
-- Retrieve shi data with a request stored in a file
-#> nms_client ims_shi.req
+Examples of conf file:
 
-b) Pattern examples
+cp_job example:
+{
+  "job_type" : "cp_job",
+  "xferlog_dir"  : "e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog",
+  "files" : ["xferlog.ears.txt"],
+  "top_data_dir" : "e:/IPPS-Data/One-Day-Replay/data/20150311-data",
+  "index_file" : "H:/index.cache",
+  "destination" : { "dest-dir" : "e:/IPPS-Data/One-Day-Replay/test-dir" }
+}
 
-#> nms_client shi.req -f "{req_id}_{req_fileprefix}.data"
-will create 546_shi.data.
+scp_job example:
+{
+  "job_type" : "scp_job",
+  "xferlog_dir"  : "e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog",
+  "files" :  ["xferlog.dwd.txt", "xferlog.ears.txt", "xferlog.eps-prime.txt", "xferlog.hrit-0.txt", "xferlog.hrit-rss.txt", "xferlog.other.txt",
+             "xferlog.saf.txt", "xferlog.saflsa.txt", "xferlog.safo3m.txt", "xferlog.wmora1.txt", "xferlog.wmora6.txt"
+             ] ,
+  "top_data_dir" : "e:/IPPS-Data/One-Day-Replay/data/20150311-data"
+  "index_file" : "H:/index.cache",
+  "destination" : { "scp": "C:/Users/Aubert/AppData/Local/Temp/Aubert_MobaXterm6.5/bin/scp" , "user" : "gaubert", "host" : "tclxs10", "dest-dir" : "/tcc1/home/gaubert/test-dir" }
+}
 
-#> nms_client shi.req -f "{req_id}_{date}.data"
-will create 547_20091224.data.
+With:
+ - job_type    : Type of job executed by the scheduler. It can be a cp_job or a scp_job.
+                 Each job_type takes a different individual destination argument.
+ - xferlog_dir : Directory where the xferlog files to re-play are.
+ - files       : list of xferlog files to replay.
+ - top_data_dir: top directory containing all data files.
+ - index_file  : index file that contains the file -> file_path list to avoid find and ls commands for getting the data.
+ - destination : information related to the destination that depends on the job_type.
 
-#> nms_client shi.req -f "{req_id}_{datetime}.data"
-will create 548_20091224-01h12m23s.data
-
-#> nms_client shi-1.req shi-2.req -f "{req_id}_{req_fileprefix}.data"
-will create 549_shi-1.data and 550_shi-2.data
 """
 
 def parse_args():
@@ -322,7 +333,7 @@ def parse_args():
 
         parser = cmdline_utils.CmdLineParser()
 
-        parser.add_option("-c", "--conf", help = "configuration file path in json", \
+        parser.add_option("-c", "--conf", help = "configuration file path in json. See help for conf file examples.", \
                           dest = "dconf", default = None)
 
         """
@@ -374,7 +385,7 @@ def run_cmd():
     else:
         raise Exception("Error. Unknown job type %s" % (conf["job_type"]))
 
-    player = DisseminationPlayer(conf['xferlog_dir'], conf['files'] , conf['index_file'], j_type, conf['destination'])
+    player = DisseminationPlayer(conf['top_data_dir'], conf['index_file'], conf['xferlog_dir'], conf['files'] , j_type, conf['destination'])
 
     player.add_jobs()
 
