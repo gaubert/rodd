@@ -2,6 +2,7 @@ __author__ = 'guillaume aubert'
 
 from pytz import utc
 import os
+import sys
 import itertools
 import gc
 import time
@@ -17,6 +18,7 @@ from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.executors.pool import ProcessPoolExecutor
 import logging
 
+import eumetsat.dmon.common.utils as utils
 import eumetsat.dmon.common.cmdline_utils as cmdline_utils
 import eumetsat.dmon.parsers.xferlog_parser
 
@@ -184,8 +186,12 @@ def read_configuration_file(a_filepath):
     :param a_filepath:
     :return:
     """
-    json_data=open(a_filepath)
-    data = json.load(json_data)
+
+    if os.path.exists(a_filepath):
+        json_data=open(a_filepath)
+        data = json.load(json_data)
+    else:
+        raise Exception("Error. Configuration file %s doesn't exist." % (a_filepath) )
 
     return data
 
@@ -226,22 +232,30 @@ def test_player_with_cp():
     #index_file = 'H:/index.cache'
     #destination = { 'dest-dir' : 'e:/IPPS-Data/One-Day-Replay/test-dir' }
 
-    conf = read_configuration_file("C:/Dev/ecli-workspace/rodd/etc/diss-player/cp_test.json")
+    try:
+        conf = read_configuration_file("C:/Dev/ecli-workspace/rodd/etc/diss-player/cp_test.json")
 
-    j_type = None
+        j_type = None
 
-    if conf["job_type"] == "cp_job":
-        j_type = cp_job
-    elif conf["job_type"] == "scp_job":
-        j_type = scp_job
-    else:
-        raise Exception("Error. Unknown job type %s" % (conf["job_type"]))
+        if conf["job_type"] == "cp_job":
+            j_type = cp_job
+        elif conf["job_type"] == "scp_job":
+            j_type = scp_job
+        else:
+            raise Exception("Error. Unknown job type %s" % (conf["job_type"]))
 
-    player = DisseminationPlayer(conf['xferlog_dir'], conf['files'] , conf['index_file'], j_type, conf['destination'])
+        player = DisseminationPlayer(conf['xferlog_dir'], conf['files'] , conf['index_file'], j_type, conf['destination'])
 
-    player.add_jobs()
+        player.add_jobs()
 
-    player.start()
+        player.start()
+    except Exception, e:
+        tracebk = utils.get_exception_traceback()
+        print(e)
+        print("Traceback %s" % (tracebk))
+        sys.exit(1)
+
+    sys.exit(0)
 
 def test_player_with_scp():
     """
@@ -376,20 +390,28 @@ def run_cmd():
 
     parsed_args = parse_args()
 
-    conf = read_configuration_file(parsed_args['conf_path'])
+    try:
+        conf = read_configuration_file(parsed_args['conf_path'])
 
-    if conf["job_type"] == "cp_job":
-        j_type = cp_job
-    elif conf["job_type"] == "scp_job":
-        j_type = scp_job
-    else:
-        raise Exception("Error. Unknown job type %s" % (conf["job_type"]))
+        if conf["job_type"] == "cp_job":
+            j_type = cp_job
+        elif conf["job_type"] == "scp_job":
+            j_type = scp_job
+        else:
+            raise Exception("Error. Unknown job type %s" % (conf["job_type"]))
 
-    player = DisseminationPlayer(conf['top_data_dir'], conf['index_file'], conf['xferlog_dir'], conf['files'] , j_type, conf['destination'])
+        player = DisseminationPlayer(conf['top_data_dir'], conf['index_file'], conf['xferlog_dir'], conf['files'] , j_type, conf['destination'])
 
-    player.add_jobs()
+        player.add_jobs()
 
-    player.start()
+        player.start()
+    except Exception, e:
+        tracebk = utils.get_exception_traceback()
+        print(e)
+        print("Traceback %s" % (tracebk))
+        sys.exit(1)
+
+    sys.exit(0)
 
 
 if __name__ == '__main__':
