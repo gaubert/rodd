@@ -16,6 +16,7 @@ from apscheduler.schedulers.background import BackgroundScheduler, BlockingSched
 #from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.memory import MemoryJobStore
 from apscheduler.executors.pool import ProcessPoolExecutor
+from apscheduler.executors.pool import ThreadPoolExecutor
 import logging
 
 import eumetsat.dmon.common.utils as utils
@@ -31,7 +32,8 @@ jobstores = {
     'default': MemoryJobStore()
 }
 executors = {
-    'default': {'type': 'threadpool', 'max_workers': 20},
+    #'default': {'type': 'processpool', 'max_workers': 20},
+    'default': ThreadPoolExecutor(max_workers=20),
     'processpool': ProcessPoolExecutor(max_workers=20)
 }
 job_defaults = {
@@ -94,7 +96,7 @@ class DisseminationPlayer(object):
 
         #can now set reference time
         #ref time = now time plus one minute
-        self._defer_time = 60
+        self._defer_time = 5 
         self._reference_date = datetime.datetime.now() +  datetime.timedelta(seconds=self._defer_time)
 
         #destination info (depends on the type of job)
