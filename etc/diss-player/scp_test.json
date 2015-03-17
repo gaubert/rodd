@@ -1,0 +1,10 @@
+{
+  "job_type" : "scp_job",
+  "xferlog_dir"  : "e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog",
+  "files" :  ["xferlog.dwd.txt", "xferlog.ears.txt", "xferlog.eps-prime.txt", "xferlog.hrit-0.txt", "xferlog.hrit-rss.txt", "xferlog.other.txt",
+             "xferlog.saf.txt", "xferlog.saflsa.txt", "xferlog.safo3m.txt", "xferlog.wmora1.txt", "xferlog.wmora6.txt"
+             ] ,
+  "top_data_dir" : "e:/IPPS-Data/One-Day-Replay/data/20150311-data"
+  "index_file" : "H:/index.cache",
+  "destination" : { "scp": "C:/Users/Aubert/AppData/Local/Temp/Aubert_MobaXterm6.5/bin/scp" , "user" : "gaubert", "host" : "tclxs10", "dest-dir" : "/tcc1/home/gaubert/test-dir" }
+}

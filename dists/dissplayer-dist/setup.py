@@ -3,9 +3,9 @@ from setuptools import setup, find_packages
 version = '0.5'
 README = os.path.join(os.path.dirname(__file__), 'README.txt')
 long_description = open(README).read() + 'nn'
-setup(name='dmon',
+setup(name='diss_player',
       version=version,
-      description=("dissemination monitoring toolbox"),
+      description=("dissemination player"),
       long_description=long_description,
       classifiers=[
         "Programming Language :: Python",
@@ -16,9 +16,9 @@ setup(name='dmon',
       author_email='guillaume.aubert@eumetsat.int',
       url='http://www.eumetsat.int',
       license='Apache 2.0',
-      packages=['eumetsat','eumetsat.dmon','eumetsat.dmon.tests'],
-      package_dir={'eumetsat':'eumetsat', 'eumetsat.dmon': 'eumetsat/dmon', 'eumetsat.dmon.tests':'eumetsat/dmon/tests'},
+      packages=['eumetsat','eumetsat.dmon'],
+      package_dir={'eumetsat':'eumetsat', 'eumetsat.dmon': 'eumetsat/dmon'},
       #package_data={'org.ctbto.conf': ['tests/test.config','tests/foo.config','tests/rn.par','tests/rn1.par']},
       #data_files=[('/tmp/py-tests',['/home/aubert/dev/src-reps/java-balivernes/RNpicker/dists/conf-dist/tests/foo.config','/home/aubert/dev/src-reps/java-balivernes/RNpicker/dists/conf-dist/tests/test.config'])],
-      install_requires=['Logbook>=0.3', 'colorama>=0.2','requests>=0.7', 'BeautifulSoup>=3.2']
+      install_requires=['pytz>=2014.10', 'APScheduler=3.0.2', 'six>=1.9.0']
       )

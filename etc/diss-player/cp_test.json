@@ -1,0 +1,8 @@
+{
+  "job_type" : "cp_job",
+  "xferlog_dir"  : "e:/IPPS-Data/One-Day-Replay/xferlog-lftp/xferlog",
+  "files" : ["xferlog.ears.txt"],
+  "top_data_dir" : "e:/IPPS-Data/One-Day-Replay/data/20150311-data",
+  "index_file" : "H:/index.cache",
+  "destination" : { "dest-dir" : "e:/IPPS-Data/One-Day-Replay/test-dir" }
+}
