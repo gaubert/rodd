@@ -2,6 +2,8 @@
 *.pyc
 *.o
 *.class
+**/__init__.pyc
+**/*.pyc
 dists/disstoolbox-dist/build
 dists/disstoolbox-dist/build/*
 dmon/dissplayer/jobs.sqlite
