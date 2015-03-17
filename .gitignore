@@ -4,6 +4,10 @@
 *.class
 **/__init__.pyc
 **/*.pyc
+**/build
+**/build/*
 dists/disstoolbox-dist/build
 dists/disstoolbox-dist/build/*
+dists/dissplayer-dist/build
+dists/dissplpayer-dist/build/*
 dmon/dissplayer/jobs.sqlite

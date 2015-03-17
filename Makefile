@@ -39,6 +39,8 @@ all: dissplayer-src-dist
 init:
 	mkdir -p $(DTBDIST)
 	mkdir -p $(DTBBUILDDIST)
+	mkdir -p $(DPLDIST)
+	mkdir -p $(DPLBUILDDIST) 
 
 #this is the one we use at the moment
 # to install with pip: /tmp/python-test/bin/pip install ./dmon-0.5.tar.gz --find-links file:///homespace/gaubert/Dev/projects/rodd/dists/disstoolbox-dist/third-party
