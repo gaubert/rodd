@@ -6,7 +6,7 @@ umask 002
 
 # Runs on Linux
 #################################
-## GMVAULT Distribution home directory
+## DISSPLAYER Distribution home directory
 #################################
 #use perl by default. if perl is not there, default to readlink
 PERL_EXISTS=`which perl`
