@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+#set -x
+
+# force a friendly umask
+umask 002
+
+# Runs on Linux
+#################################
+## GMVAULT Distribution home directory
+#################################
+#use perl by default. if perl is not there, default to readlink
+PERL_EXISTS=`which perl`
+RET_CODE=$?
+if [ $RET_CODE -eq 0 ]; then
+   ABSPATH="$(perl -e "use Cwd 'abs_path'; print abs_path('$0')")"
+   CDIR=`dirname "$ABSPATH"`
+else
+   # perl doesn't exist so try to use readlink with -f option
+   res_readlink="$(readlink -f $0 2>&1)"
+   RET_CODE=$?
+   if [ $RET_CODE -eq 0 ]; then
+      CDIR=`dirname "$res_readlink"`
+   else
+      #try readlink without -f
+      res_readlink="$(readlink $0 2>&1)"
+      RET_CODE=$?
+      if [ $RET_CODE -eq 0 ]; then
+         CDIR=`dirname "$res_readlink"`
+      else
+         #do not use readlink default to a version that doesn't support symbolic link
+         CDIR=`dirname "$0"`
+      fi
+   fi
+fi
+
+HERE=$(unset CDPATH; cd "$CDIR"; pwd)
+DISSPATH_HOME=$(unset CDPATH; cd "$HERE/.."; pwd)
+
+#set trap to remove temp file
+trap "rm -f /tmp/DISSPATH.bootstrap.$$" EXIT
+
+#################################
+## setup PYTHON_BIN
+#################################
+#look as if it was the packaged binary distribution
+if [ -f "$DISSPATH_HOME/lib/python-lib/bin/python" ]; then
+    PYTHON_BIN="$DISSPATH_HOME/lib/python-lib/bin/python"
+    export PYTHONPATH="$DISSPATH_HOME/lib:$PYTHONPATH"
+    #set pythonhome but it should not be necessary
+    export PYTHONHOME="$DISSPATH_HOME/lib/python-lib"
+
+elif [ -f "$DISSPATH_HOME/bin/python" ]; then
+    #installed from src distribution (python bin is in the same dir as DISSPATH script)
+    PYTHON_BIN="$DISSPATH_HOME/bin/python"
+
+else
+    #look for python2.7 first otherwise try python2.6
+    PYTHON_BIN=`which python2.7 2>/dev/null`
+    if [ ! $PYTHON_BIN ]; then
+       PYTHON_BIN=`which python2.6 2>/dev/null`
+    fi
+
+    echo "Odd. Use default python2.7.x or 2.6.x distribution."
+fi
+
+if [ ! "$PYTHON_BIN" ] || [ ! -f "$PYTHON_BIN" ]; then
+    echo "Error: Cannot find the python executable to set env var PYTHON_BIN."
+    echo "Please check where your python binary is."
+    exit 1
+fi
+
+###################################
+## create bootstrap and launch program
+## the bootstrap is always under
+## /tmp/disspath.bootstrap
+###################################
+
+# keep args in variables
+ARGS="$@"
+
+cat > /tmp/DISSPATH.bootstrap.$$ << EOF
+import eumetsat.dmon.dissplayer.dissemination_player as runner
+runner.run_cmd()
+EOF
+
+#call DISSPATH bootstrap
+if [ -r /tmp/DISSPATH.bootstrap.$$ ];then
+	"$PYTHON_BIN" /tmp/DISSPATH.bootstrap.$$ "$@"
+        res="$?"
+else
+	echo "Could not run DISSPATH bootstrap."
+	res=1
+fi
+
+exit $res
