@@ -94,8 +94,11 @@ clean-build:
 	cd $(DTBBUILD); rm -Rf egg-dist; 
 	rm -Rf $(DTBDIST)/diss-toolbox-*
 	cd $(DTBBUILD); rm -Rf egg-dist
+	# clean dissemination player parts
 	rm -Rf $(DPLBUILD)/*;
 	rm -Rf $(DPLDIST)/eumetsat
+	rm -Rf $(DPLDIST)/diss-player
+	rm -Rf $(DPLDIST)/diss_player-*.zip
     
 
 
