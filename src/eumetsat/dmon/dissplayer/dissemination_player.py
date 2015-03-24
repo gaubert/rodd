@@ -293,6 +293,13 @@ def test_parser():
         print("time = %s, filename = %s\n" % (elem['time'], elem['file']))
 
 
+
+class SimpleException(Exception):
+    """
+       Simple exception that will not require to print the stack trace, ie. CommandLine argument missing, ....
+    """
+    pass
+
 HELP_USAGE = """ diss_player --conf conf_filepath
 
 Replay dissemination xferlogs.
@@ -367,14 +374,10 @@ def parse_args():
 
 
         # add from
-        if options.dconf is None:
-            print("Need a configuration file. diss_player -h for more information.")
-            raise Exception("Error. Need a configuration file.")
-        else:
-            parsed_args['conf_path']              = options.dconf
+        parsed_args['conf_path']              = options.dconf
 
-        #add parsers itself for error handling
-        parsed_args['parsers'] = parser
+        #add parser itself for error handling
+        parsed_args['parser'] = parser
 
         return parsed_args
 
@@ -387,6 +390,10 @@ def run_cmd():
 
     parsed_args = parse_args()
 
+    if not parsed_args['conf_path']:
+        print("Error. Need a configuration file. diss_player -h for more information.")
+        parsed_args['parser'].die_with_usage()
+
     try:
         conf = read_configuration_file(parsed_args['conf_path'])
 
@@ -395,13 +402,16 @@ def run_cmd():
         elif conf["job_type"] == "scp_job":
             j_type = scp_job
         else:
-            raise Exception("Error. Unknown job type %s" % (conf["job_type"]))
+            raise SimpleException("Error. Unknown job type %s" % (conf["job_type"]))
 
         player = DisseminationPlayer(conf['top_data_dir'], conf['index_file'], conf['xferlog_dir'], conf['files'] , j_type, conf['destination'])
 
         player.add_jobs()
 
         player.start()
+    except SimpleException, se:
+        print(se)
+        parsed_args['parser'].die_with_usage()
     except Exception, e:
         tracebk = utils.get_exception_traceback()
         print(e)

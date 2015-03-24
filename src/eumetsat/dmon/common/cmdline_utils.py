@@ -58,12 +58,19 @@ class CmdLineParser(OptionParser): #pylint: disable-msg=R0904
         """ 
         if msg != None: 
             print >> sys.stderr, msg 
-            self.print_help(sys.stderr) 
-            sys.exit(exit_code) 
-   
-    def error(self, msg): 
-        """ 
-          Overrides parent ``OptionParser`` class's ``error()`` method and 
-          forces the full usage message on error. 
-        """ 
-        self.die_with_usage("%s: error: %s\n" % (self.get_prog_name(), msg))
+
+        self.print_help(sys.stderr)
+        sys.exit(exit_code)
+
+    def error(self, msg):
+        """
+          Overrides parent ``OptionParser`` class's ``error()`` method and
+          forces the full usage message on error.
+        """
+        self.die_with_usage("%s: error: %s\n" % (self.prog, msg))
+
+    def message(self, msg):
+        """
+           Print a message
+        """
+        print("%s: %s\n" % (self.prog, msg))

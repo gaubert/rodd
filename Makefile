@@ -60,15 +60,19 @@ disstoolbox-src-dist: clean init
 dissplayer-src-dist: clean init
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	mkdir -p $(DPLDIST)/eumetsat
-	cp $(BASEDIR)/src/eumetsat/__init__.py $(DPLDIST)/eumetsat	
+	# copy script
+	cp -R $(BASEDIR)/etc/diss-player $(DPLDIST)
+	# dos2unix it
+	dos2unix $(DPLDIST)/diss-player/diss-player
+	cp -R $(BASEDIR)/src/eumetsat/__init__.py $(DPLDIST)/eumetsat
 	cp -R $(BASEDIR)/src/eumetsat/dmon $(DPLDIST)/eumetsat
-	cd $(DPLDIST); $(PYTHONBIN) setup.py sdist -d ../../$(DPLDIST) 
+	cd $(DPLDIST); $(PYTHONBIN) setup.py sdist -d ../../$(DPLDIST)
 	#remove egg-dist dir
 	rm -Rf $(DPLDIST)/egg-dist
 	#copy third party libs in build dir in order to create one tarball that can be installed with pip
 	cp $(DPLDIST)/third-party/* $(DPLBUILD)
 	echo "distribution stored in $(DPLBUILD)"
-    
+
 disstoolbox-src-egg-dist: clean init
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	mkdir -p $(DTBDIST)/eumetsat
@@ -90,10 +94,8 @@ clean-build:
 	cd $(DTBBUILD); rm -Rf egg-dist; 
 	rm -Rf $(DTBDIST)/diss-toolbox-*
 	cd $(DTBBUILD); rm -Rf egg-dist
-	cd $(DPLBUILD); rm -Rf egg-dist; 
-	rm -Rf $(DPLDIST)/diss-toolbox-*
-	cd $(DPLBUILD); rm -Rf egg-dist
-
+	rm -Rf $(DPLBUILD)/*;
+	rm -Rf $(DPLDIST)/eumetsat
     
 
 
