@@ -29,7 +29,8 @@ def parse_gems_html():
 
     the_dir = "/home/mobaxterm/DWD-Data/" 
     #fd      = open("%s/OneDayOfRMDCNOutgoingHeaders-D69-2014.html" % (the_dir))
-    fd      = open("%s/OneDayOfRMDCNOutgoingHeaders-D67-D68-2014.html" % (the_dir))
+    #fd      = open("%s/OneDayOfRMDCNOutgoingHeaders-D67-D68-2014.html" % (the_dir))
+    fd      = open("%s/20150911-RMDCN-Bulletins-OneDay.html" % (the_dir))
     res_fd  = open("%s/result.csv" % (the_dir), "w+")
     res_fd1 = open("%s/result-by-headers.csv" % (the_dir), "w+")
     
