@@ -47,13 +47,10 @@ echo "Recovering WCM data for $DATE in $DEST_DIR/$DATE-WCM-Recovered."
 #recover data for WCM
 #Get MET10 data
 
-mkdir -p $DEST_DIR/$DATE-WCM-Recovered/MET10
+#mkdir -p $DEST_DIR/$DATE-WCM-Recovered/MET10
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_2/'H-000-MSG3*IR_108*-'"$FDATE"'*' $DEST_DIR/$DATE-WCM-Recovered/MET10
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_2/'H-000-MSG3__-MSG3________-_________-PRO______-'"$FDATE"'*_' $DEST_DIR/$DATE-WCM-Recovered/MET10
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_2/'H-000-MSG3__-MSG3________-_________-EPI______-'"$FDATE"'*_' $DEST_DIR/$DATE-WCM-Recovered/MET10
-
-#python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_2/$EUMDATE -d $DEST_DIR/$DATE-WCM-Recovered/MET10 -p 'H-000-MSG3*IR_108*-'"$FDATE"'*'
-#python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_2/$EUMDATE -d $DEST_DIR/$DATE-WCM-Recovered/MET10 -p 'H-000-MSG3__-MSG3________-_________-PRO______-'"$FDATE"'*_,H-000-MSG3__-MSG3________-_________-EPI______-'"$FDATE"'*_'
 
 #Get MET7 data (Done)
 
@@ -62,9 +59,6 @@ mkdir -p $DEST_DIR/$DATE-WCM-Recovered/MET7
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MTP___-MET7*___-'"$FDATE"'*-*' $DEST_DIR/$DATE-WCM-Recovered/MET7
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MTP___-MET7*EPI___-'"$FDATE"'*-*' $DEST_DIR/$DATE-WCM-Recovered/MET7
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MTP___-MET7*PRO___-'"$FDATE"'*-*' $DEST_DIR/$DATE-WCM-Recovered/MET7
-
-#python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_3/$PREV_DATE -d $DEST_DIR/$DATE-WCM-Recovered/MET7 -p 'L-000-MTP___-MET7*___-'"$FDATE"'*-*'
-#python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_3/$PREV_DATE -d $DEST_DIR/$DATE-WCM-Recovered/MET7 -p 'L-000-MTP___-MET7*PRO______-'"$FDATE"'*'
 
 #Get GOES 13 data
 #L-000-MSG3__-GOES13______-03_9_075W-PRO______-201501110400-__
@@ -77,16 +71,7 @@ scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13_
 mkdir -p $DEST_DIR/$DATE-WCM-Recovered/GOES-15
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES15*'"$FDATE"'*' $DEST_DIR/$DATE-WCM-Recovered/GOES-15
 
-#python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_3/$PREV_DATE -d $DEST_DIR/$DATE-WCM-Recovered/GOES-15 -p 'L-000-MSG3__-GOES15*'"$FDATE"'*'
-#python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_3/$EUMDATE -d $DEST_DIR/$DATE-WCM-Recovered/GOES-15 -p 'L-000-MSG3__-GOES15*'"$FDATE"'*'
-
-#Get MTSAT2
-mkdir -p $DEST_DIR/$DATE-WCM-Recovered/MTSAT
-#L-000-MSG3__-MTSAT2______-06_8_145E-PRO______-201501111300-__
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-MTSAT2*-'"$FDATE"'*-C_' $DEST_DIR/$DATE-WCM-Recovered/MTSAT
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-MTSAT2______-*-PRO*-'"$FDATE"'*-__' $DEST_DIR/$DATE-WCM-Recovered/MTSAT
-
-#python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_3/$EUMDATE -d $DEST_DIR/$DATE-WCM-Recovered/MTSAT -p 'L-000-MSG3__-MTSAT2*-'"$FDATE"'*-C_'
-#python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_3/$EUMDATE -d $DEST_DIR/$DATE-WCM-Recovered/MTSAT -p 'L-000-MSG3__-MTSAT2______-*-PRO*-'"$FDATE"'*-__'
-
+#Get HIMAWARI
+mkdir -p $DEST_DIR/$DATE-WCM-Recovered/HIMAW
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_4/'IMG_DK01IR1*_'"$FDATE"'*.bz2' $DEST_DIR/$DATE-WCM-Recovered/HIMAW
 

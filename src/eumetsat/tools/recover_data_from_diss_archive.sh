@@ -70,4 +70,4 @@ echo "Recovering WCM data for $DATE in $DEST_DIR/$DATE-WCM-Recovered."
 #python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_3/$EUMDATE -d $DEST_DIR/$DATE-WCM-Recovered/GOES-15 -p 'L-000-MSG3__-GOES15*'"$FDATE"'*'
 
 # GET HIMAWARI
-python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_4/$EUMDATE -d $DEST_DIR/$DATE-WCM-Recovered/HIMAW -p 'IMG_DK*_'"$FDATE"'*.bz2'
+python file_catcher.py -s /drives/y/archive/EUMETSAT_Data_Channel_4/$EUMDATE -d $DEST_DIR/$DATE-WCM-Recovered/HIMAW -p 'IMG_DK01IR1*_'"$FDATE"'*.bz2'
