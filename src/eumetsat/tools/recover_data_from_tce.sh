@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+set -x
 
 #Dest Dir Change if you wish to get the data copied somewhere else
 DEST_DIR=/drives/c/GuillaumeAubertSpecifics/Data/
@@ -65,13 +65,16 @@ scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MTP___-MET7*PR
 
 mkdir -p $DEST_DIR/$DATE-WCM-Recovered/GOES-13
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13*-'"$FDATE"'*' $DEST_DIR/$DATE-WCM-Recovered/GOES-13
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13______-*-PRO*-'"$FDATE"'*-__' $DEST_DIR/$DATE-WCM-Recovered/GOES-13
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13______-*-PRO______-'"$FDATE"'*-__' $DEST_DIR/$DATE-WCM-Recovered/GOES-13
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13______-*-EPI*-'"$FDATE"'*-__' $DEST_DIR/$DATE-WCM-Recovered/GOES-13
 
 #Get GEOS 15 data
 mkdir -p $DEST_DIR/$DATE-WCM-Recovered/GOES-15
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES15*'"$FDATE"'*' $DEST_DIR/$DATE-WCM-Recovered/GOES-15
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES15______-*-PRO______-'"$FDATE"'*-__' $DEST_DIR/$DATE-WCM-Recovered/GOES-15
 
 #Get HIMAWARI
 mkdir -p $DEST_DIR/$DATE-WCM-Recovered/HIMAW
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_4/'IMG_DK01IR1*_'"$FDATE"'*.bz2' $DEST_DIR/$DATE-WCM-Recovered/HIMAW
+#scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_4/'IMG_DK01IR4*_'"$FDATE"'*.bz2' $DEST_DIR/$DATE-WCM-Recovered/HIMAW
 
