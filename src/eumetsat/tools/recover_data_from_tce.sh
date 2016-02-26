@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+#set -x
 
 #Dest Dir Change if you wish to get the data copied somewhere else
 DEST_DIR=/drives/c/GuillaumeAubertSpecifics/Data/
