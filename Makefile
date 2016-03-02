@@ -57,6 +57,7 @@ disstoolbox-src-dist: clean init
 	echo "distribution stored in $(DTBBUILD)"
 
 # to install with pip: /tmp/python-test/bin/pip install ./dmon-0.5.tar.gz --find-links file:///homespace/gaubert/Dev/projects/rodd/dists/disstoolbox-dist/third-party
+# create dissemination player to replay from xferlogs files
 dissplayer-src-dist: clean init
 	# need to copy sources in distributions as distutils does not always support symbolic links (pity)
 	mkdir -p $(DPLDIST)/eumetsat

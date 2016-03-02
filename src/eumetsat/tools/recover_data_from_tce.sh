@@ -49,29 +49,28 @@ echo "Recovering WCM data for $DATE in $DEST_DIR/$DATE-WCM-Recovered."
 
 #mkdir -p $DEST_DIR/$DATE-WCM-Recovered/MET10
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_2/'H-000-MSG3*IR_108*-'"$FDATE"'*' $DEST_DIR/$DATE-WCM-Recovered/MET10
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_2/'H-000-MSG3__-MSG3________-_________-PRO______-'"$FDATE"'*_' $DEST_DIR/$DATE-WCM-Recovered/MET10
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_2/'H-000-MSG3__-MSG3________-_________-EPI______-'"$FDATE"'*_' $DEST_DIR/$DATE-WCM-Recovered/MET10
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_2/'H-000-MSG3__-MSG3*PRO*'"$DATE"'*' $DEST_DIR/$DATE-WCM-Recovered/MET10
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_2/'H-000-MSG3__-MSG3*EPI*'"$DATE"'*' $DEST_DIR/$DATE-WCM-Recovered/MET10
 
 #Get MET7 data (Done)
 
 #because 201501120000 is in 2015-01-11
 mkdir -p $DEST_DIR/$DATE-WCM-Recovered/MET7
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MTP___-MET7*___-'"$FDATE"'*-*' $DEST_DIR/$DATE-WCM-Recovered/MET7
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MTP___-MET7*11_5*'"$DATE"'*-*' $DEST_DIR/$DATE-WCM-Recovered/MET7
 scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MTP___-MET7*EPI___-'"$FDATE"'*-*' $DEST_DIR/$DATE-WCM-Recovered/MET7
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MTP___-MET7*PRO___-'"$FDATE"'*-*' $DEST_DIR/$DATE-WCM-Recovered/MET7
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MTP___-MET7*PRO*'"$FDATE"'*-*' $DEST_DIR/$DATE-WCM-Recovered/MET7
 
 #Get GOES 13 data
 #L-000-MSG3__-GOES13______-03_9_075W-PRO______-201501110400-__
 
 mkdir -p $DEST_DIR/$DATE-WCM-Recovered/GOES-13
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13*-'"$FDATE"'*' $DEST_DIR/$DATE-WCM-Recovered/GOES-13
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13______-*-PRO______-'"$FDATE"'*-__' $DEST_DIR/$DATE-WCM-Recovered/GOES-13
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13______-*-EPI*-'"$FDATE"'*-__' $DEST_DIR/$DATE-WCM-Recovered/GOES-13
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13*10_7*'"$DATE"'*' $DEST_DIR/$DATE-WCM-Recovered/GOES-13
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES13*PRO*'"$DATE"'*-__' $DEST_DIR/$DATE-WCM-Recovered/GOES-13
 
 #Get GEOS 15 data
 mkdir -p $DEST_DIR/$DATE-WCM-Recovered/GOES-15
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES15*'"$FDATE"'*' $DEST_DIR/$DATE-WCM-Recovered/GOES-15
-scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES15______-*-PRO______-'"$FDATE"'*-__' $DEST_DIR/$DATE-WCM-Recovered/GOES-15
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES15*10_7*'"$DATE"'*' $DEST_DIR/$DATE-WCM-Recovered/GOES-15
+scp tclxs30:/tcc1/fbf/EUMETCAST/in/EUMETSAT_Data_Channel_3/'L-000-MSG3__-GOES15*PRO*'"$DATE"'*' $DEST_DIR/$DATE-WCM-Recovered/GOES-15
 
 #Get HIMAWARI
 mkdir -p $DEST_DIR/$DATE-WCM-Recovered/HIMAW
