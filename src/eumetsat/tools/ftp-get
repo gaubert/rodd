@@ -1,0 +1,28 @@
+#!/bin/bash -vx
+
+# Script to FTP data to server
+# Paramters: host  FTP Server
+#                     user            FTP Username
+#                     passwd      FTP Password
+#                     file             File to send/put
+############################################################################
+
+# Variables
+HOST=xxxxxxxxxxx
+USER=xxxxxxxx
+PASSWD=xxxxxxxx
+FILE=$1
+TODIR=out/CCD/Diss
+
+# Connect to FTP HOST and Send File
+ftp -n $HOST <<END_SCRIPT
+    quote USER $USER
+    quote PASS $PASSWD
+	cd $TODIR
+    dir
+    binary
+    mget $FILE
+    dir
+    quit
+END_SCRIPT
+exit 0
